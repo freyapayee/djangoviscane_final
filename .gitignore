@@ -1,0 +1,9 @@
+.env/
+.env
+.env.local
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.DS_Store
+/instance/viscane.db

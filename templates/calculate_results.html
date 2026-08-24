@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISCANE | Calculation Results</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="farmer-layout">
+    <div class="dashboard-bg"></div>
+
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon">
+                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                </div>
+                <div class="brand-copy">
+                    <p class="brand-system">VISCANE</p>
+                    <p class="brand-title">Hello, {{ user.fullname }}</p>
+                    <p class="brand-subtitle">Isabela, Negros Occidental | Online</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="farmer-info-chip" aria-live="polite">
+                    <ion-icon name="partly-sunny-outline"></ion-icon>
+                    <span data-farmer-info-text>Loading date...</span>
+                </div>
+                <a class="btn light" href="/homepage">
+                    <ion-icon name="arrow-back-outline"></ion-icon>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container fade-in farmer-mobile-shell">
+        <section class="results-card">
+            <div class="results-header">
+                <div>
+                    <div class="hero-badge results-badge">
+                        <ion-icon name="leaf-outline"></ion-icon>
+                        Calculation Result
+                    </div>
+                    <h2 class="results-title">Harvest Summary</h2>
+                    <p class="results-subtitle">Generated from your latest input.</p>
+                    <p class="results-meta">Data source: latest scan + manual entry.</p>
+                </div>
+            </div>
+
+            {% if api_error %}
+                <div class="form-error" style="margin-bottom: 20px;">{{ api_error }}</div>
+            {% endif %}
+
+            <div class="results-grid">
+                <div class="result-row">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="leaf-outline"></ion-icon>
+                        </span>
+                        Variety
+                    </span>
+                    <span class="result-value">{{ variety_display }}</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                        </span>
+                        Hectares
+                    </span>
+                    <span class="result-value">{{ hectares_display }}</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="analytics-outline"></ion-icon>
+                        </span>
+                        Maturity
+                    </span>
+                    <span class="result-value">{{ maturity_display }}</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="git-branch-outline"></ion-icon>
+                        </span>
+                        Crop Stage
+                    </span>
+                    <span class="result-value">{{ crop_stage_display }}</span>
+                </div>
+                <div class="result-row result-highlight">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="sparkles-outline"></ion-icon>
+                        </span>
+                        Estimated LKG TC
+                    </span>
+                    <span class="result-value{% if predicted_lkg_tc_display == 'Pending' %} is-pending{% endif %}">
+                        {{ predicted_lkg_tc_display }}
+                        <span class="result-unit">LKG/TC</span>
+                    </span>
+                </div>
+                <div class="result-row result-highlight">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="trending-up-outline"></ion-icon>
+                        </span>
+                        Estimated TC/HA
+                    </span>
+                    <span class="result-value{% if predicted_tc_ha_display == 'Pending' %} is-pending{% endif %}">
+                        {{ predicted_tc_ha_display }}
+                        <span class="result-unit">TC/HA</span>
+                    </span>
+                </div>
+                <div class="result-row result-highlight">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="cube-outline"></ion-icon>
+                        </span>
+                        Estimated LKG
+                    </span>
+                    <span class="result-value{% if predicted_lkg_display == 'Pending' %} is-pending{% endif %}">
+                        {{ predicted_lkg_display }}
+                        <span class="result-unit">LKG</span>
+                    </span>
+                </div>
+            </div>
+            {% if cv_variety_display or cv_maturity_display %}
+                <div class="result-row" style="margin-top: 14px;">
+                    <span class="result-label">
+                        <span class="result-icon">
+                            <ion-icon name="scan-outline"></ion-icon>
+                        </span>
+                        Computer Vision
+                    </span>
+                    <span class="result-value" style="font-size: 0.92rem; text-align: right;">
+                        {% if cv_variety_display %}Variety: {{ cv_variety_display }}{% endif %}
+                        {% if cv_maturity_display %}{% if cv_variety_display %}<br>{% endif %}Maturity: {{ cv_maturity_display.replace('_', ' ').title() }}{% endif %}
+                    </span>
+                </div>
+            {% endif %}
+        </section>
+        <div class="mobile-actions">
+            <a class="btn ghost" href="/homepage#calc-form">
+                <ion-icon name="refresh-outline"></ion-icon>
+                Recalculate
+            </a>
+            <a class="btn primary" href="/homepage">
+                <ion-icon name="arrow-back-outline"></ion-icon>
+                Back to Dashboard
+            </a>
+        </div>
+    </main>
+
+    <nav class="farmer-bottom-nav" aria-label="Farmer navigation">
+        <a class="farmer-bottom-link" href="/homepage">
+            <ion-icon name="home-outline"></ion-icon>
+            <span>Home</span>
+        </a>
+        <a class="farmer-bottom-link" href="/farmer/recommendations">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            <span>Recommendations</span>
+        </a>
+        <a class="farmer-bottom-link" href="/farmer/agronomic-logs">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <span>Input Logs</span>
+        </a>
+        <a class="farmer-bottom-link" href="/farmer/settings">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Profile</span>
+        </a>
+    </nav>
+    <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+"""VISCANE Django project package."""
