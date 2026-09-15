@@ -21,3 +21,6 @@ docker compose up --build
 - Keep `.env.local` private
 - The Django project reuses the existing templates and static assets in this folder
 - PostgreSQL is supported via `DATABASE_URL`, with SQLite fallback when it is omitted
+
+
+baw weh
