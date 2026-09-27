@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,14 +16,15 @@
             </div>
             <h2 class="auth-title">VISCANE</h2>
             <p class="auth-subtitle">An Edge-Based AI for Sugarcane Quality Grading</p>
+            {% include 'farmer_language_switch.html' %}
         </div>
 
         <div class="toggle-wrapper">
             <div id="pill-bg" class="pill {{ 'register' if mode == 'register' }}"></div>
             <button id="login-btn" class="toggle-btn {{ 'active' if mode == 'login' }}" 
-                    hx-get="/auth?mode=login" hx-target="#form-container" onclick="moveToggle('login')">Login</button>
+                    hx-get="/auth?mode=login" hx-target="#form-container" onclick="moveToggle('login')">{{ farmer_text('Login') }}</button>
             <button id="register-btn" class="toggle-btn {{ 'active' if mode == 'register' }}" 
-                    hx-get="/auth?mode=register" hx-target="#form-container" onclick="moveToggle('register')">Register</button>
+                    hx-get="/auth?mode=register" hx-target="#form-container" onclick="moveToggle('register')">{{ farmer_text('Register') }}</button>
         </div>
 
         <div id="form-container">
@@ -31,11 +32,11 @@
         </div>
 
         {% if error %}
-            <div class="form-error">{{ error }}</div>
+            <div class="form-error">{{ farmer_text(error) }}</div>
         {% endif %}
 
         <div class="auth-footer">
-            <a href="/" class="auth-back-link">&larr; Back to Selection</a>
+            <a href="/" class="auth-back-link">&larr; {{ farmer_text('Back to Selection') }}</a>
         </div>
     </div>
 
@@ -55,5 +56,6 @@
             }
         }
     </script>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

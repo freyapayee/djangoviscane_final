@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,7 @@
 </head>
 <body>
     <div class="card fade-in">
+        {% include 'farmer_language_switch.html' %}
         <div class="admin-login-header">
             <div class="admin-login-icon-circle">
                 <ion-icon name="shield-checkmark-outline" class="admin-login-icon"></ion-icon>
@@ -50,5 +51,6 @@
             <a href="/admin-access" class="admin-login-back-link">&larr; Back to Admin Access</a>
         </div>
     </div>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

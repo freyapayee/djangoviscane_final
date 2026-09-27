@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,18 +18,19 @@
                 </div>
                 <div class="brand-copy">
                     <p class="brand-system">VISCANE</p>
-                    <p class="brand-title">Hello, {{ user.fullname }}</p>
-                    <p class="brand-subtitle">Isabela, Negros Occidental | Online</p>
+                    <p class="brand-title">{{ farmer_text('Hello,') }} {{ user.fullname }}</p>
+                    <p class="brand-subtitle">Isabela, Negros Occidental | {{ farmer_text('Online') }}</p>
                 </div>
             </div>
             <div class="header-actions">
+                {% include 'farmer_language_switch.html' %}
                 <div class="farmer-info-chip" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
                 </div>
                 <a class="btn light" href="/homepage">
                     <ion-icon name="arrow-back-outline"></ion-icon>
-                    Dashboard
+                    {{ farmer_text('Dashboard') }}
                 </a>
             </div>
         </div>
@@ -41,16 +42,16 @@
                 <div>
                     <div class="hero-badge results-badge">
                         <ion-icon name="leaf-outline"></ion-icon>
-                        Calculation Result
+                        {{ farmer_text('Calculation Result') }}
                     </div>
-                    <h2 class="results-title">Harvest Summary</h2>
-                    <p class="results-subtitle">Generated from your latest input.</p>
-                    <p class="results-meta">Data source: latest scan + manual entry.</p>
+                    <h2 class="results-title">{{ farmer_text('Harvest Summary') }}</h2>
+                    <p class="results-subtitle">{{ farmer_text('Generated from your latest input.') }}</p>
+                    <p class="results-meta">{{ farmer_text('Data source: latest scan + manual entry.') }}</p>
                 </div>
             </div>
 
             {% if api_error %}
-                <div class="form-error" style="margin-bottom: 20px;">{{ api_error }}</div>
+            <div class="form-error" style="margin-bottom: 20px;">{{ farmer_text(api_error) }}</div>
             {% endif %}
 
             <div class="results-grid">
@@ -59,7 +60,7 @@
                         <span class="result-icon">
                             <ion-icon name="leaf-outline"></ion-icon>
                         </span>
-                        Variety
+                        {{ farmer_text('Variety') }}
                     </span>
                     <span class="result-value">{{ variety_display }}</span>
                 </div>
@@ -68,37 +69,37 @@
                         <span class="result-icon">
                             <ion-icon name="bar-chart-outline"></ion-icon>
                         </span>
-                        Hectares
+                        {{ farmer_text('Hectares') }}
                     </span>
-                    <span class="result-value">{{ hectares_display }}</span>
+                    <span class="result-value">{{ farmer_text(hectares_display) }}</span>
                 </div>
                 <div class="result-row">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="analytics-outline"></ion-icon>
                         </span>
-                        Maturity
+                        {{ farmer_text('Maturity') }}
                     </span>
-                    <span class="result-value">{{ maturity_display }}</span>
+                    <span class="result-value">{{ farmer_text(maturity_display) }}</span>
                 </div>
                 <div class="result-row">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="git-branch-outline"></ion-icon>
                         </span>
-                        Crop Stage
+                        {{ farmer_text('Crop Stage') }}
                     </span>
-                    <span class="result-value">{{ crop_stage_display }}</span>
+                    <span class="result-value">{{ farmer_text(crop_stage_display) }}</span>
                 </div>
                 <div class="result-row result-highlight">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="sparkles-outline"></ion-icon>
                         </span>
-                        Estimated LKG TC
+                        {{ farmer_text('Estimated LKG TC') }}
                     </span>
                     <span class="result-value{% if predicted_lkg_tc_display == 'Pending' %} is-pending{% endif %}">
-                        {{ predicted_lkg_tc_display }}
+                        {{ farmer_text(predicted_lkg_tc_display) }}
                         <span class="result-unit">LKG/TC</span>
                     </span>
                 </div>
@@ -107,10 +108,10 @@
                         <span class="result-icon">
                             <ion-icon name="trending-up-outline"></ion-icon>
                         </span>
-                        Estimated TC/HA
+                        {{ farmer_text('Estimated TC/HA') }}
                     </span>
                     <span class="result-value{% if predicted_tc_ha_display == 'Pending' %} is-pending{% endif %}">
-                        {{ predicted_tc_ha_display }}
+                        {{ farmer_text(predicted_tc_ha_display) }}
                         <span class="result-unit">TC/HA</span>
                     </span>
                 </div>
@@ -119,10 +120,10 @@
                         <span class="result-icon">
                             <ion-icon name="cube-outline"></ion-icon>
                         </span>
-                        Estimated LKG
+                        {{ farmer_text('Estimated LKG') }}
                     </span>
                     <span class="result-value{% if predicted_lkg_display == 'Pending' %} is-pending{% endif %}">
-                        {{ predicted_lkg_display }}
+                        {{ farmer_text(predicted_lkg_display) }}
                         <span class="result-unit">LKG</span>
                     </span>
                 </div>
@@ -133,23 +134,30 @@
                         <span class="result-icon">
                             <ion-icon name="scan-outline"></ion-icon>
                         </span>
-                        Computer Vision
+                        {{ farmer_text('Computer Vision') }}
                     </span>
                     <span class="result-value" style="font-size: 0.92rem; text-align: right;">
-                        {% if cv_variety_display %}Variety: {{ cv_variety_display }}{% endif %}
-                        {% if cv_maturity_display %}{% if cv_variety_display %}<br>{% endif %}Maturity: {{ cv_maturity_display.replace('_', ' ').title() }}{% endif %}
+                        {% if cv_variety_display %}{{ farmer_text('Variety:') }} {{ cv_variety_display }}{% endif %}
+                        {% if cv_maturity_display %}{% if cv_variety_display %}<br>{% endif %}{{ farmer_text('Maturity:') }} {{ farmer_text(cv_maturity_display.replace('_', ' ').title()) }}{% endif %}
                     </span>
                 </div>
             {% endif %}
+            <div class="results-note" role="note">
+                <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+                <div>
+                    <strong>{{ farmer_text('Important Note') }}:</strong>
+                    <p>{{ farmer_text('These results are estimates only. Exact sugar content and quality require laboratory testing. Actual yield is confirmed after harvest and weighing.') }}</p>
+                </div>
+            </div>
         </section>
         <div class="mobile-actions">
             <a class="btn ghost" href="/homepage#calc-form">
                 <ion-icon name="refresh-outline"></ion-icon>
-                Recalculate
+                {{ farmer_text('Recalculate') }}
             </a>
             <a class="btn primary" href="/homepage">
                 <ion-icon name="arrow-back-outline"></ion-icon>
-                Back to Dashboard
+                {{ farmer_text('Back to Dashboard') }}
             </a>
         </div>
     </main>
@@ -157,21 +165,22 @@
     <nav class="farmer-bottom-nav" aria-label="Farmer navigation">
         <a class="farmer-bottom-link" href="/homepage">
             <ion-icon name="home-outline"></ion-icon>
-            <span>Home</span>
+            <span>{{ farmer_text('Home') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/recommendations">
             <ion-icon name="sparkles-outline"></ion-icon>
-            <span>Recommendations</span>
+            <span>{{ farmer_text('Recommendations') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/agronomic-logs">
             <ion-icon name="document-text-outline"></ion-icon>
-            <span>Input Logs</span>
+            <span>{{ farmer_text('Input Logs') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/settings">
             <ion-icon name="person-outline"></ion-icon>
-            <span>Profile</span>
+            <span>{{ farmer_text('Profile') }}</span>
         </a>
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

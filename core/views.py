@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+from .language import translate_recommendations
 from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, Notification, Scan, SystemConfig, User
 from .services import (
     DEFAULT_RECOMMENDATIONS,
@@ -42,7 +43,9 @@ from .services import (
     normalize_cv_maturity_status,
     normalize_variety_name,
     predict_variety_metrics,
+    request_prediction_service,
     save_prediction_context,
+    summarize_prediction_service_error,
     verify_and_upgrade_password,
 )
 
@@ -203,7 +206,7 @@ def homepage(request):
 @farmer_login_required
 def farmer_recommendations(request):
     user = current_user(request)
-    recommendations = request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS
+    recommendations = translate_recommendations(request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS)
     grouped_recommendations = group_recommendations_by_category(recommendations)
     return render_template(request, "farmer_recommendations.html", {"user": user, "recommendations": recommendations, "grouped_recommendations": grouped_recommendations})
 
@@ -246,62 +249,31 @@ def api_scan_predict(request):
     except (TypeError, ValueError):
         return JsonResponse({"error": "Invalid `top_k`. Provide an integer from 1 to 10."}, status=400)
     file_bytes = uploaded_file.read()
-    if not file_bytes:
-        return JsonResponse({"error": "Uploaded image is empty."}, status=400)
-
-    from urllib.request import Request, urlopen
-    from urllib.error import HTTPError, URLError
-    from urllib.parse import urlencode
-
-    endpoint = (os.getenv("SCAN_PREDICT_ENDPOINT", DEFAULT_SCAN_PREDICT_ENDPOINT).strip() or DEFAULT_SCAN_PREDICT_ENDPOINT)
-    timeout_raw = os.getenv("SCAN_PREDICT_TIMEOUT_SECONDS", "30")
-    try:
-        timeout_seconds = max(5.0, float(timeout_raw))
-    except (TypeError, ValueError):
-        timeout_seconds = 30.0
-
-    from .services import _build_multipart_form_data
-
-    separator = "&" if "?" in endpoint else "?"
-    target_url = f"{endpoint}{separator}{urlencode({'top_k': top_k})}"
-    body, content_type = _build_multipart_form_data(
-        fields={},
-        files=[
-            {
-                "field_name": "file",
-                "filename": os.path.basename(uploaded_file.name) or "capture.jpg",
-                "content_type": uploaded_file.content_type or "image/jpeg",
-                "content": file_bytes,
-            }
-        ],
+    response_payload, error_payload, error_status = request_prediction_service(
+        uploaded_filename=uploaded_file.name,
+        file_bytes=file_bytes,
+        content_type=uploaded_file.content_type or "image/jpeg",
+        top_k=top_k,
     )
-    outbound = Request(target_url, data=body, method="POST")
-    outbound.add_header("accept", "application/json")
-    outbound.add_header("Content-Type", content_type)
-    outbound.add_header("Content-Length", str(len(body)))
-    try:
-        with urlopen(outbound, timeout=timeout_seconds) as api_response:
-            response_body = api_response.read()
-            status_code = getattr(api_response, "status", 200)
-    except HTTPError as exc:
-        try:
-            details = exc.read().decode("utf-8", errors="replace")
-        except Exception:
-            details = str(exc)
-        return JsonResponse({"error": "Prediction service returned an error.", "status": exc.code, "details": details[:600]}, status=502)
-    except URLError as exc:
-        return JsonResponse({"error": "Prediction service is unreachable.", "details": str(exc.reason) if getattr(exc, "reason", None) else str(exc)}, status=502)
-    except TimeoutError:
-        return JsonResponse({"error": "Prediction service timed out.", "details": f"Request exceeded {timeout_seconds:.0f} seconds."}, status=504)
-    except Exception as exc:
-        return JsonResponse({"error": "Failed to request prediction service.", "details": str(exc)}, status=500)
+    if error_payload:
+        return JsonResponse(error_payload, status=error_status or 500)
+
+    response_body, status_code = response_payload
 
     if 200 <= status_code < 300:
         try:
             decoded_payload = json.loads(response_body.decode("utf-8"))
-            cv_context = _extract_cv_context(decoded_payload)
-            if cv_context:
-                request.session["latest_cv_context"] = cv_context
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return JsonResponse({"error": "Prediction service did not return valid JSON."}, status=502)
+        cv_context = _extract_cv_context(decoded_payload)
+        if not cv_context:
+            response_keys = list(decoded_payload) if isinstance(decoded_payload, dict) else []
+            return JsonResponse({
+                "error": "Prediction service returned no recognizable prediction.",
+                "details": f"Response fields: {', '.join(response_keys) or 'none'}. Expected variety, maturity, and a prediction score.",
+            }, status=502)
+        request.session["latest_cv_context"] = cv_context
+        try:
             save_prediction_context(request.session.get("user_id"), uploaded_file, file_bytes, decoded_payload)
         except Exception:
             pass

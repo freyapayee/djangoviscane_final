@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +22,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                {% include 'farmer_language_switch.html' %}
                 <div class="status-pill superadmin-pill">
                     <ion-icon name="shield-checkmark-outline"></ion-icon>
                     Audit Trail
@@ -75,5 +76,6 @@
 
         <div class="footer-link">VISCANE Superadmin | Audit & Compliance</div>
     </main>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

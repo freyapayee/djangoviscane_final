@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +10,10 @@
 <body class="scanner-layout">
     <div class="scanner-screen">
         <div class="scanner-top">
-            <a href="/homepage" class="scan-back-link">&larr; Back to Dashboard</a>
-            <div class="scan-title">Sugarcane Scanner</div>
-            <div class="scan-subtitle">Align the Sugarcane Stalk</div>
+            <a href="/homepage" class="scan-back-link">&larr; {{ farmer_text('Back to Dashboard') }}</a>
+            {% include 'farmer_language_switch.html' %}
+            <div class="scan-title">{{ farmer_text('Sugarcane Scanner') }}</div>
+            <div class="scan-subtitle">{{ farmer_text('Align the Sugarcane Stalk') }}</div>
         </div>
         <div class="scanner-viewport">
             <video id="viewfinder" autoplay muted playsinline></video>
@@ -31,7 +32,7 @@
             <div class="scanner-controls">
                 <button type="button" class="mode-btn is-active">RGB</button>
                 <button type="button" class="mode-btn">HSV</button>
-                <button type="button" class="capture-btn" id="capture-btn">Capture</button>
+                <button type="button" class="capture-btn" id="capture-btn">{{ farmer_text('Capture') }}</button>
             </div>
         </div>
     </div>
@@ -41,40 +42,47 @@
             <div class="scan-icon-circle">
                 <ion-icon name="camera-outline"></ion-icon>
             </div>
-            <h2 class="scan-title">New Scan Entry</h2>
-            <p class="scan-subtitle">Save a new sugarcane assessment</p>
+            <h2 class="scan-title">{{ farmer_text('New Scan Entry') }}</h2>
+            <p class="scan-subtitle">{{ farmer_text('Save a new sugarcane assessment') }}</p>
         </div>
 
         {% if error %}
-            <div class="form-error">{{ error }}</div>
+            <div class="form-error">{{ farmer_text(error) }}</div>
         {% endif %}
 
         <form class="fade-in" method="POST" action="/scan/new">
             <div class="input-wrapper">
                 <ion-icon name="leaf-outline"></ion-icon>
-                <input type="text" name="plot_name" placeholder="Plot Name (e.g., Plot #3)" required>
+                <input type="text" name="plot_name" placeholder="{{ farmer_text('Plot Name (e.g., Plot #3)') }}" required>
             </div>
             <div class="input-wrapper">
                 <ion-icon name="stats-chart-outline"></ion-icon>
-                <input type="number" name="maturity_pct" placeholder="Maturity Percentage (0-100)" min="0" max="100" required>
+                <input type="number" name="maturity_pct" placeholder="{{ farmer_text('Maturity Percentage (0-100)') }}" min="0" max="100" required>
             </div>
             <div class="input-wrapper">
                 <ion-icon name="ribbon-outline"></ion-icon>
-                <input type="text" name="grade" placeholder="Grade (A, B, or C)" required>
+                <input type="text" name="grade" placeholder="{{ farmer_text('Grade (A, B, or C)') }}" required>
             </div>
             <div class="input-wrapper">
                 <ion-icon name="alert-circle-outline"></ion-icon>
-                <input type="text" name="status" placeholder="Status (ready, monitor, healthy)" required>
+                <select name="status" required aria-label="{{ farmer_text('Status') }}">
+                    <option value="" disabled selected>{{ farmer_text('Select status') }}</option>
+                    <option value="ready">{{ farmer_text('Ready') }}</option>
+                    <option value="monitor">{{ farmer_text('Monitor') }}</option>
+                    <option value="healthy">{{ farmer_text('Healthy') }}</option>
+                </select>
             </div>
 
             <button type="submit" class="primary-btn">
-                Save Scan
+                {{ farmer_text('Save Scan') }}
             </button>
         </form>
     </div>
 
     <script>
         (() => {
+            const uiStrings = {{ farmer_catalog() | tojson }};
+            const uiText = (value) => uiStrings[value] || value;
             const viewfinder = document.getElementById('viewfinder');
             const canvas = document.getElementById('scan-canvas');
             const captureBtn = document.getElementById('capture-btn');
@@ -84,7 +92,7 @@
 
             const setMessage = (text) => {
                 if (message) {
-                    message.textContent = text;
+                    message.textContent = uiText(text);
                 }
             };
 
@@ -199,5 +207,6 @@
             });
         })();
     </script>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

@@ -1,0 +1,757 @@
+"""Farmer-facing Hiligaynon text and optional DeepSeek explanations."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import logging
+import os
+import re
+from copy import deepcopy
+
+from django.core.cache import cache
+from django.utils.translation import get_language
+
+
+logger = logging.getLogger(__name__)
+PROTECTED_TERMS = (
+    "VMC 84-524", "VMC 84-947", "MAURITIO RC888", "RSSI", "LKG", "PHILSURIN",
+    "Carbofuran", "Phenthoate", "Dinotefuran", "Thiamethoxam", "Pymetrozine",
+    "Buprofezin", "glyphosate", "2,4-D", "Diuron", "N-P-K",
+    "Not Mature", "Over Mature", "Mature",
+)
+
+# These short interface labels should be checked with local farmers before release.
+HILIGAYNON_LABELS = {
+    "Home": "Balik sa Una",
+    "Hello,": "Kumusta,",
+    "Online": "Naka-online",
+    "Dashboard": "Panguna nga pahina",
+    "Recommendations": "Mga rekomendasyon",
+    "Action Recommendations": "Mga rekomendasyon nga himuon",
+    "Generated from your latest agronomic inputs": "Ginhimo halin sa imo pinakabag-o nga datos sa uma",
+    "Input Logs": "Talaan sang datos",
+    "Profile": "Akon impormasyon",
+    "Settings": "Mga setting",
+    "AI Grading Ready": "Handa na ang AI sa pag-usisa",
+    "Scan Sugarcane": "I-scan ang tubo",
+    "Capture for AI maturity analysis": "Kuhai sang hulagway para masusi ang Maturity sang Tubo",
+    "Open Camera": "Buksi ang kamera",
+    "Upload Photo": "Mag-upload sang hulagway",
+    "Assessment Parameters": "Mga datos para sa pag-usisa",
+    "Choose your agronomic inputs, then calculate your expected result.": "Pilia ang mga datos sang imo uma, dayon kalkulaha ang ginapaabot nga resulta.",
+    "Agronomic Data": "Datos sang uma",
+    "Calculate": "Kalkulahon",
+    "Farmer Pages": "Mga pahina para sa mangunguma",
+    "Open recommendations and agronomic logs": "Buksi ang mga rekomendasyon kag talaan sang datos sa uma",
+    "Quick Access": "Dali nga pag-abri",
+    "Account Settings": "Mga setting sang account",
+    "Review your profile and update your account details": "Tan-awa kag bag-uha ang impormasyon sang imo account",
+    "Profile Details": "Impormasyon sang profile",
+    "Update your registered email address and phone number": "Bag-uha ang imo email kag numero sang telepono",
+    "Update": "Bag-uhon",
+    "Full Name": "Bug-os nga ngalan",
+    "Email Address": "Email address",
+    "Phone Number": "Numero sang telepono",
+    "Location Details": "Impormasyon sang lugar",
+    "Province": "Probinsya",
+    "Municipality": "Munisipyo",
+    "Barangay": "Barangay",
+    "Password": "Password",
+    "Change Password": "Bag-uhon ang password",
+    "Agronomic Input Logs": "Talaan sang datos sa uma",
+    "Saved inputs and prediction history": "Natipigan nga datos kag kasaysayan sang mga resulta",
+    "Log History": "Kasaysayan sang talaan",
+    "Your previous inputs and system recommendations": "Imo nagligad nga datos kag mga rekomendasyon sang sistema",
+    "Inputs:": "Mga datos:",
+    "Prediction:": "Ginabanta nga resulta:",
+    "Recommendations:": "Mga rekomendasyon:",
+    "No agronomic logs yet. Calculate once to save your first log.": "Wala pa sang datos sa talaan. Magkalkula anay agod matipigan ang imo una nga talaan.",
+    "No recommendations yet. Run a calculation from Home.": "Wala pa sang rekomendasyon. Magkalkula anay sa una nga pahina.",
+    "Accuracy": "Katukma",
+    "Accuracy:": "Katukma:",
+    "This percentage is the AI score for this image.": "Ini nga porsyento amo ang puntos sang AI para sa sini nga hulagway.",
+    "Calculation Results": "Mga resulta sang kalkulasyon",
+    "Calculation Result": "Resulta sang kalkulasyon",
+    "Harvest Summary": "Kabug-usan sang ani",
+    "Generated from your latest input.": "Ginhimo halin sa imo pinakabag-o nga datos.",
+    "Data source: latest scan + manual entry.": "Ginhalinan sang datos: pinakabag-o nga scan kag ginpasulod nga datos.",
+    "Variety": "Klase sang tubo",
+    "Hectares": "Ektarya",
+    "Maturity": "Maturity sang Tubo",
+    "Crop Stage": "Hugna sang pagtubo",
+    "Estimated LKG TC": "Ginabanta nga LKG/TC",
+    "Estimated TC/HA": "Ginabanta nga TC/HA",
+    "Estimated LKG": "Ginabanta nga LKG",
+    "Important Note": "Importante nga Pahibalo",
+    "These results are estimates only. Exact sugar content and quality require laboratory testing. Actual yield is confirmed after harvest and weighing.": "Mga ginabanta lamang ini nga resulta. Ang eksakto nga sulod sang asukal kag kalidad kinahanglan mapamatud-an paagi sa pag-usisa sa laboratoryo. Ang aktuwal nga ani mapamatud-an pagkatapos sang pag-ani kag pagtimbang.",
+    "Computer Vision": "Pagsusi sang hulagway",
+    "Recalculate": "Kalkulahon liwat",
+    "Back to Dashboard": "Balik sa panguna nga pahina",
+    "Pending": "Ginahulat",
+    "Not provided": "Wala ginhatag",
+    "Unknown": "Wala nahibaluan",
+    "General": "Kabilugan",
+    "Missing Inputs": "Kulang nga datos",
+    "Harvest Directives": "Mga pahibalo sa pag-ani",
+    "Pest and Disease": "Mga peste kag balatian",
+    "Fertilizer Guidance": "Giya sa abono",
+    "Weeding Guidance": "Giya sa pagpaninlo sang hilamon",
+    "Plowing Guidance": "Giya sa pag-arado",
+    "Yield Improvement": "Pagpaayo sang ani",
+    "English original": "Orihinal nga Ingles",
+    "Welcome to VISCANE": "Maayong pag-abot sa VISCANE",
+    "Select your portal to continue": "Pilia ang imo portal agod makapadayon",
+    "Farmer Portal": "Portal sang mangunguma",
+    "Access AI-powered quality analysis": "Buksi ang pagsusisa sang kalidad gamit ang AI",
+    "Login": "Magsulod",
+    "Register": "Magparehistro",
+    "Sign In": "Magsulod",
+    "Create Account": "Maghimo sang account",
+    "Confirm Password": "Kumpirmaha ang password",
+    "Back to Selection": "Balik sa pagpili",
+    "Select Province": "Pilia ang probinsya",
+    "Select Municipality": "Pilia ang munisipyo",
+    "Select Barangay": "Pilia ang barangay",
+    "Phone number must be exactly 11 digits.": "Kinahanglan 11 ka numero ang numero sang telepono.",
+    "Sugarcane Scanner": "Scanner sang tubo",
+    "Align the Sugarcane Stalk": "Itupong ang puno sang tubo",
+    "Capture": "Kuhai sang hulagway",
+    "New Scan Entry": "Bag-o nga talaan sang scan",
+    "Save a new sugarcane assessment": "Tipiga ang bag-o nga pagsusisa sang tubo",
+    "Save Scan": "Tipiga ang scan",
+    "Number of Plowing": "Pila ka beses nag-arado",
+    "Plowing": "Pag-arado",
+    "Number of Weedings": "Pila ka beses nagpaninlo sang hilamon",
+    "Weedings": "Pagpaninlo sang hilamon",
+    "Weeding": "Pagpaninlo sang hilamon",
+    "Number of Fertilizer": "Pila ka beses nag-abono",
+    "Fertilizer": "Pag-abono",
+    "Ratoon Stage": "Hugna sang ratoon",
+    "Ratoon": "Ratoon",
+    "Infected by RSSI?": "May impeksyon bala sang RSSI?",
+    "Click here to choose the variety of sugarcane.": "Pinduta diri agod makapili sang klase sang tubo.",
+    "Click the variety field to open the 3 options.": "Pinduta ang klase sang tubo agod makita ang 3 ka pilian.",
+    "Click here to choose the number of plowing.": "Pinduta diri agod makapili kon pila ka beses nag-arado.",
+    "Click here to choose the number of weedings.": "Pinduta diri agod makapili kon pila ka beses nagpaninlo sang hilamon.",
+    "Click here to choose the number of fertilizer.": "Pinduta diri agod makapili kon pila ka beses nag-abono.",
+    "Click here to choose the ratoon stage.": "Pinduta diri agod makapili sang hugna sang ratoon.",
+    "Click here to choose the RSSI status.": "Pinduta diri agod makapili sang kahimtangan sang RSSI.",
+    "Plant": "Bag-o nga tanom",
+    "1st Ratoon": "Una nga ratoon",
+    "2nd Ratoon": "Ikaduha nga ratoon",
+    "Yes": "Huo",
+    "No": "Indi",
+    "YES": "HUO",
+    "NO": "INDI",
+    "Select hectares": "Pilia ang kadakuon sa ektarya",
+    "Less than 1 Hectare": "Kulang sa 1 ka ektarya",
+    "1 Hectare": "1 ka ektarya",
+    "1-2 Hectares": "1-2 ka ektarya",
+    "2 Hectares": "2 ka ektarya",
+    "2-3 Hectares": "2-3 ka ektarya",
+    "3 Hectares": "3 ka ektarya",
+    "3-4 Hectares": "3-4 ka ektarya",
+    "4 Hectares": "4 ka ektarya",
+    "5 Hectares": "5 ka ektarya",
+    "More than 5 Hectares": "Sobra sa 5 ka ektarya",
+    "Please choose an option.": "Pilia anay ang isa ka opsyon.",
+    "Please select a variety.": "Pilia anay ang klase sang tubo.",
+    "Please select one variety before calculating.": "Pilia anay ang isa ka klase sang tubo antes magkalkula.",
+    "Tap to change variety": "Pinduta agod bag-uhon ang klase sang tubo",
+    "selected": "napili",
+    "Computer vision detected": "Nakita sang pagsusisa sang hulagway ang",
+    "Please choose this same variety before calculating.": "Pilia ang amo man nga klase sang tubo antes magkalkula.",
+    "auto-selected from computer vision. Please confirm it is correct.": "awtomatiko nga napili halin sa pagsusisa sang hulagway. Kumpirmaha kon husto ini.",
+    "Opening camera...": "Ginabuksan ang kamera...",
+    "Uploading...": "Gina-upload...",
+    "Upload Picture": "Mag-upload sang hulagway",
+    "Analysis complete.": "Tapos na ang pagsusisa.",
+    "Variety:": "Klase sang tubo:",
+    "Maturity:": "Maturity sang Tubo:",
+    "Camera preview is not available. You can still upload a photo.": "Wala makita ang hulagway halin sa kamera. Makapag-upload ka gihapon sang litrato.",
+    "Uploading photo for prediction...": "Gina-upload ang hulagway para sa pagbanta...",
+    "Photo analyzed successfully.": "Natapos ang pagsusisa sang hulagway.",
+    "Please use Upload Picture.": "Gamita ang Mag-upload sang hulagway.",
+    "No image selected.": "Wala sang napili nga hulagway.",
+    "Could not read selected image.": "Indi mabasa ang napili nga hulagway.",
+    "Could not prepare image for upload.": "Indi mahanda ang hulagway para i-upload.",
+    "Upload failed.": "Napakyas ang pag-upload.",
+    "Prediction service returned no recognizable prediction.": "Wala sang makilala nga resulta halin sa serbisyo sang pagbanta.",
+    "Not Mature": "Not Mature",
+    "Mature": "Mature",
+    "Over Mature": "Over Mature",
+    "Not Mature (Computer Vision)": "Not Mature (pagsusi sang hulagway)",
+    "Mature (Computer Vision)": "Mature (pagsusi sang hulagway)",
+    "Over Mature (Computer Vision)": "Over Mature (pagsusi sang hulagway)",
+    "New Plant (1)": "Bag-o nga tanom (1)",
+    "1st ratoon (2nd)": "Una nga ratoon (ika-2)",
+    "2nd ratoon (3rd)": "Ikaduha nga ratoon (ika-3)",
+    "Unknown Variety": "Wala nahibaluan nga klase sang tubo",
+    "Date unavailable": "Wala sang petsa",
+    "No recommendation generated.": "Wala sang nahimo nga rekomendasyon.",
+    "task": "buluhaton",
+    "tasks": "mga buluhaton",
+    "log": "talaan",
+    "logs": "mga talaan",
+    "Priority": "Unahon",
+    "Soon": "Sa indi madugay",
+    "Plan": "Plano",
+    "Advisory": "Pahibalo",
+    "Ready": "Handa",
+    "Urgent": "Dali-on",
+    "Required": "Kinahanglan",
+    "Improve": "Pauswagon",
+    "Guide": "Giya",
+    "Upgrade": "Pauswagon",
+    "Important": "Importante",
+    "Attention": "Atensyon",
+    "Stable": "Malig-on",
+    "Next best actions for": "Sunod nga mga buluhaton para kay",
+    "News & Announcements": "Balita kag mga pahibalo",
+    "Posted by admin": "Ginpahibalo sang admin",
+    "Latest": "Pinakabag-o",
+    "Recent Scans": "Bag-o nga mga scan",
+    "Latest sugarcane assessments": "Pinakabag-o nga mga pagsusisa sang tubo",
+    "Updated 10 min ago": "Ginbag-o 10 ka minuto ang nagligad",
+    "Uploaded Scan": "Gin-upload nga scan",
+    "Computer vision upload": "Gin-upload para sa pagsusisa sang hulagway",
+    "Uploaded:": "Gin-upload:",
+    "Remove Picture": "Kuhaa ang hulagway",
+    "Monitor": "Bantayan",
+    "Healthy": "Maayo ang kahimtangan",
+    "Uploaded": "Gin-upload",
+    "No scans yet. Start your first analysis.": "Wala pa sang scan. Suguri ang imo una nga pagsusisa.",
+    "Scan Gallery": "Koleksyon sang mga scan",
+    "Recent uploaded sugarcane scans": "Pinakabag-o nga gin-upload nga mga scan sang tubo",
+    "No uploaded scans yet.": "Wala pa sang gin-upload nga scan.",
+    "Feedback Box": "Kahon sang suhestyon",
+    "Tell us your suggestions or support concerns": "Ipaabot ang imo suhestyon ukon problema sa paggamit",
+    "Submit Feedback": "Ipadala ang suhestyon",
+    "Your Feedback": "Imo suhestyon",
+    "Write your feedback here...": "Isulat diri ang imo suhestyon...",
+    "No announcements yet. New admin updates will appear here.": "Wala pa sang pahibalo. Diri makita ang bag-o nga pahibalo sang admin.",
+    "Read the official news article": "Basaha ang opisyal nga balita",
+    "Sugar supply and demand file": "File sang suplay kag panginahanglan sang kalamay",
+    "Sugar statistics file": "File sang estadistika sang kalamay",
+    "SRA Official Update: Negros Occidental equipment upgrades": "Opisyal nga balita sang SRA: bag-o nga kagamitan sa Negros Occidental",
+    "Remove this uploaded picture from recent scans?": "Kuhaon bala ini nga hulagway sa bag-o nga mga scan?",
+    "Password Update": "Pagbag-o sang password",
+    "Change your farmer portal password": "Bag-uha ang imo password sa portal sang mangunguma",
+    "Current Password": "Karon nga password",
+    "New Password": "Bag-o nga password",
+    "Confirm New Password": "Kumpirmaha ang bag-o nga password",
+    "Account": "Account",
+    "Manage your active session": "Dumala-a ang imo kasamtangan nga pagsulod",
+    "Sign Out": "Magguwa",
+    "You have successfully registered": "Nagparehistro ka sing madinalag-on",
+    "Your account is ready.": "Handa na ang imo account.",
+    "Proceed to home": "Balik sa Una",
+    "Plot Name (e.g., Plot #3)": "Ngalan sang uma (halimbawa, Uma #3)",
+    "Maturity Percentage (0-100)": "Porsyento sang Maturity sang Tubo (0-100)",
+    "Grade (A, B, or C)": "Grado (A, B, ukon C)",
+    "Status (ready, monitor, healthy)": "Kahimtangan (handa, bantayan, maayo)",
+    "Select status": "Pilia ang kahimtangan",
+    "variety": "klase sang tubo",
+    "hectares": "ektarya",
+    "rssi": "RSSI",
+    "weeding": "pagpaninlo sang hilamon",
+    "fertilizer": "pag-abono",
+    "ratoon stage": "hugna sang ratoon",
+    "plowing": "pag-arado",
+    "Logout": "Magguwa",
+    "Admin Console": "Konsol sang admin",
+    "Superadmin Console": "Konsol sang superadmin",
+    "Admin Access": "Pagsulod sang admin",
+    "System Status: Operational": "Kahimtangan sang sistema: nagaandar",
+    "Platform Live": "Nagaandar ang plataporma",
+    "System Control & Governance": "Pagdumala sang sistema",
+    "Export Data": "I-export ang datos",
+    "Total Users": "Kabilugan sang mga user",
+    "Total Scans": "Kabilugan sang mga scan",
+    "Active Farmers": "Aktibo nga mga mangunguma",
+    "Pending Scans": "Mga scan nga ginahulat",
+    "Registered farmers": "Mga rehistrado nga mangunguma",
+    "No data to display yet": "Wala pa sang datos nga ipakita",
+    "All-time submissions": "Tanan nga napasa nga datos",
+    "Waiting for first scan...": "Ginahulat ang una nga scan...",
+    "Farmers with scans in the last 7 days": "Mga mangunguma nga may scan sa nagligad nga 7 ka adlaw",
+    "Queued submissions awaiting processing": "Mga datos nga nagahulat sang pagproseso",
+    "Admin Modules": "Mga buluhaton sang admin",
+    "Superadmin Modules": "Mga buluhaton sang superadmin",
+    "Operations and farmer support tools": "Mga gamit sa pagdumala kag pagbulig sa mangunguma",
+    "System governance and compliance tools": "Mga gamit sa pagdumala sang sistema",
+    "Farmer Accounts": "Mga account sang mangunguma",
+    "Farmer Account Management": "Pagdumala sang account sang mangunguma",
+    "Admin Registration": "Pagparehistro sang admin",
+    "Superadmin Registration": "Pagparehistro sang superadmin",
+    "Data Monitoring": "Pagbantay sang datos",
+    "Scoped Reports": "Mga report",
+    "Reports & Analytics": "Mga report kag pagsusisa",
+    "Comms & Support": "Komunikasyon kag bulig",
+    "Audit & Compliance": "Pagsusi kag pagsunod",
+    "System Settings": "Mga setting sang sistema",
+    "System Logs": "Talaan sang sistema",
+    "Latest platform events": "Pinakabag-o nga mga hitabo sa sistema",
+    "Updated 5 min ago": "Ginbag-o 5 ka minuto ang nagligad",
+    "Data Health": "Kahimtangan sang datos",
+    "Data quality overview": "Kabilugan nga kalidad sang datos",
+    "Training data freshness": "Kabag-uhan sang datos sa paghanas",
+    "User Management": "Pagdumala sang mga user",
+    "Role access and monitoring": "Pagsulod suno sa katungdanan kag pagbantay",
+    "Filter": "Salaon",
+    "User": "User",
+    "Role": "Katungdanan",
+    "Last Active": "Katapusan nga aktibo",
+    "Recent": "Bag-o",
+    "Review": "Tan-awon",
+    "Admin Tools": "Mga gamit sang admin",
+    "Quick access to system operations": "Dali nga pag-abri sang mga buluhaton sang sistema",
+    "Manage Users": "Dumala-a ang mga user",
+    "Audit Reports": "Mga report sang pagsusi",
+    "Access Control": "Pagdumala sang pagsulod",
+    "Status": "Kahimtangan",
+    "Action": "Buhaton",
+    "Email": "Email",
+    "Phone": "Telepono",
+    "Name": "Ngalan",
+    "Message": "Mensahe",
+    "Live": "Nagaandar",
+    "Active": "Aktibo",
+    "Inactive": "Indi aktibo",
+    "Deactivated": "Ginpauntat",
+    "Deactivated Accounts": "Mga ginpauntat nga account",
+    "Archived Farmers": "Mga na-arkibo nga mangunguma",
+    "Archive": "I-arkibo",
+    "Model Updates": "Mga bag-o nga modelo",
+    "Current Model": "Karon nga modelo",
+    "Recent Activity": "Bag-o nga kalihukan",
+    "Timestamp": "Oras kag petsa",
+    "Recent Predictions": "Bag-o nga mga pagbanta",
+    "Latest Prediction Logs": "Pinakabag-o nga talaan sang pagbanta",
+    "No prediction logs yet.": "Wala pa sang talaan sang pagbanta.",
+    "No prediction data available.": "Wala pa sang datos sang pagbanta.",
+    "Farmer Feedback": "Mga suhestyon sang mangunguma",
+    "Recent Announcements": "Bag-o nga mga pahibalo",
+    "Post Announcement": "Magpahibalo",
+    "Publish": "Ipahibalo",
+    "Title": "Titulo",
+    "No announcements yet.": "Wala pa sang mga pahibalo.",
+    "No feedback submitted yet.": "Wala pa sang ginpadala nga suhestyon.",
+    "Create Farmer Account": "Maghimo sang account sang mangunguma",
+    "Create": "Himuon",
+    "Temporary Password": "Temporaryo nga password",
+    "Create Account": "Maghimo sang account",
+    "Update": "Bag-uhon",
+    "Save": "Tipiga",
+    "Cancel": "Kanselahon",
+    "Delete": "Kuhaa",
+    "See Details": "Tan-awa ang detalye",
+    "No active users found.": "Wala sang aktibo nga user.",
+    "No archived users found.": "Wala sang na-arkibo nga user.",
+    "No deactivated accounts found.": "Wala sang ginpauntat nga account.",
+    "Choose your role to continue to the correct login": "Pilia ang imo katungdanan agod makasulod sa husto nga pahina",
+    "Go to standard admin login": "Kadto sa pagsulod sang admin",
+    "Go to restricted superadmin login": "Kadto sa pagsulod sang superadmin",
+    "Secure access to system controls": "Luwas nga pagsulod sa pagdumala sang sistema",
+    "Sign In as Admin": "Magsulod bilang admin",
+    "Forgot password?": "Nalipat ang password?",
+    "Admin registration": "Pagparehistro sang admin",
+    "Back to Admin Access": "Balik sa pagsulod sang admin",
+    "Back to Admin Login": "Balik sa pagsulod sang admin",
+    "Back to Superadmin Login": "Balik sa pagsulod sang superadmin",
+    "Error: Camera requires an HTTPS connection. If testing locally, use a self-signed certificate.": "Sayop: Kinahanglan sang HTTPS ang kamera. Kon nagatilaw sa kaugalingon nga kompyuter, gamita ang self-signed certificate.",
+    "Unable to access the camera. Please check permissions and try again.": "Indi mabuksan ang kamera. Usisaa ang permiso kag tilawi liwat.",
+    "Upload failed. Please try again.": "Napakyas ang pag-upload. Tilawi liwat.",
+    "Please complete all fields.": "Kompletuha ang tanan nga kinahanglan nga datos.",
+    "Maturity must be between 0 and 100.": "Ang porsyento sang Maturity sang Tubo kinahanglan halin sa 0 tubtob 100.",
+    "Please complete your profile details.": "Kompletuha ang imo impormasyon sa profile.",
+    "Phone number must be exactly 11 digits.": "Kinahanglan 11 ka numero ang numero sang telepono.",
+    "Email already exists.": "May ara na sini nga email.",
+    "Profile updated successfully.": "Nabag-o sing madinalag-on ang imo profile.",
+    "Please complete all password fields.": "Kompletuha ang tanan nga bahin sang password.",
+    "Current password is incorrect.": "Indi husto ang karon nga password.",
+    "New passwords do not match.": "Indi pareho ang bag-o nga mga password.",
+    "New password must be different from the current password.": "Ang bag-o nga password kinahanglan lain sa karon nga password.",
+    "Password updated successfully.": "Nabag-o sing madinalag-on ang password.",
+    "Please enter your feedback before submitting.": "Isulat anay ang imo suhestyon antes ipadala.",
+    "Thank you. Your feedback was submitted successfully.": "Salamat. Napadala sing madinalag-on ang imo suhestyon.",
+    "Picture not found or already removed.": "Wala makita ang hulagway ukon nakuha na ini.",
+    "Unable to remove picture right now.": "Indi makuha ang hulagway sa karon.",
+    "Picture removed from recent scans.": "Nakuha ang hulagway sa bag-o nga mga scan.",
+    "Account Actions": "Mga buluhaton sa account",
+    "Account State": "Kahimtangan sang account",
+    "Actions": "Mga buluhaton",
+    "Activate": "Paaktibuhon",
+    "Activity trail and governance logs": "Kasaysayan sang kalihukan kag mga talaan sang pagdumala",
+    "Add new farmer credentials": "Idugang ang bag-o nga impormasyon sa pagsulod sang mangunguma",
+    "Admin Management": "Pagdumala sang mga admin",
+    "Aggregated prediction results from user inputs": "Gin-usa nga resulta sang pagbanta halin sa datos sang user",
+    "Agronomic Logs": "Talaan sang datos sa uma",
+    "Agronomic inputs and predictive outputs": "Datos sa uma kag ginabanta nga mga resulta",
+    "All uploaded stalk photos with detected variety and maturity": "Tanan nga gin-upload nga hulagway sang tubo upod ang nakita nga klase kag Maturity sang Tubo",
+    "Announcements and farmer feedback": "Mga pahibalo kag suhestyon sang mangunguma",
+    "Attach a model file only when you want to publish an update.": "Magdugang lamang sang file sang modelo kon may bag-o nga ipahibalo.",
+    "Audit": "Pagsusi",
+    "Audit Trail": "Kasaysayan sang pagsusi",
+    "Back": "Balik",
+    "Branding and maintenance controls": "Pagdumala sang ngalan sang sistema kag maintenance",
+    "Captured": "Nakuha",
+    "Cellphone": "Cellphone",
+    "Combined farmer actions and related records": "Gin-usa nga mga buluhaton kag talaan sang mangunguma",
+    "Compliance Export": "I-export para sa pagsunod sa mga kinahanglanon",
+    "Configuration": "Konpigurasyon",
+    "Confirm Password Reset": "Kumpirmaha ang pag-reset sang password",
+    "Confirm Reset": "Kumpirmaha ang pag-reset",
+    "Create Admin": "Maghimo sang admin",
+    "Create First Admin": "Maghimo sang una nga admin",
+    "Create Superadmin": "Maghimo sang superadmin",
+    "Create a superadmin account": "Maghimo sang account sang superadmin",
+    "Create an Admin or Superadmin account": "Maghimo sang account sang admin ukon superadmin",
+    "Create, edit, and reset farmer accounts": "Maghimo, magbag-o, kag mag-reset sang account sang mangunguma",
+    "Created": "Ginhimo",
+    "Created At": "Petsa sang paghimo",
+    "Currently visible in the main registry": "Makita karon sa panguna nga talaan",
+    "Date": "Petsa",
+    "Date:": "Petsa:",
+    "Deactivate": "Pauntaton",
+    "Deploy New Model": "Ibutang ang bag-o nga modelo",
+    "Deploy the latest retrained model package": "Ibutang ang pinakabag-o nga ginhanas liwat nga modelo",
+    "Details": "Mga detalye",
+    "Displayed across portals and compliance exports.": "Makita sa mga portal kag gin-export nga mga report.",
+    "Download CSV": "I-download ang CSV",
+    "Download for SRA review": "I-download para sa pagsusisa sang SRA",
+    "Edit": "Bag-uhon",
+    "Edit Farmer": "Bag-uhon ang impormasyon sang mangunguma",
+    "Edit, reset, or deactivate active farmer accounts": "Bag-uhon, i-reset, ukon pauntaton ang aktibo nga mga account sang mangunguma",
+    "Enable Maintenance Mode": "Paandaron ang maintenance mode",
+    "Farm Performance": "Resulta sang uma",
+    "Farm and region performance summaries": "Kabug-usan nga mga resulta sang uma kag rehiyon",
+    "Farmer": "Mangunguma",
+    "Farmer Details": "Detalye sang mangunguma",
+    "Farmer Name": "Ngalan sang mangunguma",
+    "Farmer Profile": "Impormasyon sang mangunguma",
+    "Farmer account details": "Detalye sang account sang mangunguma",
+    "Farmer accounts with suspended access but still retained in the registry": "Mga account sang mangunguma nga ginpauntat ang pagsulod apang ara gihapon sa talaan",
+    "Farmer registry management": "Pagdumala sang talaan sang mga mangunguma",
+    "Farmers": "Mga mangunguma",
+    "Feedback": "Suhestyon",
+    "Feedback & Audit Notes": "Mga suhestyon kag tala sang pagsusi",
+    "Field scans linked to this farmer": "Mga scan sa uma nga naangot sa sini nga mangunguma",
+    "File:": "File:",
+    "From user-input predictions": "Halin sa ginpasulod nga datos sang user",
+    "Full archived account profile and activity summary": "Bug-os nga impormasyon kag kasaysayan sang na-arkibo nga account",
+    "Global Configuration": "Kabug-usan nga konpigurasyon",
+    "Global System Name": "Ngalan sang sistema",
+    "Global configuration & governance": "Kabug-usan nga konpigurasyon kag pagdumala",
+    "Grade": "Grado",
+    "Last 10 broadcasts": "Katapusan nga 10 ka pahibalo",
+    "Last 20 actions across the platform": "Katapusan nga 20 ka buluhaton sa plataporma",
+    "Latest LKG TC, LKG HA, and total LKG results": "Pinakabag-o nga mga resulta sang LKG/TC, LKG/HA, kag kabilugan nga LKG",
+    "Live Aggregates": "Karon nga gin-usa nga datos",
+    "Messages and account-related admin actions": "Mga mensahe kag buluhaton sang admin may kaangtanan sa account",
+    "No admin accounts found.": "Wala sang account sang admin.",
+    "No audit entries available yet.": "Wala pa sang talaan sang pagsusi.",
+    "No data available yet.": "Wala pa sang datos.",
+    "No deactivated farmer accounts.": "Wala sang ginpauntat nga account sang mangunguma.",
+    "No farmers registered yet.": "Wala pa sang rehistrado nga mangunguma.",
+    "No feedback or audit records found.": "Wala sang suhestyon ukon talaan sang pagsusi.",
+    "No prediction data available for reporting.": "Wala sang datos sang pagbanta para sa report.",
+    "No recorded activity for this farmer yet.": "Wala pa sang natala nga kalihukan sini nga mangunguma.",
+    "No scans found.": "Wala sang scan.",
+    "No sugarcane uploads yet.": "Wala pa sang gin-upload nga hulagway sang tubo.",
+    "No users registered yet. Waiting for the first farmer account to appear.": "Wala pa sang rehistrado nga user. Ginahulat ang una nga account sang mangunguma.",
+    "Notify farmers of updates": "Ipahibalo ang mga bag-o nga impormasyon sa mga mangunguma",
+    "Platform average": "Kinaandan nga resulta sang plataporma",
+    "Plot": "Uma",
+    "Prediction entries": "Mga talaan sang pagbanta",
+    "Predictions": "Mga pagbanta",
+    "Reactivate farmers with suspended access": "Paaktibuhon liwat ang mga mangunguma nga ginpauntat ang pagsulod",
+    "Receive retrained models from superadmin": "Batuna ang ginhanas liwat nga mga modelo halin sa superadmin",
+    "Received": "Nabaton",
+    "Recorded field scans": "Natala nga mga scan sa uma",
+    "Register Account": "Magparehistro sang account",
+    "Register Admin or Superadmin": "Magparehistro sang admin ukon superadmin",
+    "Registered": "Rehistrado",
+    "Registered Address": "Rehistrado nga lugar",
+    "Registered account information": "Rehistrado nga impormasyon sang account",
+    "Reset": "I-reset",
+    "Reset Admin Password": "I-reset ang password sang admin",
+    "Restore Account": "Ibalik ang account",
+    "Restricted": "May limitasyon",
+    "Restricted system governance": "May limitasyon nga pagdumala sang sistema",
+    "Role assignment and access control": "Paghatag sang katungdanan kag pagdumala sang pagsulod",
+    "Role-managed": "Ginadumala suno sa katungdanan",
+    "SRA compliance-ready summaries": "Mga report nga handa para sa SRA",
+    "Save Changes": "Tipiga ang mga pagbag-o",
+    "Scan History": "Kasaysayan sang mga scan",
+    "Scans": "Mga scan",
+    "Search": "Pangitaa",
+    "Set up the initial superadmin account": "Ihanda ang una nga account sang superadmin",
+    "Sign In as Superadmin": "Magsulod bilang superadmin",
+    "Source": "Ginhalinan",
+    "Stored farmer accounts removed from the active registry": "Natipigan nga mga account sang mangunguma nga ginkuha sa aktibo nga talaan",
+    "Sugarcane Scan Gallery": "Koleksyon sang mga scan sang tubo",
+    "Superadmin Access": "Pagsulod sang superadmin",
+    "Superadmin registration": "Pagparehistro sang superadmin",
+    "Support requests and suggestions": "Mga pangayo sang bulig kag suhestyon",
+    "Temporarily suspend farmer access for system updates.": "Pauntaton anay ang pagsulod sang mangunguma samtang ginabag-o ang sistema.",
+    "This will reset the farmer account password to the default value.": "I-reset sini ang password sang account sang mangunguma sa default nga bili.",
+    "Total Admins": "Kabilugan sang mga admin",
+    "Type": "Klase",
+    "Update Password": "Bag-uhon ang password",
+    "Update farmer profile details": "Bag-uhon ang impormasyon sang mangunguma",
+    "Upload Model": "Mag-upload sang modelo",
+    "Upload the latest model package": "I-upload ang pinakabag-o nga modelo",
+    "Uploader:": "Nag-upload:",
+    "User Governance": "Pagdumala sang mga user",
+    "User-input based LKG predictions": "Mga pagbanta sang LKG base sa ginpasulod nga datos",
+    "Verify admin details to update the password": "Kumpirmaha ang detalye sang admin agod mabag-o ang password",
+    "When": "Sang san-o",
+    "Admin Portal": "Portal sang admin",
+    "AI Assisted Grading": "Pagsusi sang kalidad gamit ang AI",
+    "Manage users and system performance": "Dumala-a ang mga user kag resulta sang sistema",
+    "System Overview": "Kabilugan sang sistema",
+    "Manual vs AI Comparison": "Pagtandi sang manwal kag AI",
+    "An Edge-Based AI for Sugarcane Quality Grading": "AI para sa pagsusisa sang kalidad sang tubo",
+    "Computer Vision Result": "Resulta sang pagsusisa sang hulagway",
+    "No result yet.": "Wala pa sang resulta.",
+    "Loading date...": "Ginakuha ang petsa...",
+    "Close": "Sirad-an",
+    "No recommendation generated.": "Wala sang nahimo nga rekomendasyon.",
+    "Please complete all required fields.": "Kompletuha ang tanan nga kinahanglan nga datos.",
+    "Passwords do not match.": "Indi pareho ang mga password.",
+    "Email already registered.": "Rehistrado na ini nga email.",
+    "Account is archived. Please contact support.": "Na-arkibo ang account. Palihog makig-angot sa support.",
+    "Account is deactivated. Please contact support.": "Ginpauntat ang account. Palihog makig-angot sa support.",
+    "Invalid credentials. Please try again.": "Indi husto ang impormasyon sa pagsulod. Tilawi liwat.",
+    "Admin Email": "Email sang admin",
+    "Admin Username": "Username sang admin",
+    "Close password reset confirmation": "Sirad-an ang pagkumpirma sang pag-reset sang password",
+    "Farmer navigation": "Paglakat sa mga pahina sang mangunguma",
+    "Infected by RSSI": "May impeksyon sang RSSI",
+    "Open SRA official news article": "Buksi ang opisyal nga balita sang SRA",
+    "Password (min 8 chars)": "Password (indi magnubo sa 8 ka karakter)",
+    "Phone number must be exactly 11 digits": "Kinahanglan 11 ka numero ang numero sang telepono",
+    "Registered Email": "Rehistrado nga email",
+    "Search by name, email, phone, or address": "Mangita gamit ang ngalan, email, telepono, ukon lugar",
+    "Sugarcane variety": "Klase sang tubo",
+    "Username": "Username",
+    "Username or Email": "Username ukon email",
+    "You are about to reset": "I-reset mo na ang",
+    "this farmer": "sini nga mangunguma",
+    "to the default password": "sa default nga password",
+    "Invalid admin credentials. Please try again.": "Indi husto ang impormasyon sang admin. Tilawi liwat.",
+    "Your account is not authorized for superadmin access.": "Wala permiso ang imo account nga magsulod bilang superadmin.",
+    "Invalid superadmin credentials. Please try again.": "Indi husto ang impormasyon sang superadmin. Tilawi liwat.",
+    "An admin account with those details already exists.": "May account na sang admin nga may amo sini nga impormasyon.",
+    "Please complete all registration fields.": "Kompletuha ang tanan nga kinahanglan nga datos sa pagparehistro.",
+    "Invalid role selected.": "Indi husto ang napili nga katungdanan.",
+    "Password must be at least 8 characters.": "Ang password kinahanglan indi magnubo sa 8 ka karakter.",
+    "Username is already taken.": "Ginagamit na ini nga username.",
+    "Email is already registered.": "Rehistrado na ini nga email.",
+    "Admin account not found with those details.": "Wala makita ang account sang admin nga may amo sini nga impormasyon.",
+    "Password updated. You can sign in now.": "Nabag-o ang password. Makasulod ka na karon.",
+}
+
+RECOMMENDATION_TITLES = {
+    "Schedule harvest for ready plot": "I-iskedyul ang pag-ani sa handa na nga uma",
+    "Apply nutrient mix": "Ibutang ang ginarekomenda nga abono",
+    "Prepare transport route": "Ihanda ang ruta sang pagdala sang ani",
+    "Delay cutting for sucrose accumulation": "Ipalantang anay ang pag-utod agod magdugang ang sucrose",
+    "Finalize immediate harvest logistics": "Ihanda na ang pag-utod kag pagdala sang ani",
+    "Expedite harvest to prevent further yield loss": "Dalion ang pag-ani agod malikawan ang dugang nga pagkawala sang ani",
+    "Complete missing agronomic inputs": "Kompletuha ang kulang nga datos sa uma",
+    "RSSI infected: apply PHILSURIN control protocol": "May RSSI: sundon ang pamaagi sang PHILSURIN",
+    "For VMC 84-947 ratoon, avoid plowing": "Sa VMC 84-947 ratoon, likawi ang pag-arado",
+    "Predicted LKG is below baseline": "Ang ginabanta nga LKG mas nubo sa kinaandan",
+    "Maintain current agronomic practices": "Padayuna ang karon nga pamaagi sa uma",
+}
+
+RECOMMENDATION_META = {
+    "Prioritize fields with high maturity this week.": "Unaha sini nga semana ang mga uma nga mataas ang Maturity sang Tubo.",
+    "Support sucrose build-up before harvest.": "Buligi ang pagdugang sang sucrose antes mag-ani.",
+    "Finalize hauling logistics before cutting day.": "Ihanda ang pagdala sang ani antes sang adlaw sang pag-utod.",
+    "Low input level is pulling down predicted LKG.": "Ang nubo nga datos sa uma nagapanubo sang ginabanta nga LKG.",
+    "Increase low agronomic inputs and re-calculate to recover yield.": "Pauswaga ang kulang nga pamaagi sa uma kag kalkulaha liwat ang ginabanta nga ani.",
+    "Current inputs are supporting baseline-level yield.": "Ang karon nga datos nagasuporta sang kinaandan nga kadamuon sang ani.",
+    "Use stubble shaving and inter-row cultivation (off-barring) to protect ratoon shoots.": "Gamita ang stubble shaving kag pagpaninlo sa tunga sang mga hilera agod maprotektahan ang bag-o nga tubo sang ratoon.",
+    'Real-time harvest directive: "Not Mature" classification indicates stalks should not be cut yet. Delay harvest to allow optimal sucrose accumulation before scheduling transport.': "Pahibalo sa pag-ani: Not Mature ang tubo. Indi anay pag-utdon; hulata nga magdugang ang sucrose antes mag-iskedyul sang pagdala sang ani.",
+    'Real-time harvest directive: "Mature" classification indicates harvest-ready stalks. Proceed with immediate cutting and finalize hauling/transport coordination.': "Pahibalo sa pag-ani: Mature na ang tubo. Ipadayon ang pag-utod kag ihanda ang pagdala sang ani.",
+    'Real-time harvest directive: "Over Mature" classification requires urgent cutting. Expedite harvest to mitigate further yield degradation caused by sucrose inversion.': "Pahibalo sa pag-ani: Over Mature na ang tubo. Dalion ang pag-utod agod malikawan ang dugang nga pagnubo sang ani tungod sang sucrose inversion.",
+    "Conduct weekly monitoring, especially lower leaf areas, and immediately remove and burn infested leaves to prevent spread. Effective chemical options include Carbofuran, Phenthoate, Dinotefuran, Thiamethoxam, Pymetrozine, and Buprofezin. Report suspected infestations to PHILSURIN, DA, or SRA, and adopt integrated pest management using monitoring, physical removal, and chemical or biological interventions.": "Susiaha ang tubo kada semana, labi na ang idalom nga bahin sang mga dahon. Kuhaa kag sunuga dayon ang mga dahon nga may impeksyon agod indi maglapta. Ang mga kemikal nga opsyon nagalakip sang Carbofuran, Phenthoate, Dinotefuran, Thiamethoxam, Pymetrozine, kag Buprofezin. Ipahibalo ang ginasuspetsahan nga impeksyon sa PHILSURIN, DA, ukon SRA, kag gamita ang nagakabagay nga pagdumala sang peste paagi sa pagsusi, pagkuha sang apektado nga bahin, kag kemikal ukon biyolohikal nga pamaagi.",
+}
+
+RECOMMENDATION_GUIDES = {
+    "1-Time: Apply all fertilizer at planting or 1 month after planting.": "1 ka beses: Ibutang ang tanan nga abono sa pagtanom ukon 1 ka bulan pagkatapos magtanom.",
+    "2-Time: Half at ~45 days, half at ~3 months before canopy closure. Alternative: first dose 3-4 days after planting, second at 3 months.": "2 ka beses: Tunga sa mga 45 ka adlaw, kag ang nabilin nga tunga sa mga 3 ka bulan antes magsirado ang mga dahon. Isa pa ka pamaagi: una nga bahin 3-4 ka adlaw pagkatapos magtanom, ikaduha sa 3 ka bulan.",
+    "3-Time: First at planting, second after 1-2 months, third at 3-4 months.": "3 ka beses: Una sa pagtanom, ikaduha pagkatapos sang 1-2 ka bulan, ikatatlo sa 3-4 ka bulan.",
+    "1-Time: Apply full fertilizer at planting or right after ratoon starts based on soil test.": "1 ka beses: Ibutang ang tanan nga abono sa pagtanom ukon sa pagsugod sang ratoon suno sa resulta sang soil test.",
+    "2-Time: Split into two doses at ~1.5 months and ~3 months before canopy closure.": "2 ka beses: Bahina sa duha ka bahin sa mga 1.5 ka bulan kag 3 ka bulan antes magsirado ang mga dahon.",
+    "3-Time: Split N and K into 3 equal doses at 30, 60, and 90 days after planting.": "3 ka beses: Bahina ang N kag K sa 3 ka pareho nga bahin sa 30, 60, kag 90 ka adlaw pagkatapos magtanom.",
+    "1-Time: Apply full N-P-K at planting.": "1 ka beses: Ibutang ang tanan nga N-P-K sa pagtanom.",
+    "2-Time: Basal dose at planting, then top dress around 3 months.": "2 ka beses: Ibutang ang una nga abono sa pagtanom, dayon dugangan sa mga 3 ka bulan.",
+    "3-Time: Split nitrogen into 3 doses within first 3-4 months, or at 30, 60, and 90 days after planting.": "3 ka beses: Bahina ang nitrogen sa 3 ka bahin sa una nga 3-4 ka bulan, ukon sa 30, 60, kag 90 ka adlaw pagkatapos magtanom.",
+    "1-Time: Not recommended. Weed pressure can become too high, and glyphosate should be avoided during germination and tillering due to crop sensitivity.": "1 ka beses: Indi ginarekomenda. Mahimo nga magdamo ang hilamon. Likawi ang glyphosate samtang nagaturok kag nagapanubo ang tubo bangod sensitibo pa ini.",
+    "2-Time: Acceptable when combined with chemical weeding. Use 2,4-D or Diuron early for safe control.": "2 ka beses: Mahimo kon updan sang pagpaninlo gamit ang kemikal. Gamita sing temprano ang 2,4-D ukon Diuron para makontrol ang hilamon.",
+    "3-Time: Best practice. Combine manual weeding with selective herbicides (2,4-D or Diuron) to keep the field clean and reduce lodging risk.": "3 ka beses: Maayo nga pamaagi. Isabayan ang manwal nga pagpaninlo sang hilamon kag pilian nga herbicide (2,4-D ukon Diuron) agod limpyo ang uma kag magnubo ang risgo sang pagkahulog sang tubo.",
+    "1-Time: Not recommended. A single weeding is not enough for this fast-growing variety.": "1 ka beses: Indi ginarekomenda. Indi igo ang isa ka pagpaninlo sang hilamon para sa sini nga madali magtubo nga klase.",
+    "2-Time: Better, but still limited. Weed competition may reduce internode elongation and ratoon strength.": "2 ka beses: Mas maayo, apang mahimo gihapon nga magkompetensya ang hilamon kag magpanubo sang pagtubo sang internode kag kusog sang ratoon.",
+    "3-Time: Strongly recommended. Use pre-emergence spraying plus three manual weedings at 25, 45, and 65 days after planting.": "3 ka beses: Ginarekomenda gid. Gamita ang pre-emergence spraying kag tatlo ka manwal nga pagpaninlo sang hilamon sa 25, 45, kag 65 ka adlaw pagkatapos magtanom.",
+    "1-Time: Risky. Weed stress can weaken plant defense and increase leaf scald vulnerability.": "1 ka beses: May risgo. Ang madamo nga hilamon mahimo magpaluyahon sang depensa sang tubo kag magdugang sang risgo sang leaf scald.",
+    "2-Time: Possible, but reduced weeding can increase disease risk.": "2 ka beses: Mahimo, apang kon kulang ang pagpaninlo sang hilamon mahimo magdugang ang risgo sang balatian.",
+    "3-Time: Best practice. Perform manual weeding at 25, 45, and 65 days after planting to reduce stress and disease outbreaks.": "3 ka beses: Maayo nga pamaagi. Magpaninlo sang hilamon sing manwal sa 25, 45, kag 65 ka adlaw pagkatapos magtanom agod magnubo ang stress kag balatian.",
+    "1-Time: Only suitable for shallow soils with hardpan underneath; excess plowing may bring up infertile soil.": "1 ka beses: Para lamang sa mababaw nga duta nga may matig-a nga sapin sa idalom; ang sobra nga pag-arado mahimo magpaguwa sang duta nga indi matambok.",
+    "2-Time: Acceptable when spaced 1-2 weeks apart; first pass encourages weed seed sprouting, second pass suppresses weeds.": "2 ka beses: Mahimo kon may 1-2 ka semana nga pagitan; ang una nga pag-arado nagapaturok sang liso sang hilamon kag ang ikaduha nagapugong sini.",
+    "3-Time: Highly recommended with deep passes (8-12 inches or ~50-60 cm with heavy tractors) to improve rooting and lodging resistance.": "3 ka beses: Ginarekomenda ang madalom nga pag-arado (8-12 pulgada ukon mga 50-60 cm gamit ang mabug-at nga traktora) agod mag-ayo ang paggamut kag indi mahapos mahulog ang tubo.",
+    "1-Time (Plant Crop): Not recommended due to poor soil preparation and reduced ratooning lifespan.": "1 ka beses (bag-o nga tanom): Indi ginarekomenda bangod indi maayo ang pagpanghanda sang duta kag mahimo mag-ikli ang kabuhi sang ratoon.",
+    "2-Time (Plant Crop): Recommended for new planting to prepare soil thoroughly for multiple ratoon cycles.": "2 ka beses (bag-o nga tanom): Ginarekomenda para mahanda sing maayo ang duta para sa pila ka siklo sang ratoon.",
+    "3-Time (Plant Crop): Best practice for deep soil preparation and stronger long-term ratoon performance.": "3 ka beses (bag-o nga tanom): Maayo nga pamaagi para sa madalom nga pagpanghanda sang duta kag mas mabakod nga ratoon sa malawig nga tion.",
+    "1-Time: Risky; can leave stubble and weeds near the surface, increasing disease pressure and weakening crop vigor.": "1 ka beses: May risgo; mahimo mabilin ang tuod kag hilamon malapit sa ibabaw, nga makadugang sang balatian kag makapaluyahon sang tubo.",
+    "2-Time: Acceptable if followed by thorough harrowing to clean and condition the soil.": "2 ka beses: Mahimo kon sundan sang maayo nga pagdaro kag pagpatag agod malimpyuhan kag mahanda ang duta.",
+    "3-Time: Strongly recommended to bury residues/weeds and improve drainage against waterlogging stress.": "3 ka beses: Ginarekomenda gid agod malubong ang nabilin nga tanom kag hilamon kag mag-ayo ang pag-agas sang tubig para malikawan ang sobra nga tubig sa duta.",
+}
+
+
+def local_recommendation_meta(meta):
+    if meta in RECOMMENDATION_META:
+        return RECOMMENDATION_META[meta]
+    if "-Time:" in meta or "-Time (Plant Crop):" in meta:
+        parts = re.split(r"(?=\b[123]-Time(?: \(Plant Crop\))?:)", meta)
+        translated = [RECOMMENDATION_GUIDES.get(part.strip(), part.strip()) for part in parts if part.strip()]
+        return " ".join(translated)
+    if meta.startswith("Please fill: "):
+        fields = [farmer_text(field.strip()) for field in meta.removeprefix("Please fill: ").rstrip(".").split(",")]
+        return "Palihog kompletuha: " + ", ".join(fields) + "."
+    return meta
+
+
+def local_recommendation_title(title):
+    if title in RECOMMENDATION_TITLES:
+        return RECOMMENDATION_TITLES[title]
+    patterns = (
+        (r"^Choose fertilizer timing for (.+)$", "Pilia ang tiyempo sang pag-abono para sa {}"),
+        (r"^Choose weeding schedule for (.+)$", "Pilia ang iskedyul sang pagpaninlo sang hilamon para sa {}"),
+        (r"^Choose plowing schedule for (.+)$", "Pilia ang iskedyul sang pag-arado para sa {}"),
+        (r"^Follow (\d+)-time fertilizer schedule for (.+)$", "Sunda ang {} ka beses nga iskedyul sang pag-abono para sa {}"),
+        (r"^Follow (\d+)-time weeding schedule for (.+)$", "Sunda ang {} ka beses nga iskedyul sang pagpaninlo sang hilamon para sa {}"),
+        (r"^Follow (\d+)-time plowing schedule for (.+)$", "Sunda ang {} ka beses nga iskedyul sang pag-arado para sa {}"),
+        (r"^Consider (\d+)-time fertilizer application for (.+)$", "Binagbinaga ang {} ka beses nga pag-abono para sa {}"),
+        (r"^Consider (\d+)-time weeding for (.+)$", "Binagbinaga ang {} ka beses nga pagpaninlo sang hilamon para sa {}"),
+        (r"^Consider (\d+)-time plowing for (.+)$", "Binagbinaga ang {} ka beses nga pag-arado para sa {}"),
+        (r"^Increase plowing from (.+) to at least (\d+)$", "Dugangi ang pag-arado halin sa {} tubtob sa indi magnubo sa {}"),
+        (r"^Increase weeding from (.+) to at least (\d+)$", "Dugangi ang pagpaninlo sang hilamon halin sa {} tubtob sa indi magnubo sa {}"),
+        (r"^Increase fertilizer from (.+) to at least (\d+)$", "Dugangi ang pag-abono halin sa {} tubtob sa indi magnubo sa {}"),
+    )
+    for pattern, translated in patterns:
+        match = re.match(pattern, title)
+        if match:
+            return translated.format(*match.groups())
+    return title
+
+
+def farmer_summary(value):
+    if not is_hiligaynon() or not value:
+        return value
+    parts = []
+    for piece in value.split(" | "):
+        category, separator, title = piece.partition(": ")
+        parts.append(f"{farmer_text(category)}: {local_recommendation_title(title)}" if separator else piece)
+    return " | ".join(parts)
+
+
+def is_hiligaynon():
+    return (get_language() or "").split("-")[0] == "hil"
+
+
+def farmer_text(value):
+    if not is_hiligaynon():
+        return value
+    return HILIGAYNON_LABELS.get(value, value)
+
+
+def translate_recommendations(recommendations):
+    """Translate display text only; never change recommendation decisions or codes."""
+    original = deepcopy(recommendations)
+    if not is_hiligaynon() or not original:
+        return original
+
+    for item in original:
+        for field, translated in (
+            ("title", local_recommendation_title(item.get("title", ""))),
+            ("meta", local_recommendation_meta(item.get("meta", ""))),
+            ("tag", farmer_text(item.get("tag", ""))),
+        ):
+            if translated != item.get(field, ""):
+                if field in ("title", "meta"):
+                    item[f"original_{field}"] = item[field]
+                item[field] = translated
+    if not os.getenv("DEEPSEEK_API_KEY"):
+        return original
+
+    pending = []
+    for index, item in enumerate(recommendations):
+        source_item = {field: item.get(field, "") for field in ("title", "meta", "tag")}
+        if any(original[index].get(field, "") == value for field, value in source_item.items() if value):
+            pending.append((index, source_item))
+    if not pending:
+        return original
+
+    source = [item for _, item in pending]
+    cache_key = "hil-recommendations-v2:" + hashlib.sha256(
+        json.dumps(source, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    translated = cache.get(cache_key)
+    if translated is None:
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com", timeout=20.0, max_retries=0)
+            response = client.chat.completions.create(
+                model="deepseek-flash",
+                messages=[
+                    {"role": "system", "content": (
+                        "Translate sugarcane farming advice into plain Hiligaynon used in Negros Occidental. "
+                        "Return only a JSON object with an 'items' array in the same order. "
+                        "Each item must have title, meta, and tag strings. Preserve all numbers, units, "
+                        "variety names, chemical names, and the farming action exactly. "
+                        "Keep the status labels Mature, Not Mature, and Over Mature in English. "
+                        "Use Ginabanta for estimated results. Do not add advice. "
+                        "Example JSON: {\"items\":[{\"title\":\"...\",\"meta\":\"...\",\"tag\":\"...\"}]}"
+                    )},
+                    {"role": "user", "content": json.dumps({"items": source}, ensure_ascii=False)},
+                ],
+                stream=False,
+                max_tokens=4000,
+                response_format={"type": "json_object"},
+                extra_body={"thinking": {"type": "enabled"}},
+                reasoning_effort="high",
+            )
+            translated = json.loads(response.choices[0].message.content or "{}").get("items")
+            if not isinstance(translated, list) or len(translated) != len(source):
+                return original
+            cache.set(cache_key, translated, 60 * 60 * 24)
+        except Exception:
+            logger.warning("DeepSeek recommendation translation failed; showing English text")
+            return original
+
+    for (index, source_item), translation in zip(pending, translated):
+        if not isinstance(translation, dict):
+            continue
+        item = original[index]
+        for field in ("title", "meta", "tag"):
+            result = translation.get(field)
+            source_text = source_item[field]
+            if item.get(field, "") != source_text:
+                continue
+            if not isinstance(result, str) or not result.strip() or len(result) > max(100, len(source_text) * 4):
+                continue
+            # A mismatched number may change a dose, timing, or variety code.
+            if sorted(re.findall(r"\d+(?:[.,]\d+)?", result)) != sorted(re.findall(r"\d+(?:[.,]\d+)?", source_text)):
+                continue
+            if any(term.lower() in source_text.lower() and term.lower() not in result.lower() for term in PROTECTED_TERMS):
+                continue
+            if field in ("title", "meta"):
+                item[f"original_{field}"] = source_text
+            item[field] = result.strip()
+    return original

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1536,18 +1536,19 @@
                 </div>
                 <div class="brand-copy">
                     <p class="brand-system">VISCANE</p>
-                    <p class="brand-title">Hello, {{ user.fullname }}</p>
-                    <p class="brand-subtitle">Isabela, Negros Occidental | Online</p>
+                    <p class="brand-title">{{ farmer_text('Hello,') }} {{ user.fullname }}</p>
+                    <p class="brand-subtitle">Isabela, Negros Occidental | {{ farmer_text('Online') }}</p>
                 </div>
             </div>
             <div class="header-actions">
+                {% include 'farmer_language_switch.html' %}
                 <div class="farmer-info-chip header-date-weather" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
                 </div>
                 <a class="btn light" href="/farmer/settings">
                     <ion-icon name="person-circle-outline"></ion-icon>
-                    Settings
+                    {{ farmer_text('Settings') }}
                 </a>
             </div>
         </div>
@@ -1555,31 +1556,31 @@
 
     <main class="dashboard-container fade-in farmer-mobile-shell">
         {% if message %}
-            <div class="form-success">{{ message }}</div>
+            <div class="form-success">{{ farmer_text(message) }}</div>
         {% endif %}
         {% if error %}
-            <div class="form-error">{{ error }}</div>
+            <div class="form-error">{{ farmer_text(error) }}</div>
         {% endif %}
 
         <section class="hero-panel">
             <div class="hero-content">
                 <div class="hero-badge">
                     <ion-icon name="sparkles"></ion-icon>
-                    AI Grading Ready
+                    {{ farmer_text('AI Grading Ready') }}
                 </div>
-                <h2>Scan Sugarcane</h2>
-                <p>Capture for AI maturity analysis</p>
+                <h2>{{ farmer_text('Scan Sugarcane') }}</h2>
+                <p>{{ farmer_text('Capture for AI maturity analysis') }}</p>
                 <div class="quick-grid">
                 </div>
             </div>
             <div class="hero-actions">
                 <button class="btn primary" id="open-camera-btn" type="button">
                     <ion-icon name="camera"></ion-icon>
-                    <span class="btn-label">Open Camera</span>
+                    <span class="btn-label">{{ farmer_text('Open Camera') }}</span>
                 </button>
                 <a class="btn ghost" href="/scan/new">
                     <ion-icon name="images"></ion-icon>
-                    Upload Photo
+                    {{ farmer_text('Upload Photo') }}
                 </a>
             </div>
         </section>
@@ -1587,15 +1588,15 @@
         <section class="panel assessment-panel">
             <div class="panel-header assessment-panel-header">
                 <div>
-                    <h3 class="panel-title">Assessment Parameters</h3>
-                    <p class="panel-subtitle">Choose your agronomic inputs, then calculate your expected result.</p>
+                    <h3 class="panel-title">{{ farmer_text('Assessment Parameters') }}</h3>
+                    <p class="panel-subtitle">{{ farmer_text('Choose your agronomic inputs, then calculate your expected result.') }}</p>
                 </div>
-                <span class="badge"><ion-icon name="leaf-outline"></ion-icon>Agronomic Data</span>
+                <span class="badge"><ion-icon name="leaf-outline"></ion-icon>{{ farmer_text('Agronomic Data') }}</span>
             </div>
 
         <form id="calc-form" class="stats-grid stats-grid-inputs assessment-grid" action="{{ url_for('calculate_results') }}" method="post">
             <div class="stat-card stat-card-variety">
-                <div class="stat-label">Variety</div>
+                <div class="stat-label">{{ farmer_text('Variety') }}</div>
                 <input type="hidden" name="variety" id="variety-input" required>
                 <input type="hidden" name="cv_maturity_status" id="cv-maturity-status-input">
                 <input type="hidden" name="cv_variety_detected" id="cv-variety-detected-input">
@@ -1604,8 +1605,8 @@
                     <span class="variety-trigger-label">
                         <span class="variety-trigger-preview" id="variety-trigger-preview" aria-hidden="true"></span>
                         <span class="variety-trigger-copy">
-                            <span class="variety-trigger-kicker" id="variety-trigger-title">Variety</span>
-                            <span class="variety-trigger-value" id="variety-trigger-value">Click here to choose the variety of sugarcane.</span>
+                            <span class="variety-trigger-kicker" id="variety-trigger-title">{{ farmer_text('Variety') }}</span>
+                            <span class="variety-trigger-value" id="variety-trigger-value">{{ farmer_text('Click here to choose the variety of sugarcane.') }}</span>
                         </span>
                     </span>
                     <span class="variety-trigger-icon" aria-hidden="true"><ion-icon name="chevron-down"></ion-icon></span>
@@ -1634,15 +1635,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="variety-helper" id="variety-helper">Click the variety field to open the 3 options.</div>
+                <div class="variety-helper" id="variety-helper">{{ farmer_text('Click the variety field to open the 3 options.') }}</div>
             </div>
-            <div class="stat-card ag-selector-card" data-label="Number of Plowing">
-                <div class="stat-label">Number of Plowing</div>
+            <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Number of Plowing') }}">
+                <div class="stat-label">{{ farmer_text('Number of Plowing') }}</div>
                 <input class="selector-input" type="hidden" name="plowing_count" id="plowing_count-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="plowing_count-panel">
                     <span class="selector-trigger-content">
-                        <span class="selector-trigger-title">Plowing</span>
-                        <span class="selector-trigger-value">Click here to choose the number of plowing.</span>
+                        <span class="selector-trigger-title">{{ farmer_text('Plowing') }}</span>
+                        <span class="selector-trigger-value">{{ farmer_text('Click here to choose the number of plowing.') }}</span>
                     </span>
                     <span class="selector-trigger-icon" aria-hidden="true"><ion-icon name="chevron-down"></ion-icon></span>
                 </button>
@@ -1656,13 +1657,13 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card ag-selector-card" data-label="Number of Weedings">
-                <div class="stat-label">Number of Weedings</div>
+            <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Number of Weedings') }}">
+                <div class="stat-label">{{ farmer_text('Number of Weedings') }}</div>
                 <input class="selector-input" type="hidden" name="weeding_count" id="weeding_count-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="weeding_count-panel">
                     <span class="selector-trigger-content">
-                        <span class="selector-trigger-title">Weedings</span>
-                        <span class="selector-trigger-value">Click here to choose the number of weedings.</span>
+                        <span class="selector-trigger-title">{{ farmer_text('Weedings') }}</span>
+                        <span class="selector-trigger-value">{{ farmer_text('Click here to choose the number of weedings.') }}</span>
                     </span>
                     <span class="selector-trigger-icon" aria-hidden="true"><ion-icon name="chevron-down"></ion-icon></span>
                 </button>
@@ -1676,13 +1677,13 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card ag-selector-card" data-label="Number of Fertilizer">
-                <div class="stat-label">Number of Fertilizer</div>
+            <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Number of Fertilizer') }}">
+                <div class="stat-label">{{ farmer_text('Number of Fertilizer') }}</div>
                 <input class="selector-input" type="hidden" name="fertilizer_count" id="fertilizer_count-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="fertilizer_count-panel">
                     <span class="selector-trigger-content">
-                        <span class="selector-trigger-title">Fertilizer</span>
-                        <span class="selector-trigger-value">Click here to choose the number of fertilizer.</span>
+                        <span class="selector-trigger-title">{{ farmer_text('Fertilizer') }}</span>
+                        <span class="selector-trigger-value">{{ farmer_text('Click here to choose the number of fertilizer.') }}</span>
                     </span>
                     <span class="selector-trigger-icon" aria-hidden="true"><ion-icon name="chevron-down"></ion-icon></span>
                 </button>
@@ -1696,62 +1697,62 @@
                     </div>
                 </div>
             </div>
-            <div class="stat-card ag-selector-card" data-label="Ratoon Stage">
-                <div class="stat-label">Ratoon Stage</div>
+            <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Ratoon Stage') }}">
+                <div class="stat-label">{{ farmer_text('Ratoon Stage') }}</div>
                 <input class="selector-input" type="hidden" name="ratoon_stage" id="ratoon_stage-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="ratoon_stage-panel">
                     <span class="selector-trigger-content">
-                        <span class="selector-trigger-title">Ratoon</span>
-                        <span class="selector-trigger-value">Click here to choose the ratoon stage.</span>
+                        <span class="selector-trigger-title">{{ farmer_text('Ratoon') }}</span>
+                        <span class="selector-trigger-value">{{ farmer_text('Click here to choose the ratoon stage.') }}</span>
                     </span>
                     <span class="selector-trigger-icon" aria-hidden="true"><ion-icon name="chevron-down"></ion-icon></span>
                 </button>
                 <div class="selector-panel" id="ratoon_stage-panel">
                     <div class="selector-panel-inner">
                         <div class="selector-grid" role="radiogroup" aria-label="Ratoon Stage">
-                            <button class="selector-option" type="button" data-value="Plant" aria-pressed="false"><span class="selector-option-value">Plant</span></button>
-                            <button class="selector-option" type="button" data-value="1st Ratoon" aria-pressed="false"><span class="selector-option-value">1st Ratoon</span></button>
-                            <button class="selector-option" type="button" data-value="2nd Ratoon" aria-pressed="false"><span class="selector-option-value">2nd Ratoon</span></button>
+                            <button class="selector-option" type="button" data-value="Plant" aria-pressed="false"><span class="selector-option-value">{{ farmer_text('Plant') }}</span></button>
+                            <button class="selector-option" type="button" data-value="1st Ratoon" aria-pressed="false"><span class="selector-option-value">{{ farmer_text('1st Ratoon') }}</span></button>
+                            <button class="selector-option" type="button" data-value="2nd Ratoon" aria-pressed="false"><span class="selector-option-value">{{ farmer_text('2nd Ratoon') }}</span></button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="stat-card ag-selector-card" data-label="Infected by RSSI">
-                <div class="stat-label">Infected by RSSI?</div>
+            <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Infected by RSSI?') }}">
+                <div class="stat-label">{{ farmer_text('Infected by RSSI?') }}</div>
                 <input class="selector-input" type="hidden" name="rssi_infected" id="rssi_infected-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="rssi_infected-panel">
                     <span class="selector-trigger-content">
                         <span class="selector-trigger-title">RSSI</span>
-                        <span class="selector-trigger-value">Click here to choose the RSSI status.</span>
+                        <span class="selector-trigger-value">{{ farmer_text('Click here to choose the RSSI status.') }}</span>
                     </span>
                     <span class="selector-trigger-icon" aria-hidden="true"><ion-icon name="chevron-down"></ion-icon></span>
                 </button>
                 <div class="selector-panel" id="rssi_infected-panel">
                     <div class="selector-panel-inner">
                         <div class="selector-grid two-col" role="radiogroup" aria-label="Infected by RSSI">
-                            <button class="selector-option" type="button" data-value="Yes" aria-pressed="false"><span class="selector-option-value">YES</span></button>
-                            <button class="selector-option" type="button" data-value="No" aria-pressed="false"><span class="selector-option-value">NO</span></button>
+                            <button class="selector-option" type="button" data-value="Yes" aria-pressed="false"><span class="selector-option-value">{{ farmer_text('YES') }}</span></button>
+                            <button class="selector-option" type="button" data-value="No" aria-pressed="false"><span class="selector-option-value">{{ farmer_text('NO') }}</span></button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="stat-card stat-card-tons">
-                <div class="stat-label">Hectares</div>
+                <div class="stat-label">{{ farmer_text('Hectares') }}</div>
                 <div class="stat-inline">
                     <select class="stat-select" name="hectares" required>
-                        <option value="" disabled selected>Select hectares</option>
-                        <option value="Less than 1 Hectares">Less than 1 Hectare</option>
-                        <option value="1 Hectares">1 Hectare</option>
-                        <option value="1-2 Hectares">1-2 Hectares</option>
-                        <option value="2 Hectares">2 Hectares</option>
-                        <option value="2-3 Hectares">2-3 Hectares</option>
-                        <option value="3 Hectares">3 Hectares</option>
-                        <option value="3-4 Hectares">3-4 Hectares</option>
-                        <option value="4 Hectares">4 Hectares</option>
-                        <option value="5 Hectares">5 Hectares</option>
-                        <option value="More than 5 Hectares">More than 5 Hectares</option>
+                        <option value="" disabled selected>{{ farmer_text('Select hectares') }}</option>
+                        <option value="Less than 1 Hectares">{{ farmer_text('Less than 1 Hectare') }}</option>
+                        <option value="1 Hectares">{{ farmer_text('1 Hectare') }}</option>
+                        <option value="1-2 Hectares">{{ farmer_text('1-2 Hectares') }}</option>
+                        <option value="2 Hectares">{{ farmer_text('2 Hectares') }}</option>
+                        <option value="2-3 Hectares">{{ farmer_text('2-3 Hectares') }}</option>
+                        <option value="3 Hectares">{{ farmer_text('3 Hectares') }}</option>
+                        <option value="3-4 Hectares">{{ farmer_text('3-4 Hectares') }}</option>
+                        <option value="4 Hectares">{{ farmer_text('4 Hectares') }}</option>
+                        <option value="5 Hectares">{{ farmer_text('5 Hectares') }}</option>
+                        <option value="More than 5 Hectares">{{ farmer_text('More than 5 Hectares') }}</option>
                     </select>
-                    <button class="stat-action" id="tons-calc-btn" type="submit">Calculate</button>
+                    <button class="stat-action" id="tons-calc-btn" type="submit">{{ farmer_text('Calculate') }}</button>
                 </div>
                 <div class="stat-helper" id="tons-calc-result" aria-live="polite"></div>
             </div>
@@ -1762,23 +1763,23 @@
             <div class="panel">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Farmer Pages</h3>
-                        <p class="panel-subtitle">Open recommendations and agronomic logs</p>
+                        <h3 class="panel-title">{{ farmer_text('Farmer Pages') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Open recommendations and agronomic logs') }}</p>
                     </div>
-                    <span class="badge"><ion-icon name="compass-outline"></ion-icon>Quick Access</span>
+                    <span class="badge"><ion-icon name="compass-outline"></ion-icon>{{ farmer_text('Quick Access') }}</span>
                 </div>
                 <div class="icon-link-grid">
                     <a class="icon-link-card" href="/farmer/recommendations">
                         <span class="icon-link-badge"><ion-icon name="sparkles-outline"></ion-icon></span>
                         <span class="icon-link-copy">
-                            <strong>Recommendations</strong>
+                            <strong>{{ farmer_text('Recommendations') }}</strong>
                             <span>{{ recommendations|length }} item{% if recommendations|length != 1 %}s{% endif %}</span>
                         </span>
                     </a>
                     <a class="icon-link-card" href="/farmer/agronomic-logs">
                         <span class="icon-link-badge"><ion-icon name="document-text-outline"></ion-icon></span>
                         <span class="icon-link-copy">
-                            <strong>Agronomic Input Logs</strong>
+                            <strong>{{ farmer_text('Agronomic Input Logs') }}</strong>
                             <span>{{ agronomic_logs|length }} log{% if agronomic_logs|length != 1 %}s{% endif %}</span>
                         </span>
                     </a>
@@ -1788,10 +1789,10 @@
             <div class="panel">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">News & Announcements</h3>
-                        <p class="panel-subtitle">Posted by admin</p>
+                        <h3 class="panel-title">{{ farmer_text('News & Announcements') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Posted by admin') }}</p>
                     </div>
-                    <span class="badge"><ion-icon name="megaphone-outline"></ion-icon>Latest</span>
+                    <span class="badge"><ion-icon name="megaphone-outline"></ion-icon>{{ farmer_text('Latest') }}</span>
                 </div>
                 <div>
                     <article class="sra-highlight">
@@ -1803,22 +1804,22 @@
                             >
                         </a>
                         <div class="sra-highlight-content">
-                            <h4 class="sra-highlight-title">SRA Official Update: Negros Occidental equipment upgrades</h4>
+                            <h4 class="sra-highlight-title">{{ farmer_text('SRA Official Update: Negros Occidental equipment upgrades') }}</h4>
                             <div class="sra-highlight-source">
                                 Sugar Regulatory Administration
                             </div>
                             <div class="sra-links">
                                 <a class="sra-link" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer">
                                     <ion-icon name="newspaper-outline"></ion-icon>
-                                    <span>Read the official news article</span>
+                                    <span>{{ farmer_text('Read the official news article') }}</span>
                                 </a>
                                 <a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_supply_demand/9e7zeeuxA9vK6zL" target="_blank" rel="noopener noreferrer">
                                     <ion-icon name="bar-chart-outline"></ion-icon>
-                                    <span>Sugar supply and demand file</span>
+                                    <span>{{ farmer_text('Sugar supply and demand file') }}</span>
                                 </a>
                                 <a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_statistics/rfVxohuYIc6DiBs" target="_blank" rel="noopener noreferrer">
                                     <ion-icon name="stats-chart-outline"></ion-icon>
-                                    <span>Sugar statistics file</span>
+                                    <span>{{ farmer_text('Sugar statistics file') }}</span>
                                 </a>
                             </div>
                         </div>
@@ -1837,7 +1838,7 @@
                             </div>
                         {% endfor %}
                     {% else %}
-                        <div class="list-meta">No announcements yet. New admin updates will appear here.</div>
+                        <div class="list-meta">{{ farmer_text('No announcements yet. New admin updates will appear here.') }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -1847,10 +1848,10 @@
             <div class="panel">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Recent Scans</h3>
-                        <p class="panel-subtitle">Latest sugarcane assessments</p>
+                        <h3 class="panel-title">{{ farmer_text('Recent Scans') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Latest sugarcane assessments') }}</p>
                     </div>
-                    <span class="badge"><ion-icon name="time-outline"></ion-icon>Updated 10 min ago</span>
+                    <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ farmer_text('Updated 10 min ago') }}</span>
                 </div>
                 {% if recent_scan_cards %}
                     {% for card in recent_scan_cards %}
@@ -1859,41 +1860,41 @@
                         <div class="recent-item">
                             <div class="recent-grade">{{ scan.grade if scan else 'CV' }}</div>
                             <div style="flex: 1;">
-                                <h4 style="margin: 0;">{{ scan.plot_name if scan else (cv_upload.original_filename or 'Uploaded Scan') }}</h4>
+                                <h4 style="margin: 0;">{{ scan.plot_name if scan else (cv_upload.original_filename or farmer_text('Uploaded Scan')) }}</h4>
                                 {% if scan %}
-                                    <div class="list-meta">{{ scan.created_at.strftime('%b %d, %I:%M %p') }} | <strong>Maturity</strong> {{ scan.maturity_pct }}%</div>
+                                    <div class="list-meta">{{ scan.created_at.strftime('%b %d, %I:%M %p') }} | <strong>{{ farmer_text('Maturity') }}</strong> {{ scan.maturity_pct }}%</div>
                                 {% elif cv_upload %}
-                                    <div class="list-meta">{{ cv_upload.created_at.strftime('%b %d, %I:%M %p') if cv_upload.created_at else 'Date unavailable' }} | <strong>Computer vision upload</strong></div>
+                                    <div class="list-meta">{{ cv_upload.created_at.strftime('%b %d, %I:%M %p') if cv_upload.created_at else farmer_text('Date unavailable') }} | <strong>{{ farmer_text('Computer vision upload') }}</strong></div>
                                 {% endif %}
                                 {% if cv_upload %}
-                                    <div class="list-meta"><strong>Uploaded:</strong> {{ cv_upload.original_filename or 'image' }}</div>
-                                    <div class="list-meta"><strong>Variety:</strong> {{ cv_upload.variety or 'Unknown' }} | <strong>Maturity:</strong> {{ (cv_upload.maturity_status or 'Unknown').replace('_', ' ').title() }}</div>
-                                    <form method="POST" action="{{ url_for('delete_cv_upload', upload_id=cv_upload.id) }}" class="recent-picture-remove-form" onsubmit="return confirm('Remove this uploaded picture from recent scans?');">
-                                        <button type="submit" class="tag alert">Remove Picture</button>
+                                    <div class="list-meta"><strong>{{ farmer_text('Uploaded:') }}</strong> {{ cv_upload.original_filename or 'image' }}</div>
+                                    <div class="list-meta"><strong>{{ farmer_text('Variety:') }}</strong> {{ cv_upload.variety or farmer_text('Unknown') }} | <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((cv_upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</div>
+                                    <form method="POST" action="{{ url_for('delete_cv_upload', upload_id=cv_upload.id) }}" class="recent-picture-remove-form" onsubmit='return confirm({{ farmer_text("Remove this uploaded picture from recent scans?") | tojson }});'>
+                                        <button type="submit" class="tag alert">{{ farmer_text('Remove Picture') }}</button>
                                     </form>
                                 {% endif %}
                             </div>
                             {% if scan and scan.status == 'ready' %}
-                                <span class="tag success">Ready</span>
+                                <span class="tag success">{{ farmer_text('Ready') }}</span>
                             {% elif scan and scan.status == 'monitor' %}
-                                <span class="tag warning">Monitor</span>
+                                <span class="tag warning">{{ farmer_text('Monitor') }}</span>
                             {% elif scan %}
-                                <span class="tag">Healthy</span>
+                                <span class="tag">{{ farmer_text('Healthy') }}</span>
                             {% else %}
-                                <span class="tag">Uploaded</span>
+                                <span class="tag">{{ farmer_text('Uploaded') }}</span>
                             {% endif %}
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div class="list-meta">No scans yet. Start your first analysis.</div>
+                    <div class="list-meta">{{ farmer_text('No scans yet. Start your first analysis.') }}</div>
                 {% endif %}
             </div>
 
             <div class="panel scan-gallery-block">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Scan Gallery</h3>
-                        <p class="panel-subtitle">Recent uploaded sugarcane scans</p>
+                        <h3 class="panel-title">{{ farmer_text('Scan Gallery') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Recent uploaded sugarcane scans') }}</p>
                     </div>
                 </div>
                 {% if recent_cv_uploads %}
@@ -1902,14 +1903,14 @@
                             <figure class="scan-gallery-item">
                                 <img src="{{ url_for('static', filename=upload.image_path) }}" alt="Uploaded sugarcane scan" loading="lazy">
                                 <figcaption>
-                                    <strong>Variety:</strong> {{ upload.variety or 'Unknown' }}<br>
-                                    <strong>Maturity:</strong> {{ (upload.maturity_status or 'Unknown').replace('_', ' ').title() }}
+                                    <strong>{{ farmer_text('Variety:') }}</strong> {{ upload.variety or farmer_text('Unknown') }}<br>
+                                    <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}
                                 </figcaption>
                             </figure>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="list-meta">No uploaded scans yet.</div>
+                    <div class="list-meta">{{ farmer_text('No uploaded scans yet.') }}</div>
                 {% endif %}
             </div>
 
@@ -1919,38 +1920,38 @@
             <form method="POST" action="/farmer/feedback">
                 <div class="panel-header">
                     <div>
-                        <h3 class="panel-title">Feedback Box</h3>
-                        <p class="panel-subtitle">Tell us your suggestions or support concerns</p>
+                        <h3 class="panel-title">{{ farmer_text('Feedback Box') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Tell us your suggestions or support concerns') }}</p>
                     </div>
                     <button class="btn primary" type="submit">
                         <ion-icon name="send-outline"></ion-icon>
-                        Submit Feedback
+                        {{ farmer_text('Submit Feedback') }}
                     </button>
                 </div>
-                <div class="stat-label">Your Feedback</div>
-                <textarea class="stat-input feedback-input" name="feedback_message" rows="3" placeholder="Write your feedback here..." required></textarea>
+                <div class="stat-label">{{ farmer_text('Your Feedback') }}</div>
+                <textarea class="stat-input feedback-input" name="feedback_message" rows="3" placeholder="{{ farmer_text('Write your feedback here...') }}" required></textarea>
             </form>
         </section>
 
-    <div class="footer-link">VISCANE Farmer Portal | AI Assisted Grading</div>
+    <div class="footer-link">VISCANE {{ farmer_text('Farmer Portal') }} | {{ farmer_text('AI Assisted Grading') }}</div>
     </main>
 
     <nav class="farmer-bottom-nav" aria-label="Farmer navigation">
         <a class="farmer-bottom-link is-active" href="/homepage">
             <ion-icon name="home-outline"></ion-icon>
-            <span>Home</span>
+            <span>{{ farmer_text('Home') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/recommendations">
             <ion-icon name="sparkles-outline"></ion-icon>
-            <span>Recommendations</span>
+            <span>{{ farmer_text('Recommendations') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/agronomic-logs">
             <ion-icon name="document-text-outline"></ion-icon>
-            <span>Input Logs</span>
+            <span>{{ farmer_text('Input Logs') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/settings">
             <ion-icon name="person-outline"></ion-icon>
-            <span>Profile</span>
+            <span>{{ farmer_text('Profile') }}</span>
         </a>
     </nav>
 
@@ -1977,14 +1978,18 @@
                 <p class="cv-results-title">Computer Vision Result</p>
                 <p class="cv-results-main" id="cv-results-main">No result yet.</p>
                 <div class="cv-results-meta">
-                    <div id="cv-results-variety">Variety: -</div>
-                    <div id="cv-results-maturity">Maturity: -</div>
+                    <div id="cv-results-variety">{{ farmer_text('Variety:') }} -</div>
+                    <div id="cv-results-maturity">{{ farmer_text('Maturity:') }} -</div>
+                    <div id="cv-results-confidence">{{ farmer_text('Accuracy:') }} -</div>
                 </div>
+                <small>{{ farmer_text('This percentage is the AI score for this image.') }}</small>
             </div>
         </div>
     </div>
     <script>
         (() => {
+            const uiStrings = {{ farmer_catalog() | tojson }};
+            const uiText = (text) => uiStrings[text] || text;
             const openCameraBtn = document.getElementById('open-camera-btn');
             const cameraOverlay = document.getElementById('camera-overlay');
             const closeCameraBtn = document.getElementById('close-camera-btn');
@@ -2000,6 +2005,7 @@
             const cvResultsMain = document.getElementById('cv-results-main');
             const cvResultsVariety = document.getElementById('cv-results-variety');
             const cvResultsMaturity = document.getElementById('cv-results-maturity');
+            const cvResultsConfidence = document.getElementById('cv-results-confidence');
             const calcForm = document.getElementById('calc-form');
             const varietyInput = document.getElementById('variety-input');
             const cvMaturityStatusInput = document.getElementById('cv-maturity-status-input');
@@ -2077,6 +2083,15 @@
                 return map[upper] || cleaned;
             };
 
+            const displayMaturityStatus = (value) => {
+                const normalized = String(value || '').trim().replaceAll('_', ' ').replaceAll('-', ' ').toUpperCase();
+                return {
+                    'NOT MATURE': 'Not Mature',
+                    'MATURE': 'Mature',
+                    'OVER MATURE': 'Over Mature',
+                }[normalized] || String(value || '').replaceAll('_', ' ');
+            };
+
             const setPreviewImage = (blobOrFile) => {
                 if (!cameraPreviewImage) {
                     return;
@@ -2101,14 +2116,18 @@
                 }
                 cvResultsPanel.hidden = false;
                 if (cvResultsMain) {
-                    cvResultsMain.textContent = 'Analysis complete.';
+                    cvResultsMain.textContent = uiText('Analysis complete.');
                 }
                 if (cvResultsVariety) {
-                    cvResultsVariety.textContent = `Variety: ${normalizeCvVariety(bestPrediction.variety) || '-'}`;
+                    cvResultsVariety.textContent = `${uiText('Variety:')} ${normalizeCvVariety(bestPrediction.variety) || '-'}`;
                 }
                 if (cvResultsMaturity) {
-                    cvResultsMaturity.textContent = `Maturity: ${bestPrediction.maturityStatus || '-'}`;
+                    cvResultsMaturity.textContent = `${uiText('Maturity:')} ${displayMaturityStatus(bestPrediction.maturityStatus) || '-'}`;
                 }
+                if (cvResultsConfidence) {
+                    cvResultsConfidence.textContent = `${uiText('Accuracy:')} ${bestPrediction.confidenceLabel}`;
+                }
+                cvResultsPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
             };
 
             const syncVarietySelection = (selectedValue) => {
@@ -2122,7 +2141,7 @@
                     varietyTriggerTitle.textContent = selectedValue;
                 }
                 if (varietyTriggerValue) {
-                    varietyTriggerValue.textContent = 'Tap to change variety';
+                    varietyTriggerValue.textContent = uiText('Tap to change variety');
                 }
                 if (varietyTrigger && selectedTile) {
                     varietyTrigger.classList.add('is-selected');
@@ -2133,7 +2152,7 @@
                     varietyTriggerPreview.classList.add('is-visible');
                 }
                 if (varietyHelper) {
-                    varietyHelper.textContent = `${selectedValue} selected`;
+                    varietyHelper.textContent = `${selectedValue} ${uiText('selected')}`;
                     varietyHelper.classList.remove('is-error');
                 }
                 varietyTiles.forEach((tile) => {
@@ -2150,7 +2169,7 @@
                 }
                 selector.input.value = selectedValue;
                 if (selector.title) {
-                    selector.title.textContent = selectedValue;
+                    selector.title.textContent = uiText(selectedValue);
                 }
                 if (selector.value) {
                     selector.value.textContent = selector.label;
@@ -2220,7 +2239,7 @@
                             closeAllSelectorPanels(varietyPanel);
                             setVarietyPanelState(true);
                             if (varietyHelper) {
-                                varietyHelper.textContent = `Computer vision detected ${cvDetectedVariety}. Please choose this same variety before calculating.`;
+                                varietyHelper.textContent = `${uiText('Computer vision detected')} ${cvDetectedVariety}. ${uiText('Please choose this same variety before calculating.')}`;
                                 varietyHelper.classList.add('is-error');
                             }
                             const matchingTile = varietyTiles.find((tile) => tile.dataset.variety === cvDetectedVariety);
@@ -2241,16 +2260,16 @@
                             missingAgSelector.trigger.focus();
                         }
                         if (missingAgSelector.value) {
-                            missingAgSelector.value.textContent = 'Please choose an option.';
+                            missingAgSelector.value.textContent = uiText('Please choose an option.');
                         }
                         return;
                     }
                     event.preventDefault();
                     closeAllSelectorPanels(varietyPanel);
-                    varietyInput.setCustomValidity('Please select a variety.');
+                    varietyInput.setCustomValidity(uiText('Please select a variety.'));
                     setVarietyPanelState(true);
                     if (varietyHelper) {
-                        varietyHelper.textContent = 'Please select one variety before calculating.';
+                        varietyHelper.textContent = uiText('Please select one variety before calculating.');
                         varietyHelper.classList.add('is-error');
                     }
                     const firstTile = varietyTiles[0];
@@ -2269,7 +2288,7 @@
                 openCameraBtn.classList.toggle('is-loading', isLoading);
                 openCameraBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
                 if (label) {
-                    label.textContent = isLoading ? 'Opening camera...' : 'Open Camera';
+                    label.textContent = uiText(isLoading ? 'Opening camera...' : 'Open Camera');
                 }
             };
 
@@ -2290,7 +2309,7 @@
                     return;
                 }
                 captureBtn.disabled = !available || isUploading;
-                captureBtn.textContent = 'Capture';
+                captureBtn.textContent = uiText('Capture');
             };
 
             const startCamera = async () => {
@@ -2348,7 +2367,7 @@
                 } catch (err) {
                     stopCamera();
                     setCaptureAvailability(false);
-                    setCameraStatus('Camera preview is not available. You can still upload a photo.', 'success');
+                    setCameraStatus(uiText('Camera preview is not available. You can still upload a photo.'), 'success');
                 } finally {
                     setCameraButtonState(false);
                     isStarting = false;
@@ -2382,14 +2401,14 @@
                 if (captureBtn) {
                     if (loading) {
                         captureBtn.disabled = true;
-                        captureBtn.textContent = 'Uploading...';
+                        captureBtn.textContent = uiText('Uploading...');
                     } else {
                         setCaptureAvailability(isCameraReady);
                     }
                 }
                 if (uploadPhotoBtn) {
                     uploadPhotoBtn.disabled = loading;
-                    uploadPhotoBtn.textContent = loading ? 'Uploading...' : 'Upload Picture';
+                    uploadPhotoBtn.textContent = uiText(loading ? 'Uploading...' : 'Upload Picture');
                 }
             };
 
@@ -2403,30 +2422,44 @@
             };
 
             const extractPredictionEntries = (payload) => {
-                const models = payload?.models;
-                if (!models || typeof models !== 'object') {
-                    return [];
-                }
+                const candidates = [];
+                const addCandidate = (value, modelName = '') => {
+                    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+                        return;
+                    }
+                    const prediction = value.prediction && typeof value.prediction === 'object'
+                        ? value.prediction : value;
+                    const variety = prediction.variety || prediction.sugarcane_variety || prediction.predicted_variety;
+                    const maturityStatus = prediction.maturity_status || prediction.maturity || prediction.predicted_maturity;
+                    const confidenceValue = prediction.confidence ?? prediction.confidence_score ?? prediction.score;
+                    const confidenceRaw = Number(confidenceValue);
+                    if (!variety || !maturityStatus || confidenceValue == null || !Number.isFinite(confidenceRaw)
+                        || confidenceRaw < 0 || confidenceRaw > 100) {
+                        return;
+                    }
+                    const confidence = confidenceRaw > 1 ? confidenceRaw / 100 : confidenceRaw;
+                    candidates.push({
+                        modelName: modelName || value.model_name || prediction.model_name || '',
+                        className: prediction.class_name || prediction.label || '',
+                        variety,
+                        maturityStatus,
+                        confidence,
+                        confidenceLabel: `${(confidence * 100).toFixed(1)}%`,
+                    });
+                };
 
-                const entries = Object.entries(models)
-                    .map(([modelName, modelPayload]) => {
-                        const prediction = modelPayload?.prediction;
-                        if (!prediction) {
-                            return null;
-                        }
-                        const confidenceRaw = Number(prediction.confidence);
-                        const confidence = Number.isFinite(confidenceRaw) ? confidenceRaw : -1;
-                        const confidenceLabel = Number.isFinite(confidenceRaw) ? `${(confidenceRaw * 100).toFixed(1)}%` : 'N/A';
-                        return {
-                            modelName,
-                            className: prediction.class_name || 'Unknown',
-                            variety: prediction.variety || '',
-                            maturityStatus: prediction.maturity_status || 'Unknown',
-                            confidence,
-                            confidenceLabel,
-                        };
-                    })
-                    .filter(Boolean);
+                addCandidate(payload);
+                [payload?.result, payload?.data, payload?.predictions, payload?.results].forEach((value) => {
+                    if (Array.isArray(value)) {
+                        value.forEach((item) => addCandidate(item));
+                    } else {
+                        addCandidate(value);
+                    }
+                });
+                if (payload?.models && typeof payload.models === 'object') {
+                    Object.entries(payload.models).forEach(([modelName, value]) => addCandidate(value, modelName));
+                }
+                const entries = candidates;
 
                 entries.sort((a, b) => b.confidence - a.confidence);
                 return entries;
@@ -2438,7 +2471,7 @@
                     return '';
                 }
                 return entries
-                    .map((entry) => `${entry.modelName}: ${entry.className} (${entry.maturityStatus}) • ${entry.confidenceLabel}`)
+                    .map((entry) => `${entry.modelName}: ${entry.className} (${displayMaturityStatus(entry.maturityStatus)}) • ${entry.confidenceLabel}`)
                     .join(' | ');
             };
 
@@ -2498,7 +2531,7 @@
 
             const normalizeUploadImage = async (file) => {
                 if (!file) {
-                    throw new Error('No image selected.');
+                    throw new Error(uiText('No image selected.'));
                 }
                 if (isLikelyHeicFile(file)) {
                     throw new Error('HEIC/HEIF photos are not supported. Use JPG or PNG, or set iPhone Camera Format to Most Compatible.');
@@ -2509,7 +2542,7 @@
                     const image = await new Promise((resolve, reject) => {
                         const img = new Image();
                         img.onload = () => resolve(img);
-                        img.onerror = () => reject(new Error('Could not read selected image.'));
+                        img.onerror = () => reject(new Error(uiText('Could not read selected image.')));
                         img.src = objectUrl;
                     });
 
@@ -2537,7 +2570,7 @@
                     const jpegBlob = await new Promise((resolve, reject) => {
                         canvas.toBlob((blob) => {
                             if (!blob) {
-                                reject(new Error('Could not prepare image for upload.'));
+                                reject(new Error(uiText('Could not prepare image for upload.')));
                                 return;
                             }
                             resolve(blob);
@@ -2578,7 +2611,7 @@
                 const formData = new FormData();
                 formData.append('file', fileOrBlob, filename);
 
-                setCameraStatus('Uploading photo for prediction...');
+                setCameraStatus(uiText('Uploading photo for prediction...'));
                 const response = await fetch('/api/scan/predict?top_k=3', {
                     method: 'POST',
                     headers: { Accept: 'application/json' },
@@ -2593,12 +2626,15 @@
                 }
 
                 if (!response.ok) {
-                    const errorMessage = payload?.error || 'Upload failed.';
+                    const errorMessage = payload?.error || uiText('Upload failed.');
                     const errorDetails = payload?.details ? ` ${payload.details}` : '';
                     throw new Error(`${errorMessage}${errorDetails}`);
                 }
 
                 const bestPrediction = getBestPrediction(payload);
+                if (!bestPrediction) {
+                    throw new Error(uiText('Prediction service returned no recognizable prediction.'));
+                }
                 if (cvMaturityStatusInput) {
                     cvMaturityStatusInput.value = bestPrediction?.maturityStatus || '';
                 }
@@ -2612,12 +2648,12 @@
                 if (detectedVariety) {
                     syncVarietySelection(detectedVariety);
                     if (varietyHelper) {
-                        varietyHelper.textContent = `${detectedVariety} auto-selected from computer vision. Please confirm it is correct.`;
+                        varietyHelper.textContent = `${detectedVariety} ${uiText('auto-selected from computer vision. Please confirm it is correct.')}`;
                         varietyHelper.classList.remove('is-error');
                     }
                 }
                 renderCvResultPanel(bestPrediction);
-                setCameraStatus('Photo analyzed successfully.', 'success');
+                setCameraStatus(uiText('Photo analyzed successfully.'), 'success');
             };
 
             if (openCameraBtn) {
@@ -2635,7 +2671,7 @@
             if (captureBtn) {
                 captureBtn.addEventListener('click', () => {
                     if (!isCameraReady) {
-                        setCameraStatus('Please use Upload Picture.', 'success');
+                        setCameraStatus(uiText('Please use Upload Picture.'), 'success');
                         return;
                     }
                     if (navigator.vibrate) {
@@ -2686,5 +2722,6 @@
         })();
     </script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

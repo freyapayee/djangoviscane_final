@@ -2738,6 +2738,29 @@ body.modal-open {
     margin-top: 20px;
 }
 
+.results-note {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid #e5cc8c;
+    border-radius: 14px;
+    background: #fff8e7;
+    color: #654919;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.results-note ion-icon {
+    flex: none;
+    margin-top: 1px;
+    font-size: 19px;
+}
+
+.results-note p {
+    margin: 3px 0 0;
+}
+
 .result-row {
     display: flex;
     justify-content: space-between;
@@ -3010,4 +3033,30 @@ body.modal-open {
         display: grid;
         grid-template-columns: 1fr;
     }
+}
+.farmer-language-switch select {
+    border: 1px solid rgba(42, 98, 52, 0.3);
+    border-radius: 10px;
+    background: #fff;
+    color: #234b2c;
+    font: inherit;
+    padding: 9px 12px;
+    max-width: 150px;
+}
+
+.card > .farmer-language-switch {
+    text-align: right;
+    margin-bottom: 12px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }

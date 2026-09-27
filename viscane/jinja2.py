@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import Environment
+from core.language import HILIGAYNON_LABELS, farmer_summary, farmer_text, is_hiligaynon
 
 
 def url_for(endpoint, **values):
@@ -26,5 +27,11 @@ def url_for(endpoint, **values):
 
 def environment(**options):
     env = Environment(**options)
-    env.globals.update(url_for=url_for)
+    env.globals.update(
+        url_for=url_for,
+        farmer_text=farmer_text,
+        farmer_summary=farmer_summary,
+        is_hiligaynon=is_hiligaynon,
+        farmer_catalog=lambda: HILIGAYNON_LABELS if is_hiligaynon() else {},
+    )
     return env

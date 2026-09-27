@@ -1,0 +1,10 @@
+<form action="/i18n/setlang/" method="post" class="farmer-language-switch">
+    {{ csrf_input }}
+    <input type="hidden" name="next" value="{{ request.get_full_path() }}">
+    <label for="farmer-language" class="sr-only">Language / Lengguwahe</label>
+    <select id="farmer-language" name="language" aria-label="Language / Lengguwahe" onchange="this.form.submit()">
+        <option value="en"{% if not is_hiligaynon() %} selected{% endif %}>English</option>
+        <option value="hil"{% if is_hiligaynon() %} selected{% endif %}>Hiligaynon</option>
+    </select>
+    <noscript><button type="submit">Apply</button></noscript>
+</form>

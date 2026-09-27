@@ -2,44 +2,44 @@
     {% if mode == 'login' %}
         <div class="input-wrapper">
             <ion-icon name="mail-outline"></ion-icon>
-            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="email" name="email" placeholder="{{ farmer_text('Email Address') }}" required>
         </div>
         <div class="input-wrapper">
             <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="password" placeholder="{{ farmer_text('Password') }}" required>
         </div>
     {% else %}
         <div class="input-wrapper">
             <ion-icon name="person-outline"></ion-icon>
-            <input type="text" name="fullname" placeholder="Full Name" required>
+            <input type="text" name="fullname" placeholder="{{ farmer_text('Full Name') }}" required>
         </div>
         <div class="input-wrapper">
             <ion-icon name="mail-outline"></ion-icon>
-            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="email" name="email" placeholder="{{ farmer_text('Email Address') }}" required>
         </div>
         <div class="input-wrapper has-warning">
             <ion-icon name="call-outline"></ion-icon>
-            <input type="tel" name="phone" placeholder="Phone Number" inputmode="numeric" minlength="11" maxlength="11" pattern="[0-9]{11}" title="Phone number must be exactly 11 digits" required>
-            <span class="input-warning">Phone number must be exactly 11 digits.</span>
+            <input type="tel" name="phone" placeholder="{{ farmer_text('Phone Number') }}" inputmode="numeric" minlength="11" maxlength="11" pattern="[0-9]{11}" title="{{ farmer_text('Phone number must be exactly 11 digits.') }}" required>
+            <span class="input-warning">{{ farmer_text('Phone number must be exactly 11 digits.') }}</span>
         </div>
         <div class="input-wrapper">
             <ion-icon name="map-outline"></ion-icon>
             <select name="province" required>
-                <option value="" disabled selected>Select Province</option>
+                <option value="" disabled selected>{{ farmer_text('Select Province') }}</option>
                 <option value="Negros Occidental">Negros Occidental</option>
             </select>
         </div>
         <div class="input-wrapper">
             <ion-icon name="business-outline"></ion-icon>
             <select name="municipality" required>
-                <option value="" disabled selected>Select Municipality</option>
+                <option value="" disabled selected>{{ farmer_text('Select Municipality') }}</option>
                 <option value="Isabela">Isabela</option>
             </select>
         </div>
         <div class="input-wrapper">
             <ion-icon name="home-outline"></ion-icon>
             <select name="barangay" required>
-                <option value="" disabled selected>Select Barangay</option>
+                <option value="" disabled selected>{{ farmer_text('Select Barangay') }}</option>
                 <option value="Amin">Amin</option>
                 <option value="Banogbanog">Banogbanog</option>
                 <option value="Bulad">Bulad</option>
@@ -74,15 +74,15 @@
         </div>
         <div class="input-wrapper">
             <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="password" placeholder="{{ farmer_text('Password') }}" required>
         </div>
         <div class="input-wrapper">
             <ion-icon name="lock-closed-outline"></ion-icon>
-            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <input type="password" name="confirm_password" placeholder="{{ farmer_text('Confirm Password') }}" required>
         </div>
     {% endif %}
 
     <button type="submit" class="primary-btn">
-        {{ 'Sign In' if mode == 'login' else 'Create Account' }}
+        {{ farmer_text('Sign In' if mode == 'login' else 'Create Account') }}
     </button>
 </form>

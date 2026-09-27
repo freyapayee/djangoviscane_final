@@ -1,0 +1,46 @@
+{% if is_hiligaynon() %}
+<script>
+(() => {
+    const labels = {{ farmer_catalog() | tojson }};
+    const skip = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE']);
+    const translateText = (node) => {
+        if (!node || skip.has(node.parentElement?.tagName)) return;
+        const source = node.nodeValue;
+        const key = source.trim();
+        if (labels[key] && labels[key] !== key) node.nodeValue = source.replace(key, labels[key]);
+    };
+    const translateElement = (element) => {
+        if (!element || skip.has(element.tagName)) return;
+        for (const attribute of ['placeholder', 'title', 'aria-label']) {
+            const value = element.getAttribute?.(attribute);
+            if (value && labels[value] && labels[value] !== value) element.setAttribute(attribute, labels[value]);
+        }
+    };
+    const translateTree = (root) => {
+        if (root.nodeType === Node.TEXT_NODE) {
+            translateText(root);
+            return;
+        }
+        if (root.nodeType !== Node.ELEMENT_NODE || skip.has(root.tagName)) return;
+        translateElement(root);
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+            if (walker.currentNode.nodeType === Node.TEXT_NODE) translateText(walker.currentNode);
+            else translateElement(walker.currentNode);
+        }
+    };
+    translateTree(document.body);
+    const titleParts = document.title.split(' | ');
+    if (titleParts.length > 1) {
+        const pageName = titleParts.pop();
+        document.title = `${titleParts.join(' | ')} | ${labels[pageName] || pageName}`;
+    }
+    new MutationObserver((changes) => {
+        for (const change of changes) {
+            if (change.type === 'characterData') translateText(change.target);
+            for (const node of change.addedNodes) translateTree(node);
+        }
+    }).observe(document.body, {childList: true, characterData: true, subtree: true});
+})();
+</script>
+{% endif %}

@@ -10,7 +10,7 @@ from functools import lru_cache
 from io import StringIO
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 from django.conf import settings
@@ -146,7 +146,7 @@ DEFAULT_RECOMMENDATIONS = [
     },
 ]
 
-DEFAULT_SCAN_PREDICT_ENDPOINT = "http://34.81.143.245:8000/predict"
+DEFAULT_SCAN_PREDICT_ENDPOINT = "http://52.74.98.121:8010/predict"
 DEFAULT_SCAN_PREDICT_TOP_K = 3
 DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS = 30
 CV_UPLOAD_RELATIVE_DIR = os.path.join("uploads", "cv_scans")
@@ -675,6 +675,163 @@ def _build_multipart_form_data(fields, files):
     return body, f"multipart/form-data; boundary={boundary}"
 
 
+def _prediction_endpoint_candidates(endpoint):
+    normalized_endpoint = (endpoint or "").strip()
+    if not normalized_endpoint:
+        return []
+
+    candidates = [normalized_endpoint]
+    parsed = urlsplit(normalized_endpoint)
+    hostname = (parsed.hostname or "").lower()
+    port = parsed.port
+
+    def _swap_host(new_host):
+        netloc = new_host
+        if port:
+            netloc = f"{new_host}:{port}"
+        elif parsed.netloc.endswith("]") and parsed.hostname:
+            netloc = f"[{new_host}]"
+        return urlunsplit((parsed.scheme, netloc, parsed.path, parsed.query, parsed.fragment))
+
+    if hostname in {"127.0.0.1", "localhost"} and _running_inside_docker():
+        candidates.append(_swap_host("host.docker.internal"))
+    elif hostname == "host.docker.internal":
+        candidates.append(_swap_host("127.0.0.1"))
+
+    unique_candidates = []
+    seen = set()
+    for candidate in candidates:
+        if candidate not in seen:
+            unique_candidates.append(candidate)
+            seen.add(candidate)
+    return unique_candidates
+
+
+def _running_inside_docker():
+    return Path("/.dockerenv").exists() or os.getenv("RUNNING_IN_DOCKER", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def summarize_prediction_service_error(exc, endpoint, timeout_seconds=None):
+    status_code = getattr(exc, "code", None)
+    try:
+        response_body = exc.read()
+    except Exception:
+        response_body = b""
+    try:
+        details = response_body.decode("utf-8", errors="replace")
+    except Exception:
+        details = str(exc)
+
+    content_type = ""
+    try:
+        headers = getattr(exc, "headers", None)
+        if headers is not None:
+            content_type = headers.get_content_type() or ""
+    except Exception:
+        content_type = ""
+
+    base_message = f"Prediction service returned HTTP {status_code} from {endpoint}."
+
+    page_not_found_path = None
+    lower_details = details.lower()
+    if "page not found at" in lower_details:
+        marker = "page not found at "
+        start = lower_details.find(marker)
+        if start != -1:
+            start += len(marker)
+            end = details.find("<", start)
+            if end == -1:
+                end = details.find("\n", start)
+            if end == -1:
+                end = len(details)
+            page_not_found_path = details[start:end].strip()
+
+    hint = ""
+    if status_code == 404:
+        hint = " Check SCAN_PREDICT_ENDPOINT and make sure the remote service exposes the expected /predict route."
+    elif content_type and content_type != "application/json":
+        hint = f" The service responded with {content_type}, not JSON."
+
+    if page_not_found_path:
+        hint = f" The remote service does not have {page_not_found_path}."
+
+    preview = details.strip().replace("\n", " ")
+    if len(preview) > 400:
+        preview = preview[:400].rstrip() + "..."
+    if preview and preview not in base_message:
+        details = f"{base_message}{hint} Response preview: {preview}"
+    else:
+        details = f"{base_message}{hint}"
+
+    return {
+        "error": "Prediction service returned an error.",
+        "status": status_code,
+        "details": details,
+    }
+
+
+def request_prediction_service(uploaded_filename, file_bytes, content_type, top_k, endpoint=None, timeout_seconds=None):
+    configured_endpoint = (endpoint or os.getenv("SCAN_PREDICT_ENDPOINT", DEFAULT_SCAN_PREDICT_ENDPOINT)).strip() or DEFAULT_SCAN_PREDICT_ENDPOINT
+    timeout_raw = timeout_seconds if timeout_seconds is not None else os.getenv("SCAN_PREDICT_TIMEOUT_SECONDS", str(DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS))
+    try:
+        timeout_seconds = max(5.0, float(timeout_raw))
+    except (TypeError, ValueError):
+        timeout_seconds = float(DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS)
+
+    if not file_bytes:
+        return None, {"error": "Uploaded image is empty."}, 400
+
+    uploaded_filename = os.path.basename(uploaded_filename or "capture.jpg") or "capture.jpg"
+    content_type = content_type or "image/jpeg"
+    candidates = _prediction_endpoint_candidates(configured_endpoint)
+    if not candidates:
+        candidates = [configured_endpoint]
+
+    last_error = None
+    for candidate_endpoint in candidates:
+        separator = "&" if "?" in candidate_endpoint else "?"
+        target_url = f"{candidate_endpoint}{separator}{urlencode({'top_k': top_k})}"
+        body, multipart_content_type = _build_multipart_form_data(
+            fields={},
+            files=[{
+                "field_name": "file",
+                "filename": uploaded_filename,
+                "content_type": content_type,
+                "content": file_bytes,
+            }],
+        )
+        outbound = Request(target_url, data=body, method="POST")
+        outbound.add_header("accept", "application/json")
+        outbound.add_header("Content-Type", multipart_content_type)
+        outbound.add_header("Content-Length", str(len(body)))
+        try:
+            with urlopen(outbound, timeout=timeout_seconds) as api_response:
+                response_body = api_response.read()
+                status_code = getattr(api_response, "status", 200)
+            return (response_body, status_code), None, None
+        except HTTPError as exc:
+            last_error = exc
+            if exc.code == 404 and candidate_endpoint != candidates[-1]:
+                continue
+            return None, summarize_prediction_service_error(exc, candidate_endpoint, timeout_seconds), 502
+        except URLError as exc:
+            last_error = exc
+            if candidate_endpoint != candidates[-1]:
+                continue
+            return None, {"error": "Prediction service is unreachable.", "details": str(exc.reason) if getattr(exc, "reason", None) else str(exc)}, 502
+        except TimeoutError:
+            return None, {"error": "Prediction service timed out.", "details": f"Request exceeded {timeout_seconds:.0f} seconds."}, 504
+        except Exception as exc:
+            last_error = exc
+            if candidate_endpoint != candidates[-1]:
+                continue
+            return None, {"error": "Failed to request prediction service.", "details": str(exc)}, 500
+
+    if last_error is not None:
+        return None, {"error": "Prediction service returned an error.", "details": str(last_error)}, 502
+    return None, {"error": "Prediction service returned an error.", "details": "No prediction endpoints were available."}, 502
+
+
 def verify_and_upgrade_password(instance, raw_password, field_name="password"):
     stored_value = getattr(instance, field_name, "") or ""
     if not raw_password:
@@ -701,24 +858,46 @@ def verify_and_upgrade_password(instance, raw_password, field_name="password"):
 def _extract_cv_context(prediction_payload):
     if not isinstance(prediction_payload, dict):
         return {}
+    candidates = [("", prediction_payload)]
+    for key in ("result", "data", "predictions", "results"):
+        value = prediction_payload.get(key)
+        if isinstance(value, dict):
+            candidates.append(("", value))
+        elif isinstance(value, list):
+            candidates.extend(("", item) for item in value if isinstance(item, dict))
     models = prediction_payload.get("models")
-    if not isinstance(models, dict) or not models:
-        return {}
+    if isinstance(models, dict):
+        candidates.extend((name, value) for name, value in models.items() if isinstance(value, dict))
+
     best_entry = None
     best_confidence = float("-inf")
-    for model_name, model_payload in models.items():
-        if not isinstance(model_payload, dict):
-            continue
-        prediction = model_payload.get("prediction")
-        if not isinstance(prediction, dict):
-            continue
+    for model_name, item in candidates:
+        prediction = item.get("prediction") if isinstance(item.get("prediction"), dict) else item
+        variety = prediction.get("variety") or prediction.get("sugarcane_variety") or prediction.get("predicted_variety")
+        maturity_status = prediction.get("maturity_status") or prediction.get("maturity") or prediction.get("predicted_maturity")
+        raw_confidence = prediction.get("confidence")
+        if raw_confidence is None:
+            raw_confidence = prediction.get("confidence_score", prediction.get("score"))
         try:
-            confidence = float(prediction.get("confidence"))
+            confidence = float(raw_confidence)
         except (TypeError, ValueError):
-            confidence = float("-inf")
+            continue
+        if not variety or not maturity_status or not 0 <= confidence <= 100:
+            continue
+        if confidence > 1:
+            confidence /= 100
         if confidence > best_confidence:
             best_confidence = confidence
-            best_entry = {"model_name": model_name, "prediction": prediction, "top_k": model_payload.get("top_k") or []}
+            best_entry = {
+                "model_name": model_name or item.get("model_name") or prediction.get("model_name") or "",
+                "prediction": {
+                    "class_name": prediction.get("class_name") or prediction.get("label"),
+                    "variety": variety,
+                    "maturity_status": maturity_status,
+                    "confidence": confidence,
+                },
+                "top_k": item.get("top_k") or [],
+            }
     if not best_entry:
         return {}
     prediction = best_entry["prediction"]
@@ -785,49 +964,13 @@ def _persist_cv_upload(user_id, uploaded_filename, file_bytes, cv_context):
 
 
 def api_predict_scan_payload(uploaded_file, top_k):
-    endpoint = (os.getenv("SCAN_PREDICT_ENDPOINT", DEFAULT_SCAN_PREDICT_ENDPOINT).strip() or DEFAULT_SCAN_PREDICT_ENDPOINT)
-    timeout_raw = os.getenv("SCAN_PREDICT_TIMEOUT_SECONDS", str(DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS))
-    try:
-        timeout_seconds = max(5.0, float(timeout_raw))
-    except (TypeError, ValueError):
-        timeout_seconds = float(DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS)
-
     file_bytes = uploaded_file.read()
-    if not file_bytes:
-        return None, {"error": "Uploaded image is empty."}, 400
-
-    separator = "&" if "?" in endpoint else "?"
-    target_url = f"{endpoint}{separator}{urlencode({'top_k': top_k})}"
-    body, content_type = _build_multipart_form_data(
-        fields={},
-        files=[{
-            "field_name": "file",
-            "filename": os.path.basename(uploaded_file.name) or "capture.jpg",
-            "content_type": getattr(uploaded_file, "content_type", None) or "image/jpeg",
-            "content": file_bytes,
-        }],
+    return request_prediction_service(
+        uploaded_filename=getattr(uploaded_file, "name", "capture.jpg"),
+        file_bytes=file_bytes,
+        content_type=getattr(uploaded_file, "content_type", None) or "image/jpeg",
+        top_k=top_k,
     )
-    outbound = Request(target_url, data=body, method="POST")
-    outbound.add_header("accept", "application/json")
-    outbound.add_header("Content-Type", content_type)
-    outbound.add_header("Content-Length", str(len(body)))
-    try:
-        with urlopen(outbound, timeout=timeout_seconds) as api_response:
-            response_body = api_response.read()
-            status_code = getattr(api_response, "status", 200)
-    except HTTPError as exc:
-        try:
-            details = exc.read().decode("utf-8", errors="replace")
-        except Exception:
-            details = str(exc)
-        return None, {"error": "Prediction service returned an error.", "status": exc.code, "details": details[:600]}, 502
-    except URLError as exc:
-        return None, {"error": "Prediction service is unreachable.", "details": str(exc.reason) if getattr(exc, "reason", None) else str(exc)}, 502
-    except TimeoutError:
-        return None, {"error": "Prediction service timed out.", "details": f"Request exceeded {timeout_seconds:.0f} seconds."}, 504
-    except Exception as exc:
-        return None, {"error": "Failed to request prediction service.", "details": str(exc)}, 500
-    return (response_body, status_code), None, None
 
 
 def save_prediction_context(user_id, uploaded_file, file_bytes, decoded_payload):

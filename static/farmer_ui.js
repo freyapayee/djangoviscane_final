@@ -1,11 +1,15 @@
 (() => {
   const infoNodes = Array.from(document.querySelectorAll('[data-farmer-info-text]'));
+  const hiligaynon = document.documentElement.lang === 'hil';
   if (!infoNodes.length) {
     return;
   }
 
   const fmtDate = () => {
     try {
+      if (hiligaynon) {
+        return new Intl.DateTimeFormat('en-PH', { year: 'numeric', month: 'numeric', day: 'numeric' }).format(new Date());
+      }
       return new Intl.DateTimeFormat(undefined, {
         weekday: 'short',
         month: 'short',
@@ -24,15 +28,15 @@
 
   const weatherText = (code) => {
     const c = Number(code);
-    if (c === 0) return 'Clear';
-    if ([1, 2].includes(c)) return 'Partly cloudy';
-    if (c === 3) return 'Cloudy';
-    if ([45, 48].includes(c)) return 'Fog';
-    if ([51, 53, 55, 56, 57].includes(c)) return 'Drizzle';
-    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(c)) return 'Rain';
-    if ([71, 73, 75, 77, 85, 86].includes(c)) return 'Snow';
-    if ([95, 96, 99].includes(c)) return 'Thunder';
-    return 'Weather';
+    if (c === 0) return hiligaynon ? 'Matawhay' : 'Clear';
+    if ([1, 2].includes(c)) return hiligaynon ? 'May panganod' : 'Partly cloudy';
+    if (c === 3) return hiligaynon ? 'Mabugal nga panganod' : 'Cloudy';
+    if ([45, 48].includes(c)) return hiligaynon ? 'May gabon' : 'Fog';
+    if ([51, 53, 55, 56, 57].includes(c)) return hiligaynon ? 'Mahinay nga ulan' : 'Drizzle';
+    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(c)) return hiligaynon ? 'Ulan' : 'Rain';
+    if ([71, 73, 75, 77, 85, 86].includes(c)) return hiligaynon ? 'Niyebe' : 'Snow';
+    if ([95, 96, 99].includes(c)) return hiligaynon ? 'May dalugdog' : 'Thunder';
+    return hiligaynon ? 'Panahon' : 'Weather';
   };
 
   const dateOnly = fmtDate();

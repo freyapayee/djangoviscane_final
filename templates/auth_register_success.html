@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,17 +21,18 @@
             <div class="auth-success-icon">
                 <ion-icon name="checkmark-outline"></ion-icon>
             </div>
-            <h3 class="auth-success-title">You have successfully registered</h3>
-            <p class="auth-success-text">Welcome to VISCANE, {{ user.fullname }}. Your account is ready.</p>
+            <h3 class="auth-success-title">{{ farmer_text('You have successfully registered') }}</h3>
+            <p class="auth-success-text">{{ farmer_text('Welcome to VISCANE') }}, {{ user.fullname }}. {{ farmer_text('Your account is ready.') }}</p>
         </div>
 
         <a class="primary-btn success-cta-btn" href="/homepage">
-            Proceed to home
+            {{ farmer_text('Proceed to home') }}
         </a>
 
         <div class="auth-footer">
-            <a href="/" class="auth-back-link">&larr; Back to Selection</a>
+            <a href="/" class="auth-back-link">&larr; {{ farmer_text('Back to Selection') }}</a>
         </div>
     </div>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

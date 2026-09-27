@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +22,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                {% include 'farmer_language_switch.html' %}
                 <a class="btn light" href="/admin">
                     <ion-icon name="grid-outline"></ion-icon>
                     Admin
@@ -81,5 +82,6 @@
 
         <div class="footer-link">VISCANE Admin | Data Monitoring</div>
     </main>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>

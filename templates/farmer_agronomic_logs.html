@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,18 +18,19 @@
                 </div>
                 <div class="brand-copy">
                     <p class="brand-system">VISCANE</p>
-                    <p class="brand-title">Agronomic Input Logs</p>
-                    <p class="brand-subtitle">Saved inputs and prediction history</p>
+                    <p class="brand-title">{{ farmer_text('Agronomic Input Logs') }}</p>
+                    <p class="brand-subtitle">{{ farmer_text('Saved inputs and prediction history') }}</p>
                 </div>
             </div>
             <div class="header-actions">
+                {% include 'farmer_language_switch.html' %}
                 <div class="farmer-info-chip" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
                 </div>
                 <a class="btn light" href="/homepage">
                     <ion-icon name="home-outline"></ion-icon>
-                    Home
+                    {{ farmer_text('Home') }}
                 </a>
             </div>
         </div>
@@ -39,10 +40,10 @@
         <section class="panel">
             <div class="panel-header">
                 <div>
-                    <h3 class="panel-title">Log History</h3>
-                    <p class="panel-subtitle">Your previous inputs and system recommendations</p>
+                    <h3 class="panel-title">{{ farmer_text('Log History') }}</h3>
+                    <p class="panel-subtitle">{{ farmer_text('Your previous inputs and system recommendations') }}</p>
                 </div>
-                <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ agronomic_logs|length }} log{% if agronomic_logs|length != 1 %}s{% endif %}</span>
+                <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ agronomic_logs|length }} {{ farmer_text('log' if agronomic_logs|length == 1 else 'logs') }}</span>
             </div>
             {% if agronomic_logs %}
                 {% for log in agronomic_logs %}
@@ -50,46 +51,47 @@
                         <div class="list-badge"><ion-icon name="document-text-outline"></ion-icon></div>
                         <div style="flex: 1;">
                             <h4 style="margin: 0;">
-                                {{ log.variety or 'Unknown Variety' }} | {{ log.created_at.strftime('%b %d, %I:%M %p') if log.created_at else 'Date unavailable' }}
+                                {{ log.variety or farmer_text('Unknown Variety') }} | {{ log.created_at.strftime('%b %d, %I:%M %p') if log.created_at else farmer_text('Date unavailable') }}
                             </h4>
                             <div class="list-meta" style="margin-top: 6px;">
-                                <strong>Inputs:</strong> Plowing {{ log.plowing_count or '-' }}, Weeding {{ log.weeding_count or '-' }}, Fertilizer {{ log.fertilizer_count or '-' }}, Ratoon {{ log.ratoon_stage or '-' }}, RSSI {{ log.rssi_infected or '-' }}, Hectares {{ log.hectares or '-' }}
+                                <strong>{{ farmer_text('Inputs:') }}</strong> {{ farmer_text('Plowing') }} {{ log.plowing_count or '-' }}, {{ farmer_text('Weeding') }} {{ log.weeding_count or '-' }}, {{ farmer_text('Fertilizer') }} {{ log.fertilizer_count or '-' }}, {{ farmer_text('Ratoon') }} {{ farmer_text(log.ratoon_stage) if log.ratoon_stage else '-' }}, RSSI {{ farmer_text(log.rssi_infected) if log.rssi_infected else '-' }}, {{ farmer_text('Hectares') }} {{ log.hectares or '-' }}
                             </div>
                             <div class="list-meta" style="margin-top: 6px;">
-                                <strong>Prediction:</strong> LKG/TC {{ '%.2f'|format(log.predicted_lkg_tc) if log.predicted_lkg_tc is not none else 'Pending' }}, TC/HA {{ '%.2f'|format(log.predicted_tc_ha) if log.predicted_tc_ha is not none else 'Pending' }}, LKG {{ '%.2f'|format(log.predicted_lkg) if log.predicted_lkg is not none else 'Pending' }}
+                                <strong>{{ farmer_text('Prediction:') }}</strong> LKG/TC {{ '%.2f'|format(log.predicted_lkg_tc) if log.predicted_lkg_tc is not none else farmer_text('Pending') }}, TC/HA {{ '%.2f'|format(log.predicted_tc_ha) if log.predicted_tc_ha is not none else farmer_text('Pending') }}, LKG {{ '%.2f'|format(log.predicted_lkg) if log.predicted_lkg is not none else farmer_text('Pending') }}
                             </div>
                             <div class="list-meta" style="margin-top: 6px;">
-                                <strong>Recommendations:</strong> {{ log.recommendations_summary or 'No recommendation generated.' }}
+                                <strong>{{ farmer_text('Recommendations:') }}</strong> {{ farmer_summary(log.recommendations_summary or farmer_text('No recommendation generated.')) }}
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="list-meta">No agronomic logs yet. Calculate once to save your first log.</div>
+                <div class="list-meta">{{ farmer_text('No agronomic logs yet. Calculate once to save your first log.') }}</div>
             {% endif %}
         </section>
 
-        <div class="footer-link">VISCANE Farmer Portal | Agronomic Input Logs</div>
+        <div class="footer-link">VISCANE {{ farmer_text('Farmer Portal') }} | {{ farmer_text('Agronomic Input Logs') }}</div>
     </main>
 
     <nav class="farmer-bottom-nav" aria-label="Farmer navigation">
         <a class="farmer-bottom-link" href="/homepage">
             <ion-icon name="home-outline"></ion-icon>
-            <span>Home</span>
+            <span>{{ farmer_text('Home') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/recommendations">
             <ion-icon name="sparkles-outline"></ion-icon>
-            <span>Recommendations</span>
+            <span>{{ farmer_text('Recommendations') }}</span>
         </a>
         <a class="farmer-bottom-link is-active" href="/farmer/agronomic-logs">
             <ion-icon name="document-text-outline"></ion-icon>
-            <span>Input Logs</span>
+            <span>{{ farmer_text('Input Logs') }}</span>
         </a>
         <a class="farmer-bottom-link" href="/farmer/settings">
             <ion-icon name="person-outline"></ion-icon>
-            <span>Profile</span>
+            <span>{{ farmer_text('Profile') }}</span>
         </a>
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+    {% include 'hiligaynon_runtime.html' %}
 </body>
 </html>
