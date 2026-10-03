@@ -2,12 +2,14 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>VISCANE | Calculation Results</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calculate-page.css') }}?v=2">
 </head>
-<body class="farmer-layout">
+<body class="farmer-layout ds-app vis-calculate-page">
     <div class="dashboard-bg"></div>
 
     <header class="dashboard-header">
@@ -23,7 +25,7 @@
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
+
                 <div class="farmer-info-chip" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
@@ -54,8 +56,8 @@
             <div class="form-error" style="margin-bottom: 20px;">{{ farmer_text(api_error) }}</div>
             {% endif %}
 
-            <div class="results-grid">
-                <div class="result-row">
+            <div class="results-grid" aria-label="Calculation summary">
+                <div class="result-row result-context">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="leaf-outline"></ion-icon>
@@ -64,7 +66,7 @@
                     </span>
                     <span class="result-value">{{ variety_display }}</span>
                 </div>
-                <div class="result-row">
+                <div class="result-row result-context">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="bar-chart-outline"></ion-icon>
@@ -73,7 +75,7 @@
                     </span>
                     <span class="result-value">{{ farmer_text(hectares_display) }}</span>
                 </div>
-                <div class="result-row">
+                <div class="result-row result-context">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="analytics-outline"></ion-icon>
@@ -82,7 +84,7 @@
                     </span>
                     <span class="result-value">{{ farmer_text(maturity_display) }}</span>
                 </div>
-                <div class="result-row">
+                <div class="result-row result-context">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="git-branch-outline"></ion-icon>
@@ -129,14 +131,14 @@
                 </div>
             </div>
             {% if cv_variety_display or cv_maturity_display %}
-                <div class="result-row" style="margin-top: 14px;">
+                <div class="result-row result-cv-summary">
                     <span class="result-label">
                         <span class="result-icon">
                             <ion-icon name="scan-outline"></ion-icon>
                         </span>
                         {{ farmer_text('Computer Vision') }}
                     </span>
-                    <span class="result-value" style="font-size: 0.92rem; text-align: right;">
+                    <span class="result-value result-cv-value">
                         {% if cv_variety_display %}{{ farmer_text('Variety:') }} {{ cv_variety_display }}{% endif %}
                         {% if cv_maturity_display %}{% if cv_variety_display %}<br>{% endif %}{{ farmer_text('Maturity:') }} {{ farmer_text(cv_maturity_display.replace('_', ' ').title()) }}{% endif %}
                     </span>
@@ -182,5 +184,6 @@
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

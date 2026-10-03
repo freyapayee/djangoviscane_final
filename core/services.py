@@ -218,6 +218,33 @@ def normalize_cv_maturity_status(status):
     return None
 
 
+def derive_scan_assessment(maturity_status, confidence=None):
+    """Convert a CV maturity class into the editable-scan record scale."""
+    normalized_status = normalize_cv_maturity_status(maturity_status)
+    try:
+        normalized_confidence = float(confidence)
+        if normalized_confidence > 1:
+            normalized_confidence /= 100
+    except (TypeError, ValueError):
+        normalized_confidence = 0.0
+
+    if normalized_status == "OVER_MATURE":
+        return {"maturity_pct": 95, "grade": "C", "status": "monitor"}
+    if normalized_status == "NOT_MATURE":
+        return {
+            "maturity_pct": 65,
+            "grade": "B" if normalized_confidence >= 0.85 else "C",
+            "status": "monitor",
+        }
+    if normalized_status == "MATURE":
+        return {
+            "maturity_pct": 85,
+            "grade": "A" if normalized_confidence >= 0.85 else "B",
+            "status": "ready",
+        }
+    return None
+
+
 def get_cv_maturity_baseline_adjustment(variety, cv_maturity_status):
     normalized_variety = normalize_variety_name(variety)
     normalized_status = normalize_cv_maturity_status(cv_maturity_status)
@@ -934,8 +961,8 @@ def _build_cv_upload_path(filename):
     if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
         ext = ".jpg"
     generated_name = f"cv-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{secrets.token_hex(8)}{ext}"
-    relative_path = os.path.join(CV_UPLOAD_RELATIVE_DIR, generated_name)
-    absolute_path = get_static_root() / Path(relative_path)
+    relative_path = os.path.join("private", "cv_scans", generated_name)
+    absolute_path = settings.PRIVATE_UPLOAD_ROOT / Path(relative_path)
     absolute_path.parent.mkdir(parents=True, exist_ok=True)
     return relative_path.replace("\\", "/"), absolute_path
 
@@ -950,7 +977,7 @@ def _persist_cv_upload(user_id, uploaded_filename, file_bytes, cv_context):
         return
     try:
         confidence = _parse_float((cv_context or {}).get("confidence"))
-        CvScanUpload.objects.create(
+        return CvScanUpload.objects.create(
             user_id=user_id,
             image_path=relative_path,
             original_filename=os.path.basename(uploaded_filename or "upload.jpg"),
@@ -975,5 +1002,7 @@ def api_predict_scan_payload(uploaded_file, top_k):
 
 def save_prediction_context(user_id, uploaded_file, file_bytes, decoded_payload):
     cv_context = _extract_cv_context(decoded_payload)
-    _persist_cv_upload(user_id=user_id, uploaded_filename=uploaded_file.name, file_bytes=file_bytes, cv_context=cv_context)
+    upload = _persist_cv_upload(user_id=user_id, uploaded_filename=uploaded_file.name, file_bytes=file_bytes, cv_context=cv_context)
+    if upload:
+        cv_context["upload_id"] = upload.pk
     return cv_context

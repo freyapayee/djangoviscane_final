@@ -223,6 +223,8 @@ HILIGAYNON_LABELS = {
     "Uploaded": "Gin-upload",
     "No scans yet. Start your first analysis.": "Wala pa sang scan. Suguri ang imo una nga pagsusisa.",
     "Scan Gallery": "Koleksyon sang mga scan",
+    "Previous": "Nagligad",
+    "Next": "Sunod",
     "Recent uploaded sugarcane scans": "Pinakabag-o nga gin-upload nga mga scan sang tubo",
     "No uploaded scans yet.": "Wala pa sang gin-upload nga scan.",
     "Feedback Box": "Kahon sang suhestyon",

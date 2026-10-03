@@ -6,8 +6,11 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Farmer Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=7">
 </head>
-<body class="admin-layout superadmin-layout">
+<body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-user-details">
+    {% include 'components/superadmin_navigation.html' %}
     <div class="dashboard-bg"></div>
 
     <header class="dashboard-header superadmin-header">
@@ -18,18 +21,14 @@
                 </div>
                 <div>
                     <p class="brand-title">Farmer Details</p>
-                    <p class="brand-subtitle">Full archived account profile and activity summary</p>
+                    <p class="brand-subtitle">Account profile, status, and activity summary</p>
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
-                <a class="btn light" href="/superadmin">
+
+                <a class="btn light" href="/superadmin#farmer-accounts">
                     <ion-icon name="arrow-back-outline"></ion-icon>
                     Back
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
                 </a>
             </div>
         </div>
@@ -68,6 +67,7 @@
                     </div>
                     {% if user.is_archived %}
                         <form method="POST" action="/superadmin/users/restore">
+    {{ csrf_input }}
                             <input type="hidden" name="user_id" value="{{ user.id }}">
                             <button class="btn primary" type="submit" onclick="return confirm('Restore this user to the active registry?')">
                                 <ion-icon name="refresh-outline"></ion-icon>
@@ -76,19 +76,17 @@
                         </form>
                     {% endif %}
                 </div>
-                <table class="data-table">
-                    <tbody>
-                        <tr><th>ID</th><td>{{ user.id }}</td></tr>
-                        <tr><th>Full Name</th><td>{{ user.fullname }}</td></tr>
-                        <tr><th>Email</th><td>{{ user.email }}</td></tr>
-                        <tr><th>Phone</th><td>{{ user.phone or 'N/A' }}</td></tr>
-                        <tr><th>Province</th><td>{{ user.province or 'N/A' }}</td></tr>
-                        <tr><th>Municipality</th><td>{{ user.municipality or 'N/A' }}</td></tr>
-                        <tr><th>Barangay</th><td>{{ user.barangay or 'N/A' }}</td></tr>
-                        <tr><th>Created At</th><td>{{ user.created_at.strftime('%b %d, %Y %I:%M %p') if user.created_at else 'N/A' }}</td></tr>
-                        <tr><th>Account State</th><td>{{ 'Archived' if user.is_archived else ('Active' if user.is_active else 'Deactivated') }}</td></tr>
-                    </tbody>
-                </table>
+                <dl class="superadmin-profile-details">
+                    <div><dt>Account ID</dt><dd>#{{ user.id }}</dd></div>
+                    <div><dt>Full name</dt><dd>{{ user.fullname }}</dd></div>
+                    <div><dt>Email address</dt><dd>{{ user.email }}</dd></div>
+                    <div><dt>Phone number</dt><dd>{{ user.phone or 'Not provided' }}</dd></div>
+                    <div><dt>Province</dt><dd>{{ user.province or 'Not provided' }}</dd></div>
+                    <div><dt>Municipality</dt><dd>{{ user.municipality or 'Not provided' }}</dd></div>
+                    <div><dt>Barangay</dt><dd>{{ user.barangay or 'Not provided' }}</dd></div>
+                    <div><dt>Created</dt><dd>{{ user.created_at.strftime('%b %d, %Y %I:%M %p') if user.created_at else 'Not available' }}</dd></div>
+                    <div class="superadmin-profile-state"><dt>Account state</dt><dd><span class="badge">{{ 'Archived' if user.is_archived else ('Active' if user.is_active else 'Deactivated') }}</span></dd></div>
+                </dl>
             </div>
 
             <div class="panel superadmin-panel">
@@ -99,7 +97,7 @@
                     </div>
                     <span class="badge">{{ activity_items|length }} entries</span>
                 </div>
-                <table class="data-table">
+                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
                     <thead>
                         <tr>
                             <th>Type</th>
@@ -125,7 +123,7 @@
                             </tr>
                         {% endif %}
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </section>
 
@@ -138,7 +136,7 @@
                     </div>
                     <span class="badge">{{ scans|length }} scans</span>
                 </div>
-                <table class="data-table">
+                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
                     <thead>
                         <tr>
                             <th>Plot</th>
@@ -163,7 +161,7 @@
                             </tr>
                         {% endif %}
                     </tbody>
-                </table>
+                </table></div>
             </div>
 
             <div class="panel superadmin-panel">
@@ -174,7 +172,7 @@
                     </div>
                     <span class="badge">{{ feedback_entries|length + audit_logs|length }} records</span>
                 </div>
-                <table class="data-table">
+                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
                     <thead>
                         <tr>
                             <th>Source</th>
@@ -203,10 +201,11 @@
                             </tr>
                         {% endif %}
                     </tbody>
-                </table>
+                </table></div>
             </div>
         </section>
     </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

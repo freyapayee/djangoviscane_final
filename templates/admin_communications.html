@@ -1,124 +1,59 @@
 <!DOCTYPE html>
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>VISCANE | Communications & Support</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}">
+    <title>VISCANE | Communications</title>
 </head>
-<body class="admin-layout">
-    <div class="dashboard-bg"></div>
+<body class="admin-layout has-vis-sidebar ds-app vis-management-dashboard vis-admin-section vis-admin-comms">
+    {% include 'components/admin_navigation.html' %}
+    <header class="dashboard-header admin-section-header"><div class="header-content">
+        <div class="brand admin-section-heading"><div class="brand-icon"><ion-icon name="chatbubbles-outline"></ion-icon></div><div><p class="brand-title">Communications</p><p class="brand-subtitle">Publish farmer updates and review support feedback.</p></div></div>
+    </div></header>
 
-    <header class="dashboard-header">
-        <div class="header-content">
-            <div class="brand">
-                <div class="brand-icon">
-                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                </div>
-                <div>
-                    <p class="brand-title">Comms & Support</p>
-                    <p class="brand-subtitle">Announcements and farmer feedback</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
-                <a class="btn light" href="/admin">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    Admin
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <main class="dashboard-container fade-in">
-        {% if message %}
-            <div class="form-success">{{ message }}</div>
-        {% endif %}
-
-        <section class="section-grid two-col">
-            <form class="panel" method="POST">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Post Announcement</h3>
-                        <p class="panel-subtitle">Notify farmers of updates</p>
-                    </div>
-                    <button class="btn primary" type="submit">
-                        <ion-icon name="send-outline"></ion-icon>
-                        Publish
-                    </button>
-                </div>
-                <div class="stat-label">Title</div>
-                <input class="stat-input" type="text" name="title" required>
-                <div class="stat-label">Message</div>
-                <textarea class="stat-input" name="message" rows="4" required></textarea>
-            </form>
-
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Recent Announcements</h3>
-                        <p class="panel-subtitle">Last 10 broadcasts</p>
-                    </div>
-                </div>
-                <div class="results-grid">
-                    {% if notifications %}
-                        {% for note in notifications %}
-                            <div class="result-row">
-                                <div>
-                                    <div class="result-label">{{ note.title }}</div>
-                                    <div class="list-meta">{{ note.message }}</div>
-                                </div>
-                                <div class="list-meta">{{ note.created_at.strftime('%b %d, %I:%M %p') }}</div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="list-meta">No announcements yet.</div>
-                    {% endif %}
-                </div>
-            </div>
+    <main class="dashboard-container fade-in admin-section-workspace">
+        <div class="admin-alerts" aria-live="polite">{% if message %}<div class="form-success"><ion-icon name="checkmark-circle-outline"></ion-icon>{{ message }}</div>{% endif %}{% if error %}<div class="form-error"><ion-icon name="alert-circle-outline"></ion-icon>{{ error }}</div>{% endif %}</div>
+        <section class="admin-summary-grid three-up" aria-label="Communication summary">
+            <article class="admin-summary-card"><span class="admin-summary-icon is-blue"><ion-icon name="megaphone-outline"></ion-icon></span><div><p>Announcements</p><strong>{{ total_announcements }}</strong><small>Published broadcasts</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-violet"><ion-icon name="chatbox-ellipses-outline"></ion-icon></span><div><p>Farmer feedback</p><strong>{{ total_feedback }}</strong><small>Support messages received</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-green"><ion-icon name="people-outline"></ion-icon></span><div><p>Active recipients</p><strong>{{ active_recipients }}</strong><small>Farmers with account access</small></div></article>
         </section>
 
-        <section class="panel">
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title">Farmer Feedback</h3>
-                    <p class="panel-subtitle">Support requests and suggestions</p>
-                </div>
-                <span class="badge"><ion-icon name="chatbubbles-outline"></ion-icon>{{ feedback|length }} messages</span>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Farmer</th>
-                        <th>Message</th>
-                        <th>Received</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if feedback %}
-                        {% for entry in feedback %}
-                            <tr>
-                                <td>{{ entry.farmer_label }}</td>
-                                <td>{{ entry.message }}</td>
-                                <td>{{ entry.created_at.strftime('%b %d, %I:%M %p') }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="3">No feedback submitted yet.</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+        <section class="communications-grid">
+            <article class="panel compose-panel"><div class="admin-panel-heading"><div><span class="admin-eyebrow">New broadcast</span><h2 class="panel-title">Post Announcement</h2><p class="panel-subtitle">Send an operational update to the farmer community.</p></div><span class="admin-panel-icon"><ion-icon name="send-outline"></ion-icon></span></div>
+                <form method="POST" id="announcement-form" class="announcement-form">{{ csrf_input }}
+                    <label class="admin-form-field"><span>Announcement title <em>Required</em></span><input type="text" name="title" id="announcement-title" placeholder="e.g. Scheduled system maintenance" required></label>
+                    <label class="admin-form-field"><span>Message <em>Required</em></span><textarea name="message" id="announcement-message" rows="6" placeholder="Write a clear, actionable message for farmers…" required></textarea><small><span id="announcement-character-count">0</span> characters</small></label>
+                    <div class="announcement-form-footer"><p><ion-icon name="information-circle-outline"></ion-icon>Review the message before publishing. Announcements appear immediately.</p><button class="btn primary" id="open-publish-confirmation" type="button"><ion-icon name="send-outline"></ion-icon>Review & publish</button></div>
+                </form>
+            </article>
+
+            <article class="panel announcements-panel"><div class="admin-panel-heading"><div><span class="admin-eyebrow">Broadcast history</span><h2 class="panel-title">Recent Announcements</h2><p class="panel-subtitle">The eight most recent farmer updates.</p></div><span class="admin-panel-icon"><ion-icon name="megaphone-outline"></ion-icon></span></div>
+                {% if notifications %}<div class="announcement-list">{% for note in notifications %}<article class="announcement-item"><span class="announcement-item-icon"><ion-icon name="notifications-outline"></ion-icon></span><div><div><strong>{{ note.title }}</strong><time>{{ note.created_at.strftime('%b %d, %Y · %I:%M %p') }}</time></div><p>{{ note.message }}</p></div></article>{% endfor %}</div>
+                {% else %}<div class="admin-empty-state compact"><span><ion-icon name="megaphone-outline"></ion-icon></span><h3>No announcements yet</h3><p>Your published broadcasts will appear here.</p></div>{% endif %}
+            </article>
         </section>
 
-        <div class="footer-link">VISCANE Admin | Communications & Support</div>
+        <section class="panel admin-data-panel feedback-directory">
+            <div class="admin-panel-heading"><div><span class="admin-eyebrow">Farmer inbox</span><h2 class="panel-title">Feedback & Support</h2><p class="panel-subtitle">{{ page_obj.paginator.count }} message{% if page_obj.paginator.count != 1 %}s{% endif %} match the current view.</p></div>
+                <form class="admin-inline-search" method="GET" action="/admin/communications"><label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search feedback</span><input type="search" name="search" value="{{ search }}" placeholder="Search farmer or message"></label>{% if search %}<a class="btn ghost" href="/admin/communications">Clear</a>{% endif %}<button class="btn primary" type="submit">Search</button></form>
+            </div>
+            {% if feedback %}<div class="feedback-list">{% for entry in feedback %}<article class="feedback-item"><span class="feedback-avatar">{{ entry.farmer_label[:1]|upper }}</span><div class="feedback-copy"><div><strong>{{ entry.farmer_label }}</strong><time datetime="{{ entry.created_at.isoformat() }}">{{ entry.created_at.strftime('%b %d, %Y · %I:%M %p') }}</time></div><p>{{ entry.message }}</p></div></article>{% endfor %}</div>{% include 'components/admin_pagination.html' %}
+            {% else %}<div class="admin-empty-state"><span><ion-icon name="chatbubbles-outline"></ion-icon></span><h3>No feedback found</h3><p>{% if search %}No messages match “{{ search }}”.{% else %}Farmer feedback and support requests will appear here.{% endif %}</p>{% if search %}<a class="btn ghost" href="/admin/communications">Clear search</a>{% endif %}</div>{% endif %}
+        </section>
+        <div class="footer-link">VISCANE Admin · Communications</div>
     </main>
-    {% include 'hiligaynon_runtime.html' %}
-</body>
-</html>
+
+    <div class="dashboard-modal publish-confirmation-modal" id="publish-confirmation-modal" aria-hidden="true"><div class="dashboard-modal-backdrop" data-close-publish-modal></div><div class="dashboard-modal-card panel" role="dialog" aria-modal="true" aria-labelledby="publish-modal-title"><button class="dashboard-modal-close admin-modal-close-dark" type="button" data-close-publish-modal aria-label="Close"><ion-icon name="close-outline"></ion-icon></button><span class="publish-modal-icon"><ion-icon name="megaphone-outline"></ion-icon></span><h2 class="panel-title" id="publish-modal-title">Publish this announcement?</h2><p>The message will be visible to active farmers immediately.</p><div class="publish-preview"><strong id="publish-preview-title"></strong><span id="publish-preview-message"></span></div><div class="admin-reset-actions"><button class="btn ghost" type="button" data-close-publish-modal>Cancel</button><button class="btn primary" type="button" id="confirm-publish"><ion-icon name="send-outline"></ion-icon>Publish announcement</button></div></div></div>
+    <script>
+    (() => {
+        const form = document.getElementById('announcement-form'); const title = document.getElementById('announcement-title'); const message = document.getElementById('announcement-message'); const modal = document.getElementById('publish-confirmation-modal'); const count = document.getElementById('announcement-character-count');
+        message?.addEventListener('input', () => { count.textContent = message.value.length; });
+        document.getElementById('open-publish-confirmation')?.addEventListener('click', () => { if (!form.reportValidity()) return; document.getElementById('publish-preview-title').textContent = title.value; document.getElementById('publish-preview-message').textContent = message.value; modal.classList.add('is-open'); modal.setAttribute('aria-hidden', 'false'); document.body.classList.add('modal-open'); });
+        const close = () => { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('modal-open'); };
+        document.querySelectorAll('[data-close-publish-modal]').forEach((button) => button.addEventListener('click', close)); document.getElementById('confirm-publish')?.addEventListener('click', () => form.submit()); document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+    })();
+    </script>
+    {% include 'hiligaynon_runtime.html' %}<script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+</body></html>

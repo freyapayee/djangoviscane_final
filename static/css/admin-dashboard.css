@@ -1,0 +1,1225 @@
+/* Admin and superadmin workspaces share the farmer dashboard's quiet canvas. */
+body.ds-app.vis-management-dashboard,
+body.ds-app.vis-management-dashboard.superadmin-layout {
+    background: #f3f8f6;
+    color: #142735;
+    overflow-x: hidden;
+}
+
+body.ds-app.vis-management-dashboard .vis-admin-sidebar {
+    background: #fff;
+    border-right-color: #e4ede7;
+    box-shadow: 2px 0 20px rgba(32, 72, 44, .035);
+}
+
+body.ds-app.vis-management-dashboard .admin-sidebar-brand {
+    padding: 0 8px 18px;
+    border-bottom: 1px solid #edf2ee;
+}
+
+body.ds-app.vis-management-dashboard .admin-sidebar-context {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 4px 4px;
+    padding: 11px;
+    border: 1px solid #e4eee6;
+    border-radius: 12px;
+    background: #f7faf8;
+}
+
+body.ds-app.vis-management-dashboard .admin-context-icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: 9px;
+    background: #e6f4e9;
+    color: #17743d;
+    font-size: 18px;
+}
+
+body.ds-app.vis-management-dashboard .admin-context-icon ion-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    display: block;
+    margin: 0;
+    flex: 0 0 18px;
+    transform: translate(-50%, -50%);
+}
+
+body.ds-app.vis-management-dashboard .admin-sidebar-context div { min-width: 0; }
+body.ds-app.vis-management-dashboard .admin-sidebar-context strong,
+body.ds-app.vis-management-dashboard .admin-sidebar-context span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.ds-app.vis-management-dashboard .admin-sidebar-context strong { color: #243d31; font-size: 12px; }
+body.ds-app.vis-management-dashboard .admin-sidebar-context div span { margin-top: 2px; color: #78887f; font-size: 10px; }
+body.ds-app.vis-management-dashboard .vis-nav-label { margin: 18px 12px 7px; color: #89968f; font-size: 10px; font-weight: 750; letter-spacing: .08em; }
+body.ds-app.vis-management-dashboard .vis-admin-nav { gap: 4px; }
+body.ds-app.vis-management-dashboard .vis-admin-nav a { min-height: 44px; padding: 9px 11px; border-radius: 10px; color: #40544a; font-size: 13px; font-weight: 600; }
+body.ds-app.vis-management-dashboard .vis-admin-nav a ion-icon { font-size: 18px; }
+body.ds-app.vis-management-dashboard .vis-admin-nav a:hover,
+body.ds-app.vis-management-dashboard .vis-admin-nav a.is-active { background: #e8f3ea; color: #176d39; }
+body.ds-app.vis-management-dashboard .vis-admin-sidebar-footer { padding-top: 12px; border-top: 1px solid #edf2ee; }
+
+body.ds-app.vis-management-dashboard .dashboard-header,
+body.ds-app.vis-management-dashboard.superadmin-layout .dashboard-header {
+    width: min(1180px, 100%);
+    margin: 8px auto 22px;
+    padding: 8px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.ds-app.vis-management-dashboard .header-content {
+    align-items: center;
+    gap: 16px 24px;
+}
+
+body.ds-app.vis-management-dashboard .brand-title {
+    margin: 0 0 3px;
+    color: #142735;
+    font-size: clamp(24px, 3vw, 30px);
+    letter-spacing: -.035em;
+}
+
+body.ds-app.vis-management-dashboard .brand-subtitle {
+    color: #687789 !important;
+    font-size: 14px;
+    opacity: 1;
+}
+
+body.ds-app.vis-management-dashboard .header-actions {
+    align-items: center;
+    gap: 8px;
+}
+
+body.ds-app.vis-management-dashboard .admin-console-language { position: relative; margin: 0; }
+body.ds-app.vis-management-dashboard .admin-console-language details { position: relative; }
+body.ds-app.vis-management-dashboard .admin-console-language summary {
+    min-width: 86px; height: 44px; padding: 0 12px; display: flex;
+    align-items: center; justify-content: center; gap: 7px;
+    border: 1px solid #dbe7de; border-radius: 999px;
+    background: #fff; color: #277544; box-shadow: none;
+    list-style: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+body.ds-app.vis-management-dashboard .admin-console-language summary::-webkit-details-marker { display: none; }
+body.ds-app.vis-management-dashboard .admin-console-language summary::marker { content: ""; }
+body.ds-app.vis-management-dashboard .admin-console-language summary svg {
+    width: 18px; height: 18px; fill: none; stroke: currentColor;
+    stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+body.ds-app.vis-management-dashboard .admin-console-language summary span {
+    font-size: 13px; font-weight: 750; letter-spacing: .04em;
+}
+body.ds-app.vis-management-dashboard .admin-console-language summary ion-icon {
+    width: 14px; height: 14px; transition: transform .2s ease;
+}
+body.ds-app.vis-management-dashboard .admin-console-language details[open] summary {
+    background: #eaf5ec; border-color: #b9d8c0;
+}
+body.ds-app.vis-management-dashboard .admin-console-language details[open] summary ion-icon { transform: rotate(180deg); }
+body.ds-app.vis-management-dashboard .admin-language-menu {
+    position: absolute; top: 50px; right: 0; z-index: 150; width: 178px; padding: 6px;
+    border: 1px solid #dbe7de; border-radius: 13px; background: #fff;
+    box-shadow: 0 12px 28px rgba(20,55,31,.16);
+}
+body.ds-app.vis-management-dashboard .admin-language-menu button {
+    width: 100%; min-height: 42px; padding: 8px 11px; display: flex;
+    align-items: center; justify-content: space-between; border: 0; border-radius: 8px;
+    background: transparent; color: #243d31; font-family: inherit;
+    font-size: 13px; font-weight: 650; text-align: left; cursor: pointer;
+}
+body.ds-app.vis-management-dashboard .admin-language-menu button:hover,
+body.ds-app.vis-management-dashboard .admin-language-menu button.is-selected {
+    background: #e8f3ea; color: #176d39;
+}
+
+body.ds-app.vis-management-dashboard .header-actions :is(.btn, .status-pill) {
+    min-height: 44px;
+    padding: 9px 13px;
+    border: 1px solid #dbe7de;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: none;
+    color: #277544;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.ds-app.vis-management-dashboard .header-actions .status-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #e7f5e9;
+    border-color: #e7f5e9;
+}
+
+body.ds-app.vis-management-dashboard .header-actions .btn:hover {
+    background: #e7f5e9;
+    border-color: #b5d6bd;
+    transform: translateY(-2px);
+}
+
+body.ds-app.vis-management-dashboard .dashboard-container,
+body.ds-app.vis-management-dashboard.superadmin-layout .dashboard-container {
+    width: min(1180px, 100%);
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 0 112px;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-stats .stat-card {
+    min-height: 148px;
+}
+
+body.ds-app.vis-superadmin-user-details .section-grid.two-col {
+    align-items: start;
+    gap: 20px;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-panel {
+    margin: 0;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-profile-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 24px;
+    margin: 0;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-profile-details > div {
+    min-width: 0;
+    padding: 14px 0;
+    border-bottom: 1px solid #e7eee9;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-profile-details dt {
+    margin-bottom: 4px;
+    color: #7a8980;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-profile-details dd {
+    margin: 0;
+    color: #243a2e;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-superadmin-user-details .superadmin-profile-details .superadmin-profile-state {
+    grid-column: 1 / -1;
+    border-bottom: 0;
+}
+
+body.ds-app.vis-superadmin-overview .superadmin-table-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.ds-app.vis-superadmin-overview .superadmin-table-actions form { margin: 0; }
+
+@media (max-width: 700px) {
+    body.ds-app.vis-superadmin-user-details .superadmin-profile-details { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-superadmin-user-details .superadmin-profile-details .superadmin-profile-state { grid-column: auto; }
+}
+
+body.ds-app.vis-management-dashboard .stats-grid:not(.assessment-grid) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+body.ds-app.vis-management-dashboard :is(.panel, .stat-card, .vis-health-item),
+body.ds-app.vis-management-dashboard .superadmin-stats .stat-card {
+    background: #fff;
+    border: 1px solid #eaf0eb;
+    border-radius: 18px;
+    box-shadow: 0 5px 20px rgba(35, 74, 51, .045);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+body.ds-app.vis-management-dashboard .stat-card {
+    min-height: 156px;
+    padding: 20px;
+    justify-content: flex-start;
+}
+
+body.ds-app.vis-management-dashboard .stat-card::after { display: none; }
+body.ds-app.vis-management-dashboard .stat-label,
+body.ds-app.vis-management-dashboard .superadmin-stats .stat-label {
+    color: #506474;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+body.ds-app.vis-management-dashboard .stat-value,
+body.ds-app.vis-management-dashboard .superadmin-stats .stat-value {
+    color: #142735;
+    font-size: clamp(26px, 3vw, 32px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard .stat-value-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 2px 10px;
+}
+
+body.ds-app.vis-management-dashboard .stat-trend {
+    text-align: left;
+    color: #278047;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard .stat-meta {
+    color: #617185 !important;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.ds-app.vis-management-dashboard .panel {
+    margin-bottom: 20px;
+    padding: 24px;
+}
+
+body.ds-app.vis-management-dashboard .panel-title { font-size: 20px; }
+body.ds-app.vis-management-dashboard .panel-subtitle { margin: 5px 0 0; }
+body.ds-app.vis-management-dashboard .vis-section-kicker { color: #238247; }
+body.ds-app.vis-management-dashboard .vis-meter { accent-color: #168b41; }
+body.ds-app.vis-management-dashboard .vis-meter.is-blue { accent-color: #2987d7; }
+body.ds-app.vis-management-dashboard .action-tile,
+body.ds-app.vis-management-dashboard .superadmin-tools .action-tile {
+    background: #f3f9f4;
+    border: 1px solid #e3eee5;
+    box-shadow: none;
+}
+
+body.ds-app.vis-management-dashboard .action-tile:hover {
+    background: #e9f5ec;
+    border-color: #a8d3b4;
+}
+
+body.ds-app.vis-management-dashboard .vis-health-item {
+    background: #f8fbf9;
+    box-shadow: none;
+}
+
+/* Management pages: generous form space, contained tables, and clear settings. */
+body.ds-app.vis-management-dashboard .panel-header {
+    align-items: flex-start;
+    gap: 12px 18px;
+}
+
+body.ds-app.vis-management-dashboard .panel-header > div { min-width: 0; }
+body.ds-app.vis-management-dashboard .panel-header .badge { flex: 0 0 auto; }
+body.ds-app.vis-management-dashboard .ds-table-scroll {
+    width: 100%;
+    border: 1px solid #e8f0ea;
+    background: #fff;
+}
+
+body.ds-app.vis-management-dashboard .data-table th {
+    padding: 13px 16px;
+    background: #f2f8f4;
+    color: #496158;
+    font-size: 12px;
+    line-height: 1.35;
+    letter-spacing: .025em;
+    vertical-align: middle;
+}
+
+body.ds-app.vis-management-dashboard .data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #edf2ef;
+    color: #253b32;
+    font-size: 13px;
+    line-height: 1.45;
+    vertical-align: middle;
+}
+
+body.ds-app.vis-management-dashboard .data-table tr:last-child td {
+    box-shadow: none;
+    filter: none;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-table-page .data-table {
+    min-width: 880px;
+}
+
+/* Scoped reports: turn the data table into a concise analytics workspace. */
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-overview {
+    margin-bottom: 20px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 18px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-section-heading h1 {
+    margin: 3px 0 5px;
+    font-size: clamp(22px, 3vw, 28px);
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-section-heading p { margin: 0; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-section-heading > div > p:last-child { color: #687789; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .vis-section-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-updated {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+    color: #687789;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-updated ion-icon { color: #238247; font-size: 22px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-updated strong { color: #253b32; font-weight: 700; }
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    min-width: 0;
+    padding: 19px;
+    background: #fff;
+    border: 1px solid #e5ede7;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(36, 66, 45, .045);
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 12px;
+    font-size: 21px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-icon.is-green { color: #168b41; background: #e8f6ec; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-icon.is-blue { color: #2479bd; background: #eaf4fb; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-icon.is-amber { color: #a86e08; background: #fff5dc; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-icon.is-violet { color: #7355ad; background: #f1edfa; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card > div:last-child { min-width: 0; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card span,
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card small { display: block; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card span { color: #607269; font-size: 12px; font-weight: 700; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card strong {
+    display: block;
+    margin: 3px 0 2px;
+    color: #142735;
+    font-size: clamp(22px, 2.5vw, 28px);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card small { color: #819087; font-size: 11px; line-height: 1.35; }
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-insight-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, .8fr);
+    gap: 20px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-insight-grid > .panel { min-height: 290px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .panel-header-icon { color: #238247; font-size: 24px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-location-list { display: grid; gap: 17px; margin-top: 22px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-location-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 7px;
+    color: #607269;
+    font-size: 12px;
+}
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-location-meta div span { display: block; margin-top: 2px; color: #819087; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-location-meta strong { color: #253b32; font-size: 13px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-progress { height: 7px; overflow: hidden; background: #edf3ef; border-radius: 999px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-progress span { display: block; height: 100%; background: linear-gradient(90deg, #1e8b46, #67b77d); border-radius: inherit; }
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-highlight-panel {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #183f2a, #23633b);
+    color: #fff;
+}
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-highlight-panel::after {
+    content: "";
+    position: absolute;
+    right: -38px;
+    top: -38px;
+    width: 145px;
+    height: 145px;
+    border: 28px solid rgba(255, 255, 255, .055);
+    border-radius: 50%;
+}
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, .13);
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 13px;
+    color: #f6cf67;
+    font-size: 23px;
+}
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-highlight-panel .vis-section-kicker { color: #a9d9b6; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-highlight-panel h2 { margin: 5px 0 3px; color: #fff; font-size: 22px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-highlight-panel > p { margin: 0; color: #c5ddcc; font-size: 13px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-stats div { padding: 12px; background: rgba(255, 255, 255, .09); border-radius: 11px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-stats strong,
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-stats span { display: block; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-stats strong { font-size: 19px; overflow-wrap: anywhere; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .report-highlight-stats span { margin-top: 2px; color: #c5ddcc; font-size: 10px; }
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-table-panel .panel-header { margin-bottom: 18px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-farmer-name { color: #1d4930; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-count-pill {
+    display: inline-grid;
+    place-items: center;
+    min-width: 30px;
+    height: 26px;
+    padding: 0 8px;
+    background: #e9f5ec;
+    border-radius: 999px;
+    color: #19753a;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 390px;
+    padding: 52px 24px 32px;
+    border: 1px dashed #cadbd0;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fbfdfc, #f4f9f6);
+    text-align: center;
+}
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-icon { display: grid; place-items: center; width: 66px; height: 66px; background: #e5f3e9; border-radius: 18px; color: #238247; font-size: 31px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-state h2 { margin: 18px 0 6px; font-size: 21px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-state > p { max-width: 480px; margin: 0 0 20px; color: #687789; font-size: 14px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-steps { display: flex; align-items: center; gap: 12px; margin-top: 36px; color: #607269; font-size: 11px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-steps span { display: flex; align-items: center; gap: 7px; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-steps b { display: grid; place-items: center; width: 22px; height: 22px; background: #dfeee3; border-radius: 50%; color: #1c7138; }
+body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-steps > ion-icon { color: #9eb0a4; }
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .farmer-management-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .farmer-management-side,
+body.ds-app.vis-management-dashboard.vis-admin-farmers .account-actions-panel { min-width: 0; }
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .farmer-management-side { gap: 20px; }
+body.ds-app.vis-management-dashboard.vis-admin-farmers .farmer-management-side .panel { margin: 0; }
+body.ds-app.vis-management-dashboard.vis-admin-farmers .create-farmer-panel .panel-header { margin-bottom: 20px; }
+body.ds-app.vis-management-dashboard.vis-admin-farmers .create-farmer-panel .stat-label {
+    margin: 16px 0 7px;
+    color: #345349;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .025em;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .create-farmer-panel .stat-input {
+    height: 48px;
+    min-height: 48px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    margin: 0 0 20px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row .stat-input {
+    grid-column: 1;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row .btn {
+    grid-column: 2;
+    width: auto;
+    min-height: 48px;
+    height: 48px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .account-actions-panel .data-table {
+    min-width: 980px;
+    table-layout: auto;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .deactivated-accounts-panel .data-table {
+    min-width: 440px;
+    table-layout: auto;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .account-actions-panel .data-table th {
+    font-size: 11px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .account-actions-panel .data-table td {
+    font-size: 12px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .account-actions-panel .actions-cell {
+    width: 210px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-action-row {
+    justify-content: flex-start;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .dashboard-container {
+    max-width: 820px;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .dashboard-header {
+    max-width: 820px;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .superadmin-panel {
+    padding: clamp(20px, 4vw, 32px);
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .superadmin-panel > .stat-label {
+    display: block;
+    margin: 22px 0 8px;
+    color: #345349;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .superadmin-panel > .stat-helper {
+    color: #65786e;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .checkbox-row {
+    min-height: 52px;
+    margin-top: 24px;
+    padding: 12px 14px;
+    border: 1px solid #deebe0;
+    border-radius: 12px;
+    background: #f5faf6;
+    color: #203f2e;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings .checkbox-row input {
+    width: 20px;
+    height: 20px;
+    accent-color: #168b41;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings input[type="file"].stat-input {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 52px;
+    padding: 12px;
+    border: 1px dashed #b9d9c2;
+    border-radius: 12px;
+    background: #f8fbf9;
+    color: #365345 !important;
+    line-height: 1.5;
+}
+
+body.ds-app.vis-management-dashboard.vis-management-settings input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #e3f2e6;
+    color: #216c3a;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .section-grid.two-col {
+    gap: 20px;
+    align-items: start;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .section-grid.two-col > .panel {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .announcement-panel .stat-label {
+    display: block;
+    margin: 18px 0 8px;
+    color: #345349;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .announcement-panel textarea.stat-input {
+    min-height: 150px;
+    resize: vertical;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .results-grid {
+    gap: 10px;
+    margin-top: 16px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .result-row {
+    align-items: flex-start;
+    gap: 8px 16px;
+    padding: 15px 16px;
+    border: 1px solid #e3eee5;
+    border-radius: 12px;
+    background: #f7fbf8;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .result-row > div:first-child { min-width: 0; }
+body.ds-app.vis-management-dashboard.vis-admin-comms .result-row .result-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #203b2d;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.35;
+    text-transform: none;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .result-row .list-meta {
+    color: #65786e !important;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .result-row > .list-meta {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .feedback-panel .data-table {
+    min-width: 620px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-comms .feedback-panel .data-table td:nth-child(2) {
+    min-width: 280px;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-models .model-panel {
+    max-width: 820px;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-models .model-panel > .stat-label {
+    margin: 22px 0 8px;
+    color: #345349;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-models .model-panel > .stat-label + .stat-helper {
+    padding: 16px;
+    border: 1px solid #dfece2;
+    border-radius: 12px;
+    background: #f5faf6;
+    color: #254334;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard.vis-admin-models .model-panel > .stat-helper:last-child {
+    color: #65786e;
+    font-size: 13px;
+}
+
+/* Superadmin overview, analytics and audit use the same workspace geometry. */
+body.ds-app.vis-management-dashboard.vis-superadmin-overview form[action="/superadmin/admins/create"] {
+    display: grid;
+    gap: 12px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview form[action="/superadmin/admins/create"] .stat-label {
+    margin-bottom: 2px;
+    color: #345349;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview form[action="/superadmin/admins/create"] .btn {
+    justify-self: start;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px 12px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 16px;
+    border: 1px solid #e1ebe4;
+    border-radius: 14px;
+    background: #f9fbfa;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-icon-badge {
+    grid-column: 1;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 19px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-list-main {
+    grid-column: 2;
+    min-width: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-list-main strong {
+    margin-bottom: 3px;
+    color: #203d2d;
+    font-size: 13px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-list-main .list-meta {
+    color: #687a70 !important;
+    font-size: 10.5px;
+    line-height: 1.45;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-list-main .list-meta,
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-list-main strong {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-action-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid #e4ece6;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-form {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    width: min(100%, 290px);
+    margin: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-form .superadmin-tag-select {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 34px 8px 12px;
+    border-radius: 10px;
+    background: #fff;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-form .superadmin-tag {
+    justify-self: stretch;
+    min-height: 42px;
+    padding: 9px 16px;
+    border-radius: 9px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-archive-form {
+    justify-self: end;
+    margin: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-archive-form .superadmin-tag {
+    width: 74px;
+    min-height: 42px;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+@media (max-width: 520px) {
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row { padding: 14px; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-action-row { grid-template-columns: 1fr; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-form {
+        width: 100%;
+    }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-archive-form {
+        justify-self: stretch;
+    }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-archive-form .superadmin-tag { width: 100%; }
+}
+
+/* Superadmin scan gallery: readable, fixed-size review cards. */
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-cv-gallery-panel {
+    padding: 24px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
+    align-items: stretch;
+    gap: 18px;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-item {
+    display: flex;
+    min-width: 0;
+    min-height: 430px;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid #dce8df;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(32, 70, 47, 0.08);
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-item:hover {
+    transform: translateY(-2px);
+    filter: none;
+    border-color: #afd1b7;
+    box-shadow: 0 14px 30px rgba(32, 70, 47, 0.13);
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-media {
+    position: relative;
+    height: 220px;
+    flex: 0 0 220px;
+    overflow: hidden;
+    background: #eef5ef;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-item .superadmin-scan-media img {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+    object-fit: cover;
+    object-position: center;
+    background: #eef5ef !important;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-item:hover .superadmin-scan-media img {
+    transform: scale(1.025);
+    filter: none;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-number {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    color: #fff;
+    background: rgba(20, 45, 29, 0.78);
+    box-shadow: 0 3px 10px rgba(15, 37, 22, 0.16);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(6px);
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-item .superadmin-scan-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    color: #263b2e;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-result {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-label {
+    display: block;
+    margin-bottom: 3px;
+    color: #718178;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-result h4 {
+    margin: 0;
+    color: #173c25;
+    font-size: 18px;
+    line-height: 1.25;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-maturity-chip {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 5px;
+    max-width: 48%;
+    padding: 6px 9px;
+    border: 1px solid #c9e4cf;
+    border-radius: 999px;
+    color: #28723d;
+    background: #edf8ef;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-maturity-chip ion-icon {
+    flex: 0 0 auto;
+    font-size: 14px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px 16px;
+    margin: 0;
+    padding-top: 15px;
+    border-top: 1px solid #e6eee8;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-details > div {
+    min-width: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-details .superadmin-scan-file {
+    grid-column: 1 / -1;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-details dt {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+    color: #6b7c71;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-details dt ion-icon {
+    color: #3f8a53;
+    font-size: 13px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-details dd {
+    margin: 0;
+    overflow: hidden;
+    color: #263b2e;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-file dd {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-empty {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    min-height: 210px;
+    padding: 34px;
+    place-content: center;
+    border: 1px dashed #cbdacf;
+    border-radius: 16px;
+    color: #6a7b70;
+    background: #f8fbf8;
+    text-align: center;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-empty ion-icon {
+    color: #4c9560;
+    font-size: 34px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-empty strong {
+    color: #264632;
+    font-size: 15px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-empty span {
+    max-width: 430px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-cv-gallery-panel { padding: 18px; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-grid { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-gallery-item { min-height: 0; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-media { height: 205px; flex-basis: 205px; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-scan-result { align-items: center; }
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .ds-table-scroll .data-table {
+    min-width: 780px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-analytics .stats-grid:not(.assessment-grid) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-analytics .stat-card {
+    min-height: 154px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-analytics .stat-value {
+    overflow-wrap: anywhere;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-analytics .ds-table-scroll .data-table {
+    min-width: 820px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-audit .ds-table-scroll .data-table {
+    min-width: 680px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-audit .data-table td:last-child {
+    min-width: 300px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 1280px) {
+    body.ds-app.vis-management-dashboard .stats-grid:not(.assessment-grid) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    body.ds-app.vis-management-dashboard.vis-admin-farmers .farmer-management-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .reports-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    body.ds-app.vis-management-dashboard.vis-superadmin-analytics .stats-grid:not(.assessment-grid) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    body.ds-app.vis-management-dashboard .vis-admin-sidebar { display: none; }
+    body.ds-app.vis-management-dashboard .vis-admin-bottom-nav { display: grid; }
+    body.ds-app.vis-management-dashboard .vis-admin-bottom-nav { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding: 6px; }
+    body.ds-app.vis-management-dashboard.superadmin-layout .vis-admin-bottom-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    body.ds-app.vis-management-dashboard .vis-admin-bottom-nav a { min-width: 0; min-height: 52px; padding: 5px 2px; font-size: 9px; }
+    body.ds-app.vis-management-dashboard .vis-admin-bottom-nav a ion-icon { font-size: 18px; }
+    body.ds-app.vis-management-dashboard .dashboard-header .brand-icon {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        border-radius: 12px;
+        background: #e7f5e9;
+    }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .reports-insight-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 600px) {
+    body.ds-app.vis-management-dashboard .dashboard-header { margin-top: 0; }
+    body.ds-app.vis-management-dashboard .header-actions { width: 100%; }
+    body.ds-app.vis-management-dashboard .header-actions :is(.btn, .status-pill) {
+        min-height: 42px;
+        padding: 8px 10px;
+    }
+    body.ds-app.vis-management-dashboard .stat-card { min-height: 140px; padding: 16px; }
+    body.ds-app.vis-management-dashboard .panel { padding: 18px; }
+    body.ds-app.vis-management-dashboard .vis-health-grid { grid-template-columns: 1fr; }
+    body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row .stat-input,
+    body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row .btn {
+        grid-column: 1;
+        width: 100%;
+    }
+    body.ds-app.vis-management-dashboard .panel-header { flex-wrap: wrap; }
+    body.ds-app.vis-management-dashboard.vis-admin-comms .result-row > .list-meta {
+        white-space: normal;
+    }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .reports-section-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .reports-kpi-grid { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .report-kpi-card { padding: 16px; }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-steps { align-items: flex-start; flex-direction: column; }
+    body.ds-app.vis-management-dashboard.vis-admin-reports .reports-empty-steps > ion-icon { display: none; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-analytics .stats-grid:not(.assessment-grid) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 390px) {
+    body.ds-app.vis-management-dashboard .stats-grid:not(.assessment-grid) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

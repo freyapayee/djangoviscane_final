@@ -1,0 +1,26 @@
+<form action="/i18n/setlang/" method="post" class="vis-landing-language">
+    {{ csrf_input }}
+    <input type="hidden" name="next" value="{{ request.get_full_path() }}">
+    <details class="vis-language-popover">
+        <summary aria-label="Choose language" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M3 12h18M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3Z"></path>
+            </svg>
+            <span>{{ 'HIL' if is_hiligaynon() else 'EN' }}</span>
+        </summary>
+        <button class="vis-language-backdrop" type="button" aria-label="Close language options" onclick="this.closest('details').removeAttribute('open')"></button>
+        <div class="vis-language-menu" role="dialog" aria-modal="true" aria-labelledby="vis-language-title">
+            <div class="vis-language-menu-header">
+                <strong id="vis-language-title">Choose language</strong>
+                <button type="button" aria-label="Close language options" onclick="this.closest('details').removeAttribute('open')">&#10005;</button>
+            </div>
+            <button type="submit" name="language" value="en"{% if not is_hiligaynon() %} class="is-selected" aria-current="true"{% endif %}>
+                <span>English</span><span aria-hidden="true">{% if not is_hiligaynon() %}&#10003;{% endif %}</span>
+            </button>
+            <button type="submit" name="language" value="hil"{% if is_hiligaynon() %} class="is-selected" aria-current="true"{% endif %}>
+                <span>Hiligaynon</span><span aria-hidden="true">{% if is_hiligaynon() %}&#10003;{% endif %}</span>
+            </button>
+        </div>
+    </details>
+</form>

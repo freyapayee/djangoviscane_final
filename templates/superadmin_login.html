@@ -2,20 +2,21 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Superadmin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-login-premium.css') }}?v=2">
 </head>
-<body>
-    <div class="card fade-in">
-        {% include 'farmer_language_switch.html' %}
-        <div style="text-align: center;">
-            <div style="background: #1E5BBF; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
-                <ion-icon name="shield-checkmark-outline" style="font-size: 30px;"></ion-icon>
+<body class="vis-auth-simple ds-app vis-admin-login-page vis-superadmin-login-page">
+    <main class="card fade-in" aria-labelledby="superadmin-login-title">
+
+        <div class="admin-login-header">
+            <div class="admin-login-icon-circle">
+                <svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#shield-checkmark-outline"></use></svg>
             </div>
-            <h2 style="margin: 15px 0 5px;">Superadmin Access</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 13px;">Restricted system governance</p>
+            <h1 id="superadmin-login-title" class="admin-login-title">Superadmin Access</h1>
+            <p class="admin-login-subtitle">Restricted system governance</p>
         </div>
 
         {% if error %}
@@ -26,28 +27,32 @@
         {% endif %}
 
         <form class="fade-in" method="POST" action="/superadmin-login">
-            <div class="input-wrapper">
-                <ion-icon name="person-outline"></ion-icon>
-                <input type="text" name="identifier" placeholder="Username or Email" required>
+            {{ csrf_input }}
+            <label class="ds-field-label" for="ds-superadmin_login-identifier">Username or Email</label>
+<div class="input-wrapper">
+                <svg viewBox="0 0 24 24" class="console-icon console-field-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#person-outline"></use></svg>
+                <input id="ds-superadmin_login-identifier" type="text" name="identifier" placeholder="Enter your username or email" autocomplete="username" required>
             </div>
-            <div class="input-wrapper">
-                <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" name="password" placeholder="Password" required>
-            </div>
+            <label class="ds-field-label" for="ds-superadmin_login-password">Password</label>
+<div class="input-wrapper">
+                <svg viewBox="0 0 24 24" class="console-icon console-field-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#lock-outline"></use></svg>
+                <input id="ds-superadmin_login-password" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-superadmin_login-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#eye-outline"></use><path class="console-eye-slash" d="m3 3 18 18"/></svg></button></div>
 
             <button type="submit" class="primary-btn">
-                Sign In as Superadmin
+                Sign In as Superadmin <span aria-hidden="true">&rarr;</span>
             </button>
         </form>
 
-        <div class="admin-login-link-row">
-            <a href="/superadmin-register" class="admin-login-link">Superadmin registration</a>
+        <div class="console-support-links is-single">
+            <a href="/superadmin-register" class="admin-login-link"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#person-outline"></use></svg>Superadmin registration</a>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
+        <div class="admin-login-footer">
             <a href="/admin-access" class="admin-login-back-link">&larr; Back to Admin Access</a>
         </div>
-    </div>
+    </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

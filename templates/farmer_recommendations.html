@@ -2,12 +2,16 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>VISCANE | Recommendations</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=2">
 </head>
-<body class="farmer-layout">
+<body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_recommendations">
+
     <div class="dashboard-bg"></div>
 
     <header class="dashboard-header">
@@ -23,7 +27,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
                 <div class="farmer-info-chip" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
@@ -96,5 +99,6 @@
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

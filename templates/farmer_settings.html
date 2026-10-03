@@ -2,12 +2,16 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Farmer Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=3">
 </head>
-<body class="farmer-layout">
+<body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_settings">
+
     <div class="dashboard-bg"></div>
 
     <header class="dashboard-header">
@@ -23,7 +27,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
                 <div class="farmer-info-chip" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
@@ -36,26 +39,18 @@
         </div>
     </header>
 
-    <main class="dashboard-container fade-in farmer-mobile-shell">
-        {% if success %}
-            <div class="form-success">{{ farmer_text(success) }}</div>
-        {% endif %}
-        {% if error %}
-            <div class="form-error">{{ farmer_text(error) }}</div>
-        {% endif %}
-
-        <section class="section-grid two-col">
-            <form class="panel" method="POST">
+    <main class="dashboard-container farmer-mobile-shell">
+        {% include 'components/farmer_settings_language.html' %}
+        <div class="settings-layout">
+            <form class="panel settings-profile" method="POST">
+    {{ csrf_input }}
                 <div class="panel-header">
                     <div>
                         <h3 class="panel-title">{{ farmer_text('Profile Details') }}</h3>
                         <p class="panel-subtitle">{{ farmer_text('Update your registered email address and phone number') }}</p>
                     </div>
                     <input type="hidden" name="action" value="update_profile">
-                    <button class="btn primary" type="submit">
-                        <ion-icon name="save-outline"></ion-icon>
-                        {{ farmer_text('Update') }}
-                    </button>
+
                 </div>
 
                 <div class="profile-details-modern">
@@ -63,7 +58,8 @@
                         <span class="profile-detail-icon"><ion-icon name="person-outline"></ion-icon></span>
                         <span class="profile-detail-copy">
                             <span class="profile-detail-label">{{ farmer_text('Full Name') }}</span>
-                            <input class="profile-detail-input is-readonly" type="text" value="{{ user.fullname }}" readonly>
+                            <input id="settings-fullname" class="profile-detail-input is-readonly" type="text" value="{{ user.fullname }}" readonly aria-describedby="fullname-help">
+                            <span id="fullname-help" class="settings-help">{{ farmer_text('Full name is read-only.') }}</span>
                         </span>
                     </label>
 
@@ -149,31 +145,45 @@
                         </span>
                     </label>
                 </div>
-            </form>
+            {% if request.POST.get('action') == 'update_profile' %}
+{% if success %}<div class="form-success" role="status">{{ farmer_text(success) }}</div>{% endif %}
+{% if error %}<div class="form-error" role="alert">{{ farmer_text(error) }}</div>{% endif %}
+{% endif %}<div class="settings-form-actions"><button class="btn primary" type="submit">
+                        <ion-icon name="save-outline"></ion-icon>
+                        {{ farmer_text('Update') }}
+                    </button></div></form>
 
-            <form class="panel" method="POST">
+            <div class="settings-side">
+            <form class="panel settings-password" method="POST">
+    {{ csrf_input }}
                 <div class="panel-header">
                     <div>
                         <h3 class="panel-title">{{ farmer_text('Password Update') }}</h3>
                         <p class="panel-subtitle">{{ farmer_text('Change your farmer portal password') }}</p>
                     </div>
                     <input type="hidden" name="action" value="update_password">
-                    <button class="btn primary" type="submit">
-                        <ion-icon name="save-outline"></ion-icon>
-                        {{ farmer_text('Update') }}
-                    </button>
+
                 </div>
 
-                <div class="stat-label">{{ farmer_text('Current Password') }}</div>
-                <input class="stat-input" type="password" name="current_password" required>
-                <div class="stat-label">{{ farmer_text('New Password') }}</div>
-                <input class="stat-input" type="password" name="new_password" required>
-                <div class="stat-label">{{ farmer_text('Confirm New Password') }}</div>
-                <input class="stat-input" type="password" name="confirm_password" required>
-            </form>
-        </section>
+                {% for field_name, field_label in [('current_password', 'Current Password'), ('new_password', 'New Password'), ('confirm_password', 'Confirm New Password')] %}
+                <div class="settings-password-field">
+                    <label class="stat-label" for="settings-{{ field_name }}">{{ farmer_text(field_label) }}</label>
+                    <div class="settings-password-control">
+                        <input id="settings-{{ field_name }}" class="stat-input" type="password" name="{{ field_name }}" autocomplete="{{ 'current-password' if field_name == 'current_password' else 'new-password' }}"{% if field_name != 'current_password' %} aria-describedby="password-help"{% endif %} required>
+                        <button type="button" class="vis-password-toggle" data-password-toggle="settings-{{ field_name }}" aria-label="Show password" aria-pressed="false"><span>Show</span></button>
+                    </div>
+                </div>
+                {% endfor %}
+                <p id="password-help" class="settings-help">{{ farmer_text('New password must be different from the current password.') }} {{ farmer_text('Enter the same new password in both fields.') }}</p>
+            {% if request.POST.get('action') == 'update_password' %}
+{% if success %}<div class="form-success" role="status">{{ farmer_text(success) }}</div>{% endif %}
+{% if error %}<div class="form-error" role="alert">{{ farmer_text(error) }}</div>{% endif %}
+{% endif %}<div class="settings-form-actions"><button class="btn primary" type="submit">
+                        <ion-icon name="save-outline"></ion-icon>
+                        {{ farmer_text('Update') }}
+                    </button></div></form>
 
-        <section class="panel">
+        <section class="panel settings-account">
             <div class="panel-header">
                 <div>
                     <h3 class="panel-title">{{ farmer_text('Account') }}</h3>
@@ -187,6 +197,8 @@
                 </a>
             </div>
         </section>
+            </div>
+        </div>
 
         <div class="footer-link">VISCANE {{ farmer_text('Farmer Portal') }} | {{ farmer_text('Account Settings') }}</div>
     </main>
@@ -211,5 +223,6 @@
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

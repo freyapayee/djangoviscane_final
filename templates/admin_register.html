@@ -6,16 +6,18 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
 </head>
-<body>
+<body class="vis-auth-simple ds-app">
+    {% include 'components/app_header.html' %}
     <div class="card fade-in">
-        {% include 'farmer_language_switch.html' %}
-        <div style="text-align: center;">
-            <div style="background: #1E5BBF; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+
+        <div class="admin-login-header">
+            <div class="admin-login-icon-circle">
                 <ion-icon name="person-add-outline" style="font-size: 30px;"></ion-icon>
             </div>
             <h2 style="margin: 15px 0 5px;">Admin Registration</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 13px;">Create an Admin or Superadmin account</p>
+            <p class="admin-login-subtitle">Create an Admin or Superadmin account</p>
         </div>
 
         {% if error %}
@@ -23,29 +25,35 @@
         {% endif %}
 
         <form class="fade-in" method="POST" action="/admin-register">
-            <div class="input-wrapper">
+            {{ csrf_input }}
+            <label class="ds-field-label" for="ds-admin_register-username">Username</label>
+<div class="input-wrapper">
                 <ion-icon name="person-outline"></ion-icon>
-                <input type="text" name="username" placeholder="Username" required>
+                <input id="ds-admin_register-username" type="text" name="username" placeholder="Username" required>
             </div>
-            <div class="input-wrapper">
+            <label class="ds-field-label" for="ds-admin_register-email">Email</label>
+<div class="input-wrapper">
                 <ion-icon name="mail-outline"></ion-icon>
-                <input type="email" name="email" placeholder="Email" required>
+                <input id="ds-admin_register-email" type="email" name="email" placeholder="Email" required>
             </div>
-            <div class="input-wrapper">
+            <label class="ds-field-label" for="ds-admin_register-role">Role</label>
+<div class="input-wrapper">
                 <ion-icon name="shield-checkmark-outline"></ion-icon>
-                <select name="role" required>
+                <select id="ds-admin_register-role" name="role" required>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Superadmin</option>
                 </select>
             </div>
-            <div class="input-wrapper">
+            <label class="ds-field-label" for="ds-admin_register-password">Password (min 8 chars)</label>
+<div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" name="password" placeholder="Password (min 8 chars)" required>
-            </div>
-            <div class="input-wrapper">
+                <input id="ds-admin_register-password" type="password" name="password" placeholder="Password (min 8 chars)" required>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
+            <label class="ds-field-label" for="ds-admin_register-confirm_password">Confirm Password</label>
+<div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-            </div>
+                <input id="ds-admin_register-confirm_password" type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-confirm_password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
 
             <button type="submit" class="primary-btn">
                 Create Account
@@ -57,5 +65,6 @@
         </div>
     </div>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

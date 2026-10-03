@@ -1,0 +1,194 @@
+/* Reference-led authentication composition; existing form behavior is unchanged. */
+body.ds-app.vis-auth-page {
+    --auth-motion-duration: .56s;
+    --auth-motion-ease: cubic-bezier(.22,1,.36,1);
+    position: relative;
+    isolation: isolate;
+    padding: 32px;
+    background: #dce9db;
+}
+body.ds-app.vis-auth-page::before {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    background: linear-gradient(115deg, rgba(18,48,25,.12), rgba(18,48,25,.04)), url('../background1.png') center / cover no-repeat;
+    transform: translateZ(0);
+    pointer-events: none;
+}
+body.ds-app.vis-auth-page .vis-auth-shell {
+    width: 100%; max-width: 1120px; min-height: calc(100svh - 64px);
+    grid-template-columns: minmax(0,1fr) minmax(0,1.04fr);
+    align-items: center; gap: 0; padding: 24px 0; margin: 0 auto;
+    transition: max-width var(--auth-motion-duration) var(--auth-motion-ease),
+        grid-template-columns var(--auth-motion-duration) var(--auth-motion-ease);
+}
+body.ds-app.vis-auth-page .vis-auth-intro {
+    position: relative; isolation: isolate; overflow: hidden;
+    padding: 44px 46px 60px; margin-right: -16px;
+    border-radius: 48px 0 110px 120px;
+    background: linear-gradient(140deg, rgba(255,255,248,.95), rgba(251,249,230,.91));
+    border: 1px solid rgba(255,255,255,.7);
+    box-shadow: 0 16px 48px rgba(21,49,24,.1);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    opacity: 1; transform: translateX(0); visibility: visible;
+    transition: opacity .3s ease, transform var(--auth-motion-duration) var(--auth-motion-ease),
+        padding var(--auth-motion-duration) var(--auth-motion-ease),
+        margin var(--auth-motion-duration) var(--auth-motion-ease),
+        border-width .3s ease, visibility 0s linear 0s;
+}
+body.ds-app.vis-auth-page .vis-auth-intro::after {
+    content: ''; position: absolute; z-index: -1; right: -70px; bottom: -110px;
+    width: 350px; height: 190px; border-radius: 50%; transform: rotate(-22deg);
+    background: linear-gradient(150deg, rgba(166,205,140,.4), rgba(205,229,174,.08));
+    box-shadow: -36px -14px 0 rgba(190,215,157,.18);
+}
+body.ds-app.vis-auth-page .vis-auth-intro .vis-brand { gap: 14px; }
+body.ds-app.vis-auth-page .vis-auth-intro .vis-brand-mark {
+    width: 52px; height: 52px; border-radius: 12px; mix-blend-mode: multiply;
+}
+body.ds-app.vis-auth-page .vis-auth-intro .vis-brand-name {
+    font-size: 23px; letter-spacing: -.02em; color: var(--ds-text);
+}
+body.ds-app.vis-auth-page .vis-auth-intro .vis-brand-tagline { font-size: 15px; }
+body.ds-app.vis-auth-page .vis-auth-intro h1 {
+    font-size: clamp(36px,3.4vw,48px); line-height: 1.08; letter-spacing: -.035em;
+    margin: 32px 0 18px; font-weight: 750;
+    max-width: 390px;
+}
+.auth-headline-accent { display: block; color: var(--ds-green); }
+body.ds-app.vis-auth-page .vis-auth-intro > p {
+    font-size: 18px; line-height: 1.55; color: #526171; margin: 0 0 24px;
+}
+body.ds-app.vis-auth-page .vis-auth-benefits { gap: 12px; }
+body.ds-app.vis-auth-page .vis-auth-benefit { gap: 16px; font-size: 18px; }
+body.ds-app.vis-auth-page .vis-auth-benefit ion-icon {
+    flex: 0 0 auto; box-sizing: content-box; width: 24px; height: 24px;
+    padding: 12px; border-radius: 50%; background: #e0ecd6;
+    box-shadow: 0 3px 8px rgba(45,84,42,.05);
+}
+body.ds-app.vis-auth-page .vis-auth-panel {
+    position: relative; z-index: 1; min-width: 0;
+    transition: transform var(--auth-motion-duration) var(--auth-motion-ease);
+}
+body.ds-app.vis-auth-page .vis-auth-shell.is-register {
+    max-width: 640px;
+    grid-template-columns: minmax(0,0fr) minmax(0,1fr);
+}
+body.ds-app.vis-auth-page .vis-auth-shell.is-register .vis-auth-intro {
+    padding-left: 0; padding-right: 0; margin-right: 0;
+    border-left-width: 0; border-right-width: 0;
+    opacity: 0; transform: translateX(-28px); visibility: hidden;
+    transition-delay: 0s, 0s, 0s, 0s, 0s, .38s;
+}
+body.ds-app.vis-auth-page .vis-auth-card {
+    padding: 28px 34px 30px; border-radius: 28px;
+    background: linear-gradient(145deg, rgba(255,255,255,.97), rgba(253,254,250,.95) 65%, rgba(244,247,226,.92));
+    border: 1px solid rgba(255,255,255,.8);
+    box-shadow: 0 20px 50px rgba(21,49,24,.19), inset 0 1px 0 white;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+body.ds-app.vis-auth-page .ds-entry-toolbar { margin-bottom: 12px; }
+body.ds-app.vis-auth-page .ds-entry-toolbar select {
+    width: 146px; border-radius: 20px; border-color: #e5eae4;
+    box-shadow: 0 2px 8px rgba(26,51,32,.09) !important;
+}
+body.ds-app.vis-auth-page .auth-logo-circle {
+    width: 64px; height: 64px; margin: 8px auto 18px;
+    box-shadow: 0 7px 15px rgba(46,92,42,.18); border: 1px solid #dfe7dc;
+}
+body.ds-app.vis-auth-page .auth-logo-img { width: 100%; height: 100%; object-fit: cover; }
+body.ds-app.vis-auth-page .auth-title { font-size: 32px; margin: 0 0 8px; letter-spacing: -.025em; }
+body.ds-app.vis-auth-page .auth-subtitle { font-size: 14px; color: #526171 !important; }
+body.ds-app.vis-auth-page .toggle-wrapper { margin: 30px 0 24px; }
+body.ds-app.vis-auth-page .pill {
+    box-shadow: 0 3px 7px rgba(45,84,42,.13);
+    transition: transform .38s var(--auth-motion-ease);
+}
+body.ds-app.vis-auth-page .toggle-btn { transition: color .3s ease; }
+body.ds-app.vis-auth-page .vis-field { margin-bottom: 18px; }
+body.ds-app.vis-auth-page .input-wrapper { box-shadow: 0 2px 7px rgba(34,54,39,.07); }
+body.ds-app.vis-auth-page .primary-btn {
+    min-height: 60px; margin-top: 8px; border-radius: 16px;
+    background: linear-gradient(110deg, #3e7c4a, #43844d);
+    box-shadow: 0 3px 8px rgba(45,84,42,.12);
+}
+body.ds-app.vis-auth-page .primary-btn::after { content: '\2192'; position: absolute; right: 20px; font-size: 24px; font-weight: 400; }
+body.ds-app.vis-auth-page .primary-btn { position: relative; padding-left: 44px; padding-right: 44px; }
+body.ds-app.vis-auth-page .auth-form--register .primary-btn::after { content: none; }
+body.ds-app.vis-auth-page #form-container > .auth-form {
+    animation: auth-form-enter .38s var(--auth-motion-ease) both;
+}
+body.ds-app.vis-auth-page .auth-footer { margin-top: 24px; padding-top: 4px; text-align: center; }
+@keyframes auth-form-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.ds-app.vis-auth-page .vis-auth-shell,
+    body.ds-app.vis-auth-page .vis-auth-intro,
+    body.ds-app.vis-auth-page .vis-auth-panel,
+    body.ds-app.vis-auth-page #form-container { transition: none; }
+    body.ds-app.vis-auth-page #form-container > .auth-form { animation: none; }
+}
+@media (max-width: 1000px) {
+    body.ds-app.vis-auth-page .vis-auth-shell { grid-template-columns: 1fr; max-width: 560px; }
+    body.ds-app.vis-auth-page .vis-auth-intro { display: none; }
+}
+@media (max-width: 600px) {
+    body.ds-app.vis-auth-page {
+        padding-top: max(16px,env(safe-area-inset-top));
+        padding-right: max(16px,env(safe-area-inset-right));
+        padding-bottom: max(16px,env(safe-area-inset-bottom));
+        padding-left: max(16px,env(safe-area-inset-left));
+        background-attachment: scroll;
+    }
+    body.ds-app.vis-auth-page .vis-auth-shell,
+    body.ds-app.vis-auth-page .vis-auth-shell.is-register {
+        width: min(100%,360px); max-width: 360px; min-height: auto;
+        grid-template-columns: minmax(0,1fr); gap: 0;
+        margin: 0 auto; padding: 0; align-items: start;
+    }
+    body.ds-app.vis-auth-page .vis-auth-shell.is-login {
+        min-height: calc(100svh - 32px); min-height: calc(100dvh - 32px);
+        align-items: center;
+    }
+    body.ds-app.vis-auth-page .vis-auth-intro,
+    body.ds-app.vis-auth-page .vis-auth-shell.is-register .vis-auth-intro { display: none; }
+    body.ds-app.vis-auth-page .vis-auth-panel,
+    body.ds-app.vis-auth-page #form-container,
+    body.ds-app.vis-auth-page .auth-form { width: 100%; min-width: 0; }
+    body.ds-app.vis-auth-page .vis-auth-card {
+        width: 100%; max-width: 100%; padding: 14px; border-radius: 20px;
+        backdrop-filter: none; -webkit-backdrop-filter: none;
+    }
+    body.ds-app.vis-auth-page .auth-logo-circle {
+        width: 54px; height: 54px; margin: 4px auto 8px;
+    }
+    body.ds-app.vis-auth-page .auth-title { margin: 0 0 4px; font-size: 26px; }
+    body.ds-app.vis-auth-page .auth-subtitle {
+        max-width: 280px; margin: 0 auto; font-size: 12px; line-height: 1.35;
+    }
+    body.ds-app.vis-auth-page .toggle-wrapper {
+        height: 48px; margin: 16px 0; padding: 4px;
+    }
+    body.ds-app.vis-auth-page .pill { height: 40px; }
+    body.ds-app.vis-auth-page .toggle-btn { height: 40px; min-height: 40px; font-size: 14px; }
+    body.ds-app.vis-auth-page .vis-field { width: 100%; min-width: 0; margin-bottom: 12px; }
+    body.ds-app.vis-auth-page .vis-field-label { margin-bottom: 6px; font-size: 13px; }
+    body.ds-app.vis-auth-page .input-wrapper,
+    body.ds-app.vis-auth-page .input-wrapper > :is(input,select) { width: 100%; min-width: 0; }
+    body.ds-app.vis-auth-page .primary-btn {
+        min-height: 52px; margin-top: 4px; border-radius: 14px; font-size: 15px;
+    }
+    body.ds-app.vis-auth-page .auth-footer { margin-top: 16px; padding-top: 0; }
+    body.ds-app.vis-auth-page .auth-back-link { font-size: 13px; }
+    body.ds-app.vis-auth-page .vis-auth-shell.is-register .auth-logo-circle {
+        width: 48px; height: 48px;
+    }
+    body.ds-app.vis-auth-page .vis-auth-shell.is-register .auth-title { font-size: 24px; }
+    body.ds-app.vis-auth-page .vis-auth-shell.is-register .toggle-wrapper { margin: 12px 0; }
+    body.ds-app.vis-auth-page .vis-auth-shell.is-register .vis-field { margin-bottom: 10px; }
+}

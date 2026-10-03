@@ -2,42 +2,73 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Access</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-access-premium.css') }}?v=2">
 </head>
-<body>
-    <div class="card fade-in">
-        {% include 'farmer_language_switch.html' %}
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="background: #1E88E5; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
-                <ion-icon name="shield-checkmark-outline"></ion-icon>
-            </div>
-            <h2 style="margin: 20px 0 5px;">Admin Access</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px;">Choose your role to continue to the correct login</p>
-        </div>
+<body class="vis-auth-simple vis-admin-access-page ds-app">
+    <a class="vis-skip-link" href="#admin-access">Skip to role selection</a>
+    <main id="admin-access" class="vis-access-shell fade-in">
+        <header class="ds-app-header" aria-label="VISCANE application header">
+            {% include 'components/brand.html' %}
+        </header>
+        <div class="access-composition">
+        <header class="vis-access-heading">
+            <p class="vis-eyebrow">Secure system management</p>
+            <h1>Administrator <span>Access</span></h1>
+            <p>Choose your authorized role to continue to the correct management workspace.</p>
+        </header>
 
-        <div class="portal-item" onclick="location.href='/admin-login'">
-            <div class="icon-circle" style="background: #1976D2;">
-                <ion-icon name="person-circle-outline" style="font-size: 28px;"></ion-icon>
-            </div>
-            <h3 style="margin: 0; font-size: 18px;">Admin</h3>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 5px;">Go to standard admin login</p>
-        </div>
+        <section class="vis-access-grid" aria-label="Administrator roles">
+            <article class="vis-access-card">
+                <img class="access-illustration" src="{{ url_for('static', filename='images/access-cane.svg') }}" alt="" aria-hidden="true">
+                <div class="vis-access-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="3"></circle>
+                        <path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                </div>
+                <div class="vis-access-copy">
+                    <h2>Admin</h2>
+                    <p>Manage farmer accounts, monitor scan activity, and prepare operational reports.</p>
+                </div>
+                <ul class="access-features">
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#people-outline"></use></svg><span>Manage User Accounts</span></li>
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#bar-chart-outline"></use></svg><span>Monitor Scan Activity</span></li>
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#document-text-outline"></use></svg><span>Generate Operational Reports</span></li>
+                </ul>
+                <a class="vis-button" href="/admin-login">Continue as Admin <span aria-hidden="true">&rarr;</span></a>
+            </article>
 
-        <div class="portal-item" onclick="location.href='/superadmin-login'">
-            <div class="icon-circle" style="background: #0D47A1;">
-                <ion-icon name="shield-half-outline" style="font-size: 28px;"></ion-icon>
-            </div>
-            <h3 style="margin: 0; font-size: 18px;">Superadmin</h3>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 5px;">Go to restricted superadmin login</p>
+            <article class="vis-access-card is-superadmin">
+                <img class="access-illustration" src="{{ url_for('static', filename='images/access-analytics.svg') }}" alt="" aria-hidden="true">
+                <div class="vis-access-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3 5 6v5c0 4.5 2.8 7.8 7 10 4.2-2.2 7-5.5 7-10V6l-7-3Z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div class="vis-access-copy">
+                    <h2>Superadmin</h2>
+                    <p>Control administrator access, system settings, analytics, and governance records.</p>
+                </div>
+                <ul class="access-features">
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#shield-checkmark-outline"></use></svg><span>Manage Administrator Access</span></li>
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#options-outline"></use></svg><span>System Settings and Configurations</span></li>
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#bar-chart-outline"></use></svg><span>View System Analytics</span></li>
+                    <li><svg class="access-feature-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#server-outline"></use></svg><span>Access Governance Records</span></li>
+                </ul>
+                <a class="vis-button is-secondary" href="/superadmin-login">Continue as Superadmin <span aria-hidden="true">&rarr;</span></a>
+            </article>
+        </section>
         </div>
-
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="/" class="admin-login-back-link">&larr; Back to Selection</a>
-        </div>
-    </div>
+        <a href="/" class="vis-access-back">&larr; Back to portal selection</a>
+    </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

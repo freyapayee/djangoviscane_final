@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Registration Successful</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registration-success.css') }}?v=1">
 </head>
-<body>
-    <div class="card fade-in auth-success-card">
+<body class="vis-auth-simple ds-app vis-registration-success">
+    <main class="card fade-in auth-success-card" aria-labelledby="registration-success-title">
         <div class="auth-header">
             <div class="auth-logo-circle">
                 <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" class="auth-logo-img">
@@ -19,9 +20,9 @@
 
         <div class="auth-success-box">
             <div class="auth-success-icon">
-                <ion-icon name="checkmark-outline"></ion-icon>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
             </div>
-            <h3 class="auth-success-title">{{ farmer_text('You have successfully registered') }}</h3>
+            <h1 id="registration-success-title" class="auth-success-title">{{ farmer_text('You have successfully registered') }}</h1>
             <p class="auth-success-text">{{ farmer_text('Welcome to VISCANE') }}, {{ user.fullname }}. {{ farmer_text('Your account is ready.') }}</p>
         </div>
 
@@ -32,7 +33,8 @@
         <div class="auth-footer">
             <a href="/" class="auth-back-link">&larr; {{ farmer_text('Back to Selection') }}</a>
         </div>
-    </div>
+    </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

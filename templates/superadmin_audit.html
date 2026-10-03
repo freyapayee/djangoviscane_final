@@ -6,8 +6,11 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Audit & Compliance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
 </head>
-<body class="admin-layout superadmin-layout">
+<body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-audit">
+    {% include 'components/superadmin_navigation.html' %}
     <div class="dashboard-bg"></div>
 
     <header class="dashboard-header superadmin-header">
@@ -22,19 +25,10 @@
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
                 <div class="status-pill superadmin-pill">
                     <ion-icon name="shield-checkmark-outline"></ion-icon>
                     Audit Trail
                 </div>
-                <a class="btn light" href="/superadmin">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    Superadmin
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
-                </a>
             </div>
         </div>
     </header>
@@ -48,7 +42,7 @@
                 </div>
                 <span class="badge"><ion-icon name="time-outline"></ion-icon>Live</span>
             </div>
-            <table class="data-table">
+            <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
                 <thead>
                     <tr>
                         <th>Timestamp</th>
@@ -71,11 +65,12 @@
                         </tr>
                     {% endif %}
                 </tbody>
-            </table>
+            </table></div>
         </section>
 
         <div class="footer-link">VISCANE Superadmin | Audit & Compliance</div>
     </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

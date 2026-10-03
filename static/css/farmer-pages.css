@@ -1,0 +1,104 @@
+/* Companion pages use the dashboard's canvas, header, cards and navigation. */
+.settings-layout { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 24px; align-items: start; }
+.settings-side { display: grid; gap: 24px; min-width: 0; }
+body.ds-app.farmer_settings .settings-layout .panel { margin-bottom: 0; padding: 28px; }
+body.ds-app.farmer_settings .settings-layout .panel-header { margin-bottom: 24px; }
+body.ds-app.farmer_settings .settings-layout .profile-detail-icon { display: none; }
+body.ds-app.farmer_settings .settings-layout .profile-details-modern { gap: 20px; }
+body.ds-app.farmer_settings .settings-layout .profile-detail-divider { text-align: left; justify-content: flex-start; margin-top: 8px; padding-top: 24px; }
+body.ds-app.farmer_settings .settings-layout .profile-detail-divider span { text-transform: none; letter-spacing: 0; }
+.settings-help { font-size: 13px; line-height: 1.55; color: #64766b; margin: 0; }
+.settings-password-field { margin-bottom: 20px; }
+body.ds-app.farmer_settings .settings-password-field label { display: block; margin: 0 0 8px; font-size: 14px; text-transform: none; }
+.settings-password-control { position: relative; }
+body.ds-app.farmer_settings .settings-password-control input { --ds-input-padding: 0 76px 0 16px; }
+body.ds-app.farmer_settings .settings-password-control .vis-password-toggle { top: 4px; right: 4px; }
+.settings-form-actions { margin-top: 24px; display: flex; justify-content: flex-end; }
+.settings-language { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.settings-language-copy { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.settings-language-copy > span:last-child { min-width: 0; }
+.settings-language-copy strong, .settings-language-copy small { display: block; }
+.settings-language-copy strong { color: #173b29; font-size: 16px; }
+.settings-language-copy small { margin-top: 3px; color: #687b6e; font-size: 12px; }
+.settings-language-icon { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border-radius: 12px; background: #e8f4ea; color: #167b38; }
+.settings-language-icon svg, .settings-language-form summary svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.settings-language-form { flex: 0 0 auto; }
+.settings-language-form details { position: relative; padding: 0 !important; border: 0 !important; background: transparent !important; }
+.settings-language-form summary { width: 78px; height: 44px; padding: 0 12px; display: flex !important; align-items: center; justify-content: center; gap: 7px; border: 1px solid #cdded1; border-radius: 999px; background: #f8fcf8; color: #176d39; list-style: none; cursor: pointer; }
+.settings-language-form summary::-webkit-details-marker { display: none; }
+.settings-language-form summary::marker { content: ""; }
+.settings-language-form summary span { font-size: 13px; font-weight: 750; letter-spacing: .04em; }
+.settings-language-backdrop { position: fixed; inset: 0; z-index: 1000; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; background: rgba(8,24,14,.35); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.settings-language-sheet { position: fixed; left: 12px; right: 12px; bottom: calc(104px + env(safe-area-inset-bottom)); z-index: 1001; width: auto; max-width: 420px; max-height: calc(100svh - 140px); margin: 0 auto; padding: 10px; overflow-y: auto; border: 1px solid #e0ebe2; border-radius: 20px; background: rgba(255,255,255,.98); box-shadow: 0 18px 45px rgba(10,35,18,.28); }
+.settings-language-sheet-header { min-height: 44px; padding: 4px 4px 8px 10px; display: flex; align-items: center; justify-content: space-between; color: #173b25; }
+.settings-language-sheet-header > button { width: 40px; min-height: 40px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 50%; background: #eef5ed; color: #365248; }
+.settings-language-sheet > button { width: 100%; min-height: 52px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border: 0; border-radius: 9px; background: transparent; color: #1f2933; font-family: inherit; font-size: 15px; font-weight: 600; text-align: left; }
+.settings-language-sheet > button.is-selected { background: #e8f2e8; color: #075326; }
+body.ds-app.farmer_settings .settings-layout .settings-form-actions .btn.primary { min-height: 48px; min-width: 132px; }
+/* Let the fixed language overlay share the root stacking context so the bottom nav cannot cover it. */
+body.ds-app.farmer_settings .dashboard-container { z-index: auto; }
+#settings-fullname { background: #f1f6f3; }
+body.ds-app.farmer_settings .settings-layout .form-success, body.ds-app.farmer_settings .settings-layout .form-error { margin-top: 20px; }
+@media (max-width: 900px) { .settings-layout { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+    body.ds-app.farmer_settings .settings-layout { gap: 14px; }
+    body.ds-app.farmer_settings .settings-layout .panel { padding: 16px; }
+    body.ds-app.farmer_settings .settings-layout .panel-header { margin-bottom: 16px; }
+    body.ds-app.farmer_settings .settings-form-actions .btn.primary { width: 100%; }
+    .settings-language { padding: 14px !important; }
+    .settings-language-copy { gap: 9px; }
+    .settings-language-copy strong { font-size: 14px; }
+    .settings-language-copy small { font-size: 11px; }
+    .settings-language-icon { width: 38px; height: 38px; flex-basis: 38px; }
+    .settings-language-sheet { bottom: calc(92px + env(safe-area-inset-bottom)); max-height: calc(100svh - 116px); }
+}
+body.ds-app.vis-farmer-page .dashboard-container { min-height: calc(100svh - 140px); }
+body.ds-app.vis-farmer-page .header-content { justify-content: space-between; }
+body.ds-app.vis-farmer-page .brand-copy { min-width: 0; }
+body.ds-app.vis-farmer-page .brand-title { overflow-wrap: anywhere; }
+body.ds-app.vis-farmer-page .panel > .list-meta { padding: 20px; border: 1px solid #e4eee7; border-radius: 12px; background: #f4faf6; color: #53685b !important; line-height: 1.6; }
+body.ds-app.vis-farmer-page .list-row {
+    display: flex; align-items: flex-start; gap: 16px; padding: 20px;
+    margin: 12px 0; border: 1px solid #e5eee8; border-radius: 14px;
+    background: linear-gradient(110deg,#f7fcf8,white); box-shadow: none;
+}
+body.ds-app.vis-farmer-page .list-row > div { min-width: 0; }
+body.ds-app.vis-farmer-page .list-row h4 { font-size: 17px; line-height: 1.4; color: #173b29; overflow-wrap: anywhere; }
+body.ds-app.vis-farmer-page .list-row .list-meta { font-size: 14px; line-height: 1.65; color: #607466 !important; margin-top: 6px; overflow-wrap: anywhere; }
+body.ds-app.vis-farmer-page .list-badge { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px; color: #078735; background: #e2f3e6; box-shadow: none; }
+body.ds-app.vis-farmer-page .list-row .tag { flex-shrink: 0; margin-top: 2px; padding: 6px 10px; font-size: 12px; max-width: 100%; white-space: normal; }
+body.ds-app.vis-farmer-page .tag.alert { color: #a93832; background: #fcedeb; }
+body.ds-app.vis-farmer-page details { padding: 10px 12px; border-radius: 10px; background: white; border: 1px solid #e3eee6; }
+body.ds-app.vis-farmer-page summary { cursor: pointer; color: #167b38; min-height: 32px; display: list-item; }
+body.ds-app.farmer_agronomic_logs .list-row .list-meta + .list-meta { padding-top: 8px; border-top: 1px solid #eaf1ec; }
+body.ds-app.farmer_agronomic_logs .list-row strong { color: #304e3b; }
+body.ds-app.farmer_settings .section-grid.two-col { align-items: start; }
+body.ds-app.farmer_settings form.panel .panel-header { align-items: flex-start; }
+body.ds-app.farmer_settings .profile-details-modern { display: grid; gap: 18px; }
+body.ds-app.farmer_settings .profile-detail-row { display: flex; align-items: flex-start; gap: 12px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; min-width: 0; }
+body.ds-app.farmer_settings .profile-detail-icon { width: 38px; height: 38px; flex: 0 0 38px; margin-top: 28px; border-radius: 10px; color: #0c8636; background: #edf8ef; box-shadow: none; }
+body.ds-app.farmer_settings .profile-detail-copy { display: grid; flex: 1; min-width: 0; gap: 8px; }
+body.ds-app.farmer_settings .profile-detail-label { font-size: 14px; font-weight: 600; line-height: 1.4; color: #294337; text-transform: none; letter-spacing: 0; }
+body.ds-app.farmer_settings .profile-detail-input { border-color: #dce8e0; border-radius: 10px; background: white; }
+body.ds-app.farmer_settings .profile-detail-input.is-readonly { background: #f1f6f3; color: #586b5f !important; }
+body.ds-app.farmer_settings .profile-detail-divider { margin: 4px 0 0; padding: 16px 0 0; border-top: 1px solid #e5eee8; }
+body.ds-app.farmer_settings .profile-detail-divider span { padding: 0; background: transparent; color: #254c34; font-size: 15px; font-weight: 650; }
+body.ds-app.farmer_settings .profile-detail-divider::before, body.ds-app.farmer_settings .profile-detail-divider::after { display: none; }
+body.ds-app.farmer_settings form.panel > .stat-label { margin: 20px 0 8px; font-size: 14px; text-transform: none; }
+body.ds-app.farmer_settings form.panel .btn.primary { min-height: 44px; padding: 10px 14px; border: 0; border-radius: 10px; background: #078735; color: white; font-size: 14px; box-shadow: none; }
+body.ds-app.farmer_settings .action-grid { display: flex; flex-wrap: wrap; }
+body.ds-app.farmer_settings .signout-tile { min-height: 52px; padding: 12px 20px; border: 1px solid #dce8e0; border-radius: 12px; display: inline-flex; align-items: center; gap: 12px; color: #1d5933; background: #f2f9f4; box-shadow: none; }
+body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-size: 12px; }
+@media (max-width: 900px) {
+    body.ds-app.farmer_settings .section-grid.two-col { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 600px) {
+    body.ds-app.vis-farmer-page .panel { padding: 20px 16px; }
+    body.ds-app.vis-farmer-page .list-row { display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 10px; padding: 16px 12px; }
+    body.ds-app.vis-farmer-page .list-badge { width: 36px; height: 36px; }
+    body.ds-app.vis-farmer-page .list-row > .tag { grid-column: 2; justify-self: start; }
+    body.ds-app.vis-farmer-page .list-row h4 { font-size: 16px; }
+    body.ds-app.vis-farmer-page .list-row .list-meta { font-size: 14px; }
+    body.ds-app.farmer_settings .profile-detail-icon { display: none; }
+    body.ds-app.farmer_settings .profile-details-modern { gap: 16px; }
+}

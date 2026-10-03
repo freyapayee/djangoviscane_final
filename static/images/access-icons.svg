@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<symbol id="person-outline" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M3 22v-2a9 9 0 0 1 18 0v2Z"/></symbol>
+<symbol id="lock-outline" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4M12 15v3"/></symbol>
+<symbol id="eye-outline" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="people-outline" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M2 21v-3a7 7 0 0 1 14 0v3M17 4a3 3 0 0 1 0 6m1 4a5 5 0 0 1 4 5v2M6 18h6"/></symbol>
+<symbol id="bar-chart-outline" viewBox="0 0 24 24"><path d="M3 3v18h19M7 17V11h3v6m3 0V7h3v10m3 0V3h3v14"/></symbol>
+<symbol id="document-text-outline" viewBox="0 0 24 24"><path d="M5 2h9l5 5v15H5ZM14 2v6h5M8 12h8M8 16h8M8 19h6"/></symbol>
+<symbol id="shield-checkmark-outline" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-5 8-9 10-4-2-9-5-9-10V6Zm-5 9 3 3 6-6"/></symbol>
+<symbol id="options-outline" viewBox="0 0 24 24"><path d="M2 5h5m4 0h11M2 12h11m4 0h5M2 19h3m4 0h13"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="7" cy="19" r="2"/></symbol>
+<symbol id="server-outline" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 4 18 4 18 0V5M3 10c0 4 18 4 18 0M3 15c0 4 18 4 18 0"/></symbol>
+</svg>

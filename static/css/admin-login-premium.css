@@ -1,0 +1,65 @@
+/* Centered administrator authentication, matching the approved glass reference. */
+body.ds-app.vis-admin-login-page {
+    display: grid; grid-template-columns: minmax(0,1fr); place-items: center; min-height: 100svh; padding: 24px 20px;
+    background: linear-gradient(rgba(20,55,29,.06),rgba(20,55,29,.06)), url('../background1.png') center / cover fixed;
+}
+body.ds-app.vis-admin-login-page > .card {
+    width: min(520px,100%); max-width: 520px; margin: 0; padding: 28px 42px 22px;
+    border-radius: 24px; border: 1px solid rgba(255,255,255,.8);
+    background: linear-gradient(145deg,rgba(255,254,237,.9),rgba(230,247,255,.85) 42%,rgba(235,247,204,.9));
+    box-shadow: 0 22px 60px rgba(22,52,30,.18), inset 0 1px 0 rgba(255,255,255,.8);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.console-icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+body.ds-app.vis-admin-login-page .admin-login-header { text-align: center; margin-bottom: 14px; }
+body.ds-app.vis-admin-login-page .admin-login-icon-circle {
+    width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%;
+    display: grid; place-items: center; background: #edffe8; color: #118330;
+    border: 1px solid rgba(255,255,255,.8); box-shadow: 0 3px 12px rgba(41,87,43,.12);
+}
+body.ds-app.vis-admin-login-page .admin-login-icon-circle .console-icon { width: 31px; height: 31px; }
+body.ds-app.vis-admin-login-page .admin-login-title { font-size: 26px; letter-spacing: -.025em; color: #10222e; margin: 0 0 7px; }
+body.ds-app.vis-admin-login-page .admin-login-subtitle { font-size: 14px; color: #506377 !important; margin: 0; }
+body.ds-app.vis-admin-login-page .admin-login-header::after {
+    content: ''; display: block; width: 144px; height: 3px; margin: 15px auto;
+    background: linear-gradient(to right,rgba(90,118,107,.12) 0 28%,transparent 28% 35%,#14853b 35% 67%,transparent 67% 74%,rgba(90,118,107,.12) 74%);
+}
+body.ds-app.vis-admin-login-page .ds-field-label { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #243c4a; }
+body.ds-app.vis-admin-login-page .input-wrapper { height: 52px; min-height: 52px; margin-bottom: 15px; border-radius: 13px; box-shadow: 0 2px 6px rgba(25,68,37,.07); }
+#ds-admin_login-identifier, #ds-admin_login-password,
+#ds-superadmin_login-identifier, #ds-superadmin_login-password {
+    height: 52px; min-height: 52px; border-radius: 13px; border-color: #e0ebda;
+    background: rgba(255,255,255,.97); font-size: 15px;
+    --ds-input-padding: 0 46px 0 48px;
+}
+body.ds-app.vis-admin-login-page .input-wrapper > input { --ds-input-padding: 0 46px 0 48px; }
+body.ds-app.vis-admin-login-page .console-field-icon { position: absolute; left: 16px; top: 15px; width: 20px; height: 20px; color: #07872f; z-index: 1; pointer-events: none; }
+body.ds-app.vis-admin-login-page .vis-password-toggle { top: 4px; right: 4px; min-width: 44px; width: 44px; color: #087c2a; }
+.console-eye-slash { display: none; }
+[aria-pressed=true] .console-eye-slash { display: block; }
+body.ds-app.vis-admin-login-page .primary-btn { min-height: 52px; border: 0; border-radius: 13px; margin: 6px 0 0; background: linear-gradient(110deg,#146736,#149d34); color: white; font-size: 16px; gap: 10px; box-shadow: 0 4px 12px rgba(20,125,47,.1); }
+body.ds-app.vis-admin-login-page .primary-btn:hover { background: linear-gradient(110deg,#10582c,#10872d); }
+.console-support-links { display: grid; grid-template-columns: 1fr 1fr; margin-top: 18px; }
+.console-support-links.is-single { grid-template-columns: 1fr; }
+body.ds-app.vis-admin-login-page .console-support-links a { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; font-size: 13px; color: #08702e; font-weight: 500; text-decoration: none; }
+.console-support-links a + a { border-left: 1px solid rgba(33,101,48,.14); }
+body.ds-app.vis-admin-login-page .admin-login-footer { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(33,101,48,.14); text-align: center; }
+body.ds-app.vis-admin-login-page .admin-login-back-link { display: inline-flex; align-items: center; min-height: 32px; font-size: 13px; color: #08702e; text-decoration: none; }
+body.ds-app.vis-admin-login-page .console-support-links a:hover, body.ds-app.vis-admin-login-page .admin-login-back-link:hover { text-decoration: underline; }
+@media (max-width: 600px) {
+    body.ds-app.vis-admin-login-page {
+        padding-top: max(16px,env(safe-area-inset-top));
+        padding-right: max(12px,env(safe-area-inset-right));
+        padding-bottom: max(16px,env(safe-area-inset-bottom));
+        padding-left: max(12px,env(safe-area-inset-left));
+        background-attachment: scroll;
+    }
+    body.ds-app.vis-admin-login-page > .card { padding: 20px 16px 16px; border-radius: 20px; }
+    body.ds-app.vis-admin-login-page .admin-login-title { font-size: 24px; }
+    body.ds-app.vis-admin-login-page .console-support-links a { font-size: 12px; gap: 5px; }
+    .console-support-links .console-icon { width: 18px; height: 18px; }
+}
+@media (max-width: 360px) {
+    .console-support-links { grid-template-columns: 1fr; gap: 4px; }
+    .console-support-links a + a { border: 0; }
+}

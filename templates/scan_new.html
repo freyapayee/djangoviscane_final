@@ -2,21 +2,42 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | New Scan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scan-page.css') }}?v=6">
 </head>
-<body class="scanner-layout">
-    <div class="scanner-screen">
-        <div class="scanner-top">
-            <a href="/homepage" class="scan-back-link">&larr; {{ farmer_text('Back to Dashboard') }}</a>
-            {% include 'farmer_language_switch.html' %}
-            <div class="scan-title">{{ farmer_text('Sugarcane Scanner') }}</div>
-            <div class="scan-subtitle">{{ farmer_text('Align the Sugarcane Stalk') }}</div>
+<body class="scanner-layout ds-app vis-scan-page">
+    <header class="vis-scan-header">
+        <div class="vis-scan-heading">
+            <p class="vis-section-kicker">AI crop assessment</p>
+            <h1>{{ farmer_text('Scan Sugarcane') }}</h1>
+            <p>{{ farmer_text('Capture or upload a sugarcane image for AI quality analysis.') }}</p>
         </div>
-        <div class="scanner-viewport">
+        <a class="vis-button is-tonal" href="/homepage"><ion-icon name="arrow-back-outline"></ion-icon>{{ farmer_text('Dashboard') }}</a>
+    </header>
+    <main class="scan-flow" data-scan-flow data-current="{% if error %}details{% else %}capture{% endif %}">
+    <ol class="scan-stepper" aria-label="Scan progress">
+        <li data-step-indicator="capture"><span>1</span><strong>{{ farmer_text('Photo') }}</strong></li>
+        <li data-step-indicator="review"><span>2</span><strong>{{ farmer_text('Review') }}</strong></li>
+        <li data-step-indicator="details"><span>3</span><strong>{{ farmer_text('Details') }}</strong></li>
+    </ol>
+    <div class="vis-scan-layout">
+    <div class="scanner-screen" data-stage="capture">
+        <div class="scanner-top">
+            <div class="scan-title">{{ farmer_text('Upload a sugarcane photo') }}</div>
+            <div class="scan-subtitle">{{ farmer_text('Choose a photo from your device to check its quality.') }}</div>
+        </div>
+        <div class="scanner-viewport" data-camera-state="upload">
             <video id="viewfinder" autoplay muted playsinline></video>
+            <div class="scanner-placeholder">
+                <ion-icon name="images-outline" aria-hidden="true"></ion-icon>
+                <strong>{{ farmer_text('Start with a clear photo') }}</strong>
+                <p>{{ farmer_text('Keep the stalk in focus, use good lighting, and avoid a busy background.') }}</p>
+                <small>{{ farmer_text('JPG, PNG or WebP') }}</small>
+            </div>
             <div class="ar-overlay" aria-hidden="true">
                 <span class="ar-corner corner-top-left"></span>
                 <span class="ar-corner corner-top-right"></span>
@@ -29,55 +50,120 @@
         <canvas id="scan-canvas" class="scan-canvas" hidden></canvas>
         <div class="scanner-actions">
             <div id="scanner-message" class="scanner-message" role="status"></div>
-            <div class="scanner-controls">
-                <button type="button" class="mode-btn is-active">RGB</button>
-                <button type="button" class="mode-btn">HSV</button>
-                <button type="button" class="capture-btn" id="capture-btn">{{ farmer_text('Capture') }}</button>
+            <div class="vis-upload-panel">
+                <button type="button" class="vis-upload-button" id="upload-image-btn"><ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Choose photo') }}</button>
+                <button type="button" class="vis-upload-button is-secondary" id="take-photo-btn"><ion-icon name="camera-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Use camera') }}</button>
+                <button type="button" class="capture-btn" id="capture-btn" disabled hidden><ion-icon name="camera-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Take photo') }}</span></button>
+                <input id="scan-native-camera" type="file" accept="image/*" capture="environment" aria-label="Take a sugarcane photo" hidden>
+                <input id="scan-upload" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload sugarcane image" hidden>
             </div>
+            <button type="button" class="scan-back-button" id="close-camera-btn" hidden>{{ farmer_text('Close camera') }}</button>
+            <button class="scan-skip-button" id="skip-to-details" type="button">{{ farmer_text('Continue without an image') }}</button>
         </div>
     </div>
+        <section id="scan-result" class="vis-scan-result" data-stage="review" aria-live="polite">
+            <img id="scan-preview" class="vis-preview" alt="Selected sugarcane preview">
+            <div class="scan-result-heading">
+                <span class="scan-result-icon"><ion-icon name="sparkles-outline"></ion-icon></span>
+                <div><p class="vis-section-kicker">{{ farmer_text('Analysis complete') }}</p><h2>{{ farmer_text('Review AI Result') }}</h2></div>
+            </div>
+            <div class="vis-result-grid">
+                <div class="vis-result-cell"><small>{{ farmer_text('Classification') }}</small><strong id="result-variety">—</strong></div>
+                <div class="vis-result-cell"><small>{{ farmer_text('Maturity') }}</small><strong id="result-maturity">—</strong></div>
+                <div class="vis-result-cell"><small>{{ farmer_text('Confidence') }}</small><strong id="result-confidence">—</strong></div>
+            </div>
+            <p class="scan-result-note"><ion-icon name="information-circle-outline"></ion-icon>{{ farmer_text('Confirm that the photo is clear before continuing. You can still adjust the assessment details.') }}</p>
+            <div class="scan-review-actions">
+                <button class="vis-button is-tonal" id="retake-scan" type="button"><ion-icon name="refresh-outline"></ion-icon>{{ farmer_text('Change photo') }}</button>
+                <button class="vis-button is-primary" id="use-scan-result" type="button">{{ farmer_text('Use this result') }}<ion-icon name="arrow-forward-outline"></ion-icon></button>
+            </div>
+        </section>
 
-    <div class="card fade-in scan-entry-card">
+    <div class="card scan-entry-card" data-stage="details">
         <div class="scan-header">
             <div class="scan-icon-circle">
-                <ion-icon name="camera-outline"></ion-icon>
+                <ion-icon name="clipboard-outline"></ion-icon>
             </div>
-            <h2 class="scan-title">{{ farmer_text('New Scan Entry') }}</h2>
-            <p class="scan-subtitle">{{ farmer_text('Save a new sugarcane assessment') }}</p>
+            <h2 class="scan-title">{{ farmer_text('Assessment Details') }}</h2>
+            <p class="scan-subtitle">{{ farmer_text('Add the plot name, then save the assessment') }}</p>
+        </div>
+
+        <div class="scan-ai-reference" id="scan-ai-reference" hidden>
+            <ion-icon name="sparkles-outline"></ion-icon>
+            <span id="scan-ai-reference-text"></span>
         </div>
 
         {% if error %}
             <div class="form-error">{{ farmer_text(error) }}</div>
         {% endif %}
 
-        <form class="fade-in" method="POST" action="/scan/new">
+        <form method="POST" action="/scan/new">
+    {{ csrf_input }}
+            <input type="hidden" id="ai-prediction-applied" name="ai_prediction_applied" value="{{ '1' if ai_prediction_applied else '0' }}">
+            <label class="scan-field-label" for="scan-plot">{{ farmer_text('Plot name') }}</label>
             <div class="input-wrapper">
                 <ion-icon name="leaf-outline"></ion-icon>
-                <input type="text" name="plot_name" placeholder="{{ farmer_text('Plot Name (e.g., Plot #3)') }}" required>
+                <input id="scan-plot" type="text" name="plot_name" value="{{ plot_name or '' }}" placeholder="{{ farmer_text('e.g., North Field 3') }}" required>
             </div>
+            <label class="scan-field-label" for="scan-maturity">{{ farmer_text('Maturity percentage') }}</label>
             <div class="input-wrapper">
                 <ion-icon name="stats-chart-outline"></ion-icon>
-                <input type="number" name="maturity_pct" placeholder="{{ farmer_text('Maturity Percentage (0-100)') }}" min="0" max="100" required>
+                <input id="scan-maturity" type="number" name="maturity_pct" value="{{ maturity_pct or '' }}" placeholder="{{ farmer_text('Enter 0 to 100') }}" min="0" max="100" inputmode="numeric" required>
             </div>
+            <label class="scan-field-label" for="scan-grade">{{ farmer_text('Quality grade') }}</label>
             <div class="input-wrapper">
                 <ion-icon name="ribbon-outline"></ion-icon>
-                <input type="text" name="grade" placeholder="{{ farmer_text('Grade (A, B, or C)') }}" required>
+                <select id="scan-grade" name="grade" required>
+                    <option value="" disabled{% if not grade %} selected{% endif %}>{{ farmer_text('Select grade') }}</option>
+                    <option value="A"{% if grade == 'A' %} selected{% endif %}>{{ farmer_text('Grade A') }}</option>
+                    <option value="B"{% if grade == 'B' %} selected{% endif %}>{{ farmer_text('Grade B') }}</option>
+                    <option value="C"{% if grade == 'C' %} selected{% endif %}>{{ farmer_text('Grade C') }}</option>
+                </select>
             </div>
+            <label class="scan-field-label" for="scan-status">{{ farmer_text('Field status') }}</label>
             <div class="input-wrapper">
                 <ion-icon name="alert-circle-outline"></ion-icon>
-                <select name="status" required aria-label="{{ farmer_text('Status') }}">
-                    <option value="" disabled selected>{{ farmer_text('Select status') }}</option>
-                    <option value="ready">{{ farmer_text('Ready') }}</option>
-                    <option value="monitor">{{ farmer_text('Monitor') }}</option>
-                    <option value="healthy">{{ farmer_text('Healthy') }}</option>
+                <select id="scan-status" name="status" required>
+                    <option value="" disabled{% if not status %} selected{% endif %}>{{ farmer_text('Select status') }}</option>
+                    <option value="ready"{% if status == 'ready' %} selected{% endif %}>{{ farmer_text('Ready') }}</option>
+                    <option value="monitor"{% if status == 'monitor' %} selected{% endif %}>{{ farmer_text('Monitor') }}</option>
+                    <option value="healthy"{% if status == 'healthy' %} selected{% endif %}>{{ farmer_text('Healthy') }}</option>
                 </select>
             </div>
 
             <button type="submit" class="primary-btn">
+                <ion-icon name="save-outline"></ion-icon>
                 {{ farmer_text('Save Scan') }}
             </button>
+            <button class="scan-back-button" id="back-from-details" type="button"><ion-icon name="arrow-back-outline"></ion-icon>{{ farmer_text('Back to previous step') }}</button>
         </form>
     </div>
+    </main>
+
+    <dialog class="scan-analysis-modal" id="scan-analysis-modal" aria-labelledby="scan-analysis-title" aria-describedby="scan-analysis-status">
+        <section class="scan-analysis-dialog" role="dialog" aria-modal="true" aria-labelledby="scan-analysis-title" aria-describedby="scan-analysis-status" tabindex="-1">
+            <div class="scan-analysis-preview-shell">
+                <img id="scan-analysis-preview" alt="Sugarcane image being analyzed">
+                <span class="scan-analysis-line" aria-hidden="true"></span>
+                <span class="scan-analysis-success-icon" aria-hidden="true"><ion-icon name="checkmark-outline"></ion-icon></span>
+                <span class="scan-analysis-error-icon" aria-hidden="true"><ion-icon name="alert-outline"></ion-icon></span>
+            </div>
+            <div class="scan-analysis-heading">
+                <span class="scan-analysis-pulse" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></span>
+                <div>
+                    <h2 id="scan-analysis-title">{{ farmer_text('Analyzing sugarcane image') }}</h2>
+                    <p id="scan-analysis-status" role="status" aria-live="polite">{{ farmer_text('Checking image quality...') }}</p>
+                </div>
+            </div>
+            <div class="scan-analysis-progress" aria-hidden="true"><span></span></div>
+            <p class="scan-analysis-hint">{{ farmer_text('Keep this page open while the image is processed.') }}</p>
+            <button class="scan-analysis-cancel" id="cancel-scan-analysis" type="button">{{ farmer_text('Cancel analysis') }}</button>
+            <div class="scan-analysis-error-actions" hidden>
+                <button class="vis-button is-tonal" id="choose-another-image" type="button"><ion-icon name="images-outline"></ion-icon>{{ farmer_text('Choose another image') }}</button>
+                <button class="vis-button is-primary" id="retry-scan-analysis" type="button"><ion-icon name="refresh-outline"></ion-icon>{{ farmer_text('Try again') }}</button>
+            </div>
+        </section>
+    </dialog>
 
     <script>
         (() => {
@@ -88,7 +174,71 @@
             const captureBtn = document.getElementById('capture-btn');
             const flash = document.getElementById('shutter-flash');
             const message = document.getElementById('scanner-message');
+            const uploadInput = document.getElementById('scan-upload');
+            const nativeCameraInput = document.getElementById('scan-native-camera');
+            const cameraViewport = document.querySelector('.scanner-viewport');
+            const cameraButton = document.getElementById('take-photo-btn');
+            const closeCameraButton = document.getElementById('close-camera-btn');
+            const isAndroidApp = navigator.userAgent.includes('ViscaneFarmer/');
+            const setCameraState = (state) => {
+                cameraViewport.dataset.cameraState = state;
+                captureBtn.disabled = state !== 'live';
+                captureBtn.hidden = state !== 'live';
+                cameraButton.hidden = state === 'live';
+                cameraButton.disabled = state === 'pending';
+                closeCameraButton.hidden = state !== 'live' && state !== 'pending';
+                document.querySelector('.scanner-top > .scan-title').textContent = uiText(state === 'live' ? 'Take a sugarcane photo' : 'Upload a sugarcane photo');
+                document.querySelector('.scanner-top > .scan-subtitle').textContent = uiText(state === 'live' ? 'Align the stalk inside the guide, then take a photo.' : 'Choose a photo from your device to check its quality.');
+            };
+            document.getElementById('upload-image-btn').addEventListener('click', () => {
+                uploadInput.value = '';
+                uploadInput.click();
+            });
+            cameraButton.addEventListener('click', () => {
+                if (isAndroidApp || !navigator.mediaDevices?.getUserMedia || cameraViewport.dataset.cameraState === 'unavailable') {
+                    nativeCameraInput.value = '';
+                    nativeCameraInput.click();
+                } else {
+                    startScanner();
+                }
+            });
+            closeCameraButton.addEventListener('click', () => {
+                stopScanner();
+                setMessage('');
+            });
+            const resultCard = document.getElementById('scan-result');
+            const preview = document.getElementById('scan-preview');
+            const resultVariety = document.getElementById('result-variety');
+            const resultMaturity = document.getElementById('result-maturity');
+            const resultConfidence = document.getElementById('result-confidence');
+            const flow = document.querySelector('[data-scan-flow]');
+            const retakeBtn = document.getElementById('retake-scan');
+            const useResultBtn = document.getElementById('use-scan-result');
+            const skipBtn = document.getElementById('skip-to-details');
+            const backFromDetailsBtn = document.getElementById('back-from-details');
+            const aiReference = document.getElementById('scan-ai-reference');
+            const aiReferenceText = document.getElementById('scan-ai-reference-text');
+            const maturityInput = document.getElementById('scan-maturity');
+            const gradeInput = document.getElementById('scan-grade');
+            const statusInput = document.getElementById('scan-status');
+            const aiPredictionAppliedInput = document.getElementById('ai-prediction-applied');
+            const analysisModal = document.getElementById('scan-analysis-modal');
+            const analysisDialog = analysisModal?.querySelector('.scan-analysis-dialog');
+            const analysisPreview = document.getElementById('scan-analysis-preview');
+            const analysisTitle = document.getElementById('scan-analysis-title');
+            const analysisStatus = document.getElementById('scan-analysis-status');
+            const analysisErrorActions = analysisModal?.querySelector('.scan-analysis-error-actions');
+            const cancelAnalysisBtn = document.getElementById('cancel-scan-analysis');
+            const retryAnalysisBtn = document.getElementById('retry-scan-analysis');
+            const chooseAnotherBtn = document.getElementById('choose-another-image');
             let activeStream = null;
+            let cameraSequence = 0;
+            let currentPrediction = null;
+            let analysisController = null;
+            let analysisMessageTimer = null;
+            let analysisSequence = 0;
+            let lastAnalysis = null;
+            let lastAnalysisFocus = null;
 
             const setMessage = (text) => {
                 if (message) {
@@ -96,7 +246,208 @@
                 }
             };
 
+            const goToStep = (step) => {
+                if (!flow) return;
+                flow.dataset.current = step;
+                flow.querySelectorAll('[data-step-indicator]').forEach((indicator) => {
+                    const steps = ['capture', 'review', 'details'];
+                    const indicatorIndex = steps.indexOf(indicator.dataset.stepIndicator);
+                    const activeIndex = steps.indexOf(step);
+                    indicator.classList.toggle('is-active', indicatorIndex === activeIndex);
+                    const skippedReview = flow.classList.contains('is-manual') && indicator.dataset.stepIndicator === 'review';
+                    indicator.classList.toggle('is-complete', indicatorIndex < activeIndex && !skippedReview);
+                    indicator.classList.toggle('is-skipped', skippedReview);
+                    if (indicatorIndex === activeIndex) indicator.setAttribute('aria-current', 'step');
+                    else indicator.removeAttribute('aria-current');
+                });
+                flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            const deriveAssessment = (prediction) => {
+                const rawStatus = String(prediction?.maturity_status || '').trim().toUpperCase().replaceAll('-', '_').replaceAll(' ', '_');
+                const confidenceRaw = Number(prediction?.confidence);
+                const confidence = Number.isFinite(confidenceRaw)
+                    ? (confidenceRaw <= 1 ? confidenceRaw : confidenceRaw / 100)
+                    : 0;
+
+                if (rawStatus.includes('OVER') && rawStatus.includes('MATURE')) {
+                    return { maturityPct: 95, grade: 'C', status: 'monitor' };
+                }
+                if ((rawStatus.includes('NOT') && rawStatus.includes('MATURE')) || rawStatus.includes('IMMATURE')) {
+                    return { maturityPct: 65, grade: confidence >= .85 ? 'B' : 'C', status: 'monitor' };
+                }
+                if (rawStatus.includes('MATURE')) {
+                    return { maturityPct: 85, grade: confidence >= .85 ? 'A' : 'B', status: 'ready' };
+                }
+                return null;
+            };
+
+            const applyAssessment = (prediction) => {
+                const assessment = deriveAssessment(prediction);
+                if (!assessment) return null;
+                maturityInput.value = String(assessment.maturityPct);
+                gradeInput.value = assessment.grade;
+                statusInput.value = assessment.status;
+                [maturityInput, gradeInput, statusInput].forEach((field) => {
+                    field.closest('.input-wrapper')?.classList.add('is-ai-filled');
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                setAssessmentLocked(true);
+                return assessment;
+            };
+
+            const setAssessmentLocked = (locked) => {
+                maturityInput.readOnly = locked;
+                gradeInput.tabIndex = locked ? -1 : 0;
+                statusInput.tabIndex = locked ? -1 : 0;
+                aiPredictionAppliedInput.value = locked ? '1' : '0';
+                [maturityInput, gradeInput, statusInput].forEach((field) => {
+                    const wrapper = field.closest('.input-wrapper');
+                    wrapper?.classList.toggle('is-ai-locked', locked);
+                    if (locked) field.setAttribute('aria-readonly', 'true');
+                    else field.removeAttribute('aria-readonly');
+                });
+            };
+
+            const clearDerivedAssessment = () => {
+                setAssessmentLocked(false);
+                maturityInput.value = '';
+                gradeInput.value = '';
+                statusInput.value = '';
+                [maturityInput, gradeInput, statusInput].forEach((field) => {
+                    field.closest('.input-wrapper')?.classList.remove('is-ai-filled');
+                });
+                if (aiReference) aiReference.hidden = true;
+            };
+
+            const showResult = (prediction, imageUrl = '') => {
+                currentPrediction = prediction;
+                const variety = prediction.variety || 'Unknown variety';
+                const maturity = String(prediction.maturity_status || 'Unknown maturity').replaceAll('_', ' ');
+                const confidenceValue = Number(prediction.confidence);
+                const confidence = Number.isFinite(confidenceValue)
+                    ? `${(confidenceValue <= 1 ? confidenceValue * 100 : confidenceValue).toFixed(1)}%`
+                    : 'Unavailable';
+                resultVariety.textContent = variety;
+                resultMaturity.textContent = maturity;
+                resultConfidence.textContent = confidence;
+                if (imageUrl) {
+                    preview.src = imageUrl;
+                    preview.classList.add('is-visible');
+                }
+                resultCard.classList.add('is-visible');
+                setMessage(`Analysis complete: ${variety}, ${maturity}, AI score ${confidence}.`);
+                stopScanner();
+                goToStep('review');
+            };
+
+            const analysisMessages = [
+                'Waiting for image analysis...',
+                'Still processing your image. You can cancel at any time.'
+            ];
+
+            const stopAnalysisMessages = () => {
+                if (analysisMessageTimer) window.clearInterval(analysisMessageTimer);
+                analysisMessageTimer = null;
+            };
+
+            const openAnalysisModal = (imageUrl) => {
+                stopAnalysisMessages();
+                lastAnalysisFocus = document.activeElement;
+                analysisModal.classList.remove('is-error', 'is-success');
+                analysisModal.classList.add('is-open');
+                if (!analysisModal.open) analysisModal.showModal();
+                document.body.classList.add('has-analysis-modal');
+                analysisTitle.textContent = uiText('Analyzing sugarcane image');
+                analysisStatus.textContent = uiText(analysisMessages[0]);
+                analysisErrorActions.hidden = true;
+                cancelAnalysisBtn.hidden = false;
+                cancelAnalysisBtn.textContent = uiText('Cancel analysis');
+                if (imageUrl) {
+                    analysisPreview.src = imageUrl;
+                    analysisPreview.hidden = false;
+                } else {
+                    analysisPreview.removeAttribute('src');
+                    analysisPreview.hidden = true;
+                }
+                let messageIndex = 0;
+                analysisMessageTimer = window.setInterval(() => {
+                    messageIndex = Math.min(messageIndex + 1, analysisMessages.length - 1);
+                    analysisStatus.textContent = uiText(analysisMessages[messageIndex]);
+                }, 10000);
+                window.setTimeout(() => analysisDialog?.focus(), 0);
+            };
+
+            const closeAnalysisModal = () => {
+                stopAnalysisMessages();
+                analysisModal.classList.remove('is-open', 'is-error', 'is-success');
+                if (analysisModal.open) analysisModal.close();
+                document.body.classList.remove('has-analysis-modal');
+                lastAnalysisFocus?.focus?.();
+            };
+
+            const showAnalysisError = (text) => {
+                stopAnalysisMessages();
+                analysisModal.classList.add('is-error');
+                analysisTitle.textContent = uiText('Analysis could not finish');
+                analysisStatus.textContent = uiText(text || 'Image analysis failed.');
+                analysisErrorActions.hidden = false;
+                cancelAnalysisBtn.hidden = false;
+                cancelAnalysisBtn.textContent = uiText('Back to scanner');
+                retryAnalysisBtn?.focus();
+            };
+
+            const showAnalysisSuccess = () => {
+                stopAnalysisMessages();
+                analysisModal.classList.add('is-success');
+                analysisTitle.textContent = uiText('Analysis complete');
+                analysisStatus.textContent = uiText('Your result is ready to review.');
+                cancelAnalysisBtn.hidden = true;
+            };
+
+            const analyzeImage = async (blob, filename = 'stalk.jpg', imageUrl = '') => {
+                if (analysisController) return;
+                const sequence = ++analysisSequence;
+                lastAnalysis = { blob, filename, imageUrl };
+                const formData = new FormData();
+                formData.append('image', blob, filename);
+                setMessage('Analyzing image...');
+                flow?.classList.add('is-analyzing');
+                analysisController = new AbortController();
+                openAnalysisModal(imageUrl);
+                try {
+                    const response = await fetch('/api/scan/predict?top_k=3', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: formData,
+                        signal: analysisController.signal,
+                    });
+                    let payload = null;
+                    try { payload = await response.json(); } catch (_) { payload = null; }
+                    if (!response.ok) throw new Error(payload?.error || 'Image analysis failed.');
+                    const prediction = payload?.prediction || payload?.result?.prediction;
+                    if (!prediction) throw new Error('Prediction service returned no recognizable result.');
+                    if (sequence !== analysisSequence) return;
+                    showAnalysisSuccess();
+                    await new Promise((resolve) => window.setTimeout(resolve, 550));
+                    if (sequence !== analysisSequence) return;
+                    closeAnalysisModal();
+                    showResult(prediction, imageUrl);
+                } catch (error) {
+                    if (error?.name === 'AbortError' || sequence !== analysisSequence) return;
+                    setMessage(error?.message || 'Image analysis failed. Please try again.');
+                    showAnalysisError(error?.message || 'Image analysis failed. Please try again.');
+                } finally {
+                    if (sequence === analysisSequence) {
+                        flow?.classList.remove('is-analyzing');
+                        analysisController = null;
+                    }
+                }
+            };
+
             const stopScanner = () => {
+                cameraSequence += 1;
+                setCameraState('upload');
                 if (activeStream) {
                     activeStream.getTracks().forEach((track) => track.stop());
                     activeStream = null;
@@ -125,8 +476,13 @@
             };
 
             const startScanner = async () => {
+                stopScanner();
+                const sequence = cameraSequence;
+                setCameraState('pending');
+                setMessage('Opening camera...');
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    setMessage('Error: Camera requires an HTTPS connection. If testing locally, use a self-signed certificate.');
+                    setCameraState('unavailable');
+                    setMessage('Live preview is unavailable. Use Take Photo or Upload image.');
                     return;
                 }
                 try {
@@ -134,24 +490,41 @@
                         video: { facingMode: { exact: 'environment' } },
                         audio: false
                     });
+                    if (sequence !== cameraSequence) {
+                        stream.getTracks().forEach((track) => track.stop());
+                        return;
+                    }
                     activeStream = stream;
                     viewfinder.srcObject = stream;
                     await viewfinder.play();
+                    if (sequence !== cameraSequence) return;
+                    setCameraState('live');
                     applyEnhancedConstraints(stream.getVideoTracks()[0]);
-                    setMessage('');
+                    setMessage('Camera ready. Align the stalk inside the guide.');
                 } catch (error) {
+                    if (sequence !== cameraSequence) return;
+                    activeStream?.getTracks().forEach((track) => track.stop());
                     try {
                         const fallbackStream = await navigator.mediaDevices.getUserMedia({
                             video: { facingMode: 'user' },
                             audio: false
                         });
+                        if (sequence !== cameraSequence) {
+                            fallbackStream.getTracks().forEach((track) => track.stop());
+                            return;
+                        }
                         activeStream = fallbackStream;
                         viewfinder.srcObject = fallbackStream;
                         await viewfinder.play();
+                        if (sequence !== cameraSequence) return;
+                        setCameraState('live');
                         applyEnhancedConstraints(fallbackStream.getVideoTracks()[0]);
-                        setMessage('');
+                        setMessage('Front camera ready. Align the stalk inside the guide.');
                     } catch (fallbackError) {
-                        setMessage('Unable to access the camera. Please check permissions and try again.');
+                        if (sequence !== cameraSequence) return;
+                        stopScanner();
+                        setCameraState('unavailable');
+                        setMessage('Camera unavailable. Choose a photo from your device, or use your device camera.');
                     }
                 }
             };
@@ -168,6 +541,7 @@
 
             const captureFrame = () => {
                 if (!canvas || !viewfinder || viewfinder.videoWidth === 0) {
+                    setMessage('Camera is not ready. Please wait or choose an image instead.');
                     return;
                 }
                 if (navigator.vibrate) {
@@ -182,31 +556,129 @@
                     if (!blob) {
                         return;
                     }
-                    const formData = new FormData();
-                    formData.append('image', blob, 'stalk.jpg');
-                    fetch('/analyze_stalk', {
-                        method: 'POST',
-                        body: formData
-                    }).catch(() => {
-                        setMessage('Upload failed. Please try again.');
-                    });
+                    const imageUrl = URL.createObjectURL(blob);
+                    analyzeImage(blob, 'stalk.jpg', imageUrl)
+                        .catch((error) => {
+                            setMessage(error?.message || 'Upload failed. Please try again.');
+                        });
                 }, 'image/jpeg', 0.92);
             };
 
             if (captureBtn) {
                 captureBtn.addEventListener('click', captureFrame);
             }
+            for (const imageInput of [uploadInput, nativeCameraInput].filter(Boolean)) {
+                imageInput.addEventListener('change', () => {
+                    const [file] = imageInput.files || [];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        setMessage('Please choose a valid image file.');
+                        return;
+                    }
+                    analyzeImage(file, file.name, URL.createObjectURL(file)).catch((error) => {
+                        setMessage(error?.message || 'Upload failed. Please try again.');
+                    });
+                });
+            }
 
-            startScanner();
+            cancelAnalysisBtn?.addEventListener('click', () => {
+                analysisSequence += 1;
+                analysisController?.abort();
+                analysisController = null;
+                flow?.classList.remove('is-analyzing');
+                closeAnalysisModal();
+                setMessage('Analysis canceled. You can capture or choose another image.');
+            });
+
+            retryAnalysisBtn?.addEventListener('click', () => {
+                if (lastAnalysis) {
+                    analyzeImage(lastAnalysis.blob, lastAnalysis.filename, lastAnalysis.imageUrl);
+                }
+            });
+
+            chooseAnotherBtn?.addEventListener('click', () => {
+                analysisSequence += 1;
+                analysisController?.abort();
+                analysisController = null;
+                flow?.classList.remove('is-analyzing');
+                closeAnalysisModal();
+                uploadInput.value = '';
+                uploadInput.click();
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && analysisModal?.classList.contains('is-open') && !analysisModal.classList.contains('is-success')) {
+                    cancelAnalysisBtn?.click();
+                }
+            });
+            analysisModal.addEventListener('cancel', (event) => {
+                event.preventDefault();
+                cancelAnalysisBtn.click();
+            });
+
+            retakeBtn?.addEventListener('click', () => {
+                currentPrediction = null;
+                clearDerivedAssessment();
+                resultCard.classList.remove('is-visible');
+                preview.classList.remove('is-visible');
+                uploadInput.value = '';
+                goToStep('capture');
+                stopScanner();
+                setMessage('');
+            });
+
+            useResultBtn?.addEventListener('click', () => {
+                flow?.classList.remove('is-manual');
+                if (currentPrediction && aiReference && aiReferenceText) {
+                    const variety = currentPrediction.variety || 'Unknown variety';
+                    const maturity = String(currentPrediction.maturity_status || 'Unknown maturity').replaceAll('_', ' ');
+                    const assessment = applyAssessment(currentPrediction);
+                    aiReferenceText.textContent = assessment
+                        ? `AI result locked from ${variety} · ${maturity}: ${assessment.maturityPct}% maturity, Grade ${assessment.grade}, ${assessment.status}.`
+                        : `AI reference: ${variety} · ${maturity}. Complete the remaining fields before saving.`;
+                    aiReference.hidden = false;
+                }
+                goToStep('details');
+            });
+
+            skipBtn?.addEventListener('click', () => {
+                stopScanner();
+                clearDerivedAssessment();
+                flow?.classList.add('is-manual');
+                goToStep('details');
+            });
+
+            backFromDetailsBtn?.addEventListener('click', () => {
+                if (currentPrediction) goToStep('review');
+                else {
+                    goToStep('capture');
+                    stopScanner();
+                    setMessage('');
+                }
+            });
+
+            if (aiPredictionAppliedInput.value === '1') {
+                setAssessmentLocked(true);
+                const savedVariety = {{ (cv_variety or '') | tojson }};
+                const savedMaturity = {{ (cv_maturity_status or '') | tojson }};
+                if (savedMaturity) {
+                    aiReferenceText.textContent = `AI result from ${savedVariety || 'the image'}: ${savedMaturity.replaceAll('_', ' ')}, ${maturityInput.value}% maturity, Grade ${gradeInput.value}, ${statusInput.value}.`;
+                    aiReference.hidden = false;
+                }
+            }
+            const initialStep = flow?.dataset.current || 'capture';
+            goToStep(initialStep);
             window.addEventListener('pagehide', stopScanner);
             window.addEventListener('beforeunload', stopScanner);
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     stopScanner();
+                    setMessage('');
                 }
             });
         })();
     </script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

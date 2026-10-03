@@ -1,0 +1,483 @@
+body.ds-app.vis-scan-page {
+    min-height: 100dvh;
+    padding: 24px;
+    color: #1d3025;
+    background: #f2f7f3;
+}
+
+body.ds-app.vis-scan-page .vis-scan-header,
+body.ds-app.vis-scan-page .vis-scan-layout {
+    width: min(1180px, 100%);
+    max-width: 1180px;
+    margin-inline: auto;
+}
+
+body.ds-app.vis-scan-page .vis-scan-header {
+    margin-bottom: 20px;
+    padding: 22px 24px;
+    border: 1px solid #e0eae2;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(29, 64, 39, .06);
+}
+
+body.ds-app.vis-scan-page .vis-section-kicker { margin: 0 0 4px; color: #2c7a43; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+body.ds-app.vis-scan-page .vis-scan-heading h1 { margin: 0 0 5px; color: #14291d; font-size: clamp(27px, 4vw, 36px); letter-spacing: -.04em; }
+body.ds-app.vis-scan-page .vis-scan-heading > p:last-child { margin: 0; color: #68796e; font-size: 13px; }
+
+body.ds-app.vis-scan-page .vis-scan-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(330px, .75fr);
+    gap: 20px;
+    align-items: start;
+}
+
+body.ds-app.vis-scan-page .scanner-screen,
+body.ds-app.vis-scan-page .scan-entry-card {
+    min-width: 0;
+    border: 1px solid #e0eae2;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(29, 64, 39, .07);
+}
+
+body.ds-app.vis-scan-page .scanner-screen { display: flex; flex-direction: column; width: 100%; height: auto; min-height: 0; padding: 20px; color: #1d3025; }
+body.ds-app.vis-scan-page .scanner-top > .scan-title { color: #1d3025; font-size: 18px; font-weight: 750; }
+body.ds-app.vis-scan-page .scanner-top > .scan-subtitle { color: #748178; font-size: 12px; }
+
+body.ds-app.vis-scan-page .vis-upload-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+body.ds-app.vis-scan-page .vis-upload-panel p { margin: 0; font-size: 11px; }
+body.ds-app.vis-scan-page .vis-upload-button { justify-content: center; min-width: 0; min-height: 48px; padding: 10px; gap: 7px; border: 1px solid #367d49; font: inherit; font-size: 13px; font-weight: 700; }
+body.ds-app.vis-scan-page .vis-upload-button.is-secondary { color: #286b3b; background: #eef6f0; border-color: #c8ddce; }
+body.ds-app.vis-scan-page .vis-upload-button:focus-visible { outline: 3px solid #84b990; outline-offset: 3px; }
+
+body.ds-app.vis-scan-page .scanner-viewport { width: 100%; height: auto; min-height: 350px; flex: none; aspect-ratio: 16 / 10; margin: 0; border: 0; border-radius: 14px; background: linear-gradient(145deg, #17241b, #080d0a); }
+body.ds-app.vis-scan-page .scanner-actions { gap: 8px; padding-top: 12px; }
+body.ds-app.vis-scan-page .scanner-message { min-height: 20px; color: #65766b; font-size: 12px; }
+body.ds-app.vis-scan-page .scanner-controls { justify-content: flex-start; gap: 8px; }
+body.ds-app.vis-scan-page .mode-btn { color: #627469; background: #eef4ef; border-color: #dae6dc; }
+body.ds-app.vis-scan-page .mode-btn.is-active { color: #246f3c; background: #dfeee2; }
+body.ds-app.vis-scan-page .capture-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 112px; min-height: 46px; padding: 9px 15px; border: 0; border-radius: 11px; color: #fff; background: #367d49; box-shadow: 0 5px 14px rgba(38, 103, 57, .18); }
+body.ds-app.vis-scan-page .scanner-controls .capture-btn { margin-left: auto; }
+body.ds-app.vis-scan-page .capture-btn:disabled { cursor: not-allowed; opacity: .48; box-shadow: none; }
+body.ds-app.vis-scan-page .capture-btn ion-icon { font-size: 17px; }
+
+body.ds-app.vis-scan-page .vis-scan-result { margin: 14px 0 0; padding: 16px; border: 1px solid #dbe9de; border-radius: 14px; color: #243d2d; background: #f8fbf8; }
+body.ds-app.vis-scan-page .vis-scan-result h3 { margin: 14px 0 10px; font-size: 15px; }
+body.ds-app.vis-scan-page .vis-result-cell { background: #fff; border: 1px solid #e1ebe3; }
+
+body.ds-app.vis-scan-page .scan-entry-card { position: sticky; top: 20px; width: 100%; margin: 0; padding: 20px; }
+body.ds-app.vis-scan-page .scan-entry-card .scan-header { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 2px 12px; margin-bottom: 20px; text-align: left; }
+body.ds-app.vis-scan-page .scan-entry-card .scan-icon-circle { grid-row: 1 / 3; width: 42px; height: 42px; margin: 0; border-radius: 12px; font-size: 21px; }
+body.ds-app.vis-scan-page .scan-entry-card .scan-title { margin: 0; color: #1d3025; font-size: 18px; }
+body.ds-app.vis-scan-page .scan-entry-card .scan-subtitle { margin: 0; color: #748178; font-size: 11px; }
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper { margin-bottom: 14px; box-shadow: none; }
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper :is(input, select) { min-height: 50px; border-color: #d7e3da; font-size: 13px; }
+body.ds-app.vis-scan-page .scan-entry-card .primary-btn { min-height: 50px; margin-top: 2px; border-radius: 11px; font-size: 13px; }
+
+@media (max-width: 900px) {
+    body.ds-app.vis-scan-page .vis-scan-layout { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-scan-page .scan-entry-card { position: static; }
+}
+
+@media (max-width: 600px) {
+    body.ds-app.vis-scan-page { padding: max(12px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom)); }
+    body.ds-app.vis-scan-page .vis-scan-header { align-items: flex-start; flex-direction: column; padding: 18px; border-radius: 15px; }
+    body.ds-app.vis-scan-page .vis-scan-header .vis-button { width: 100%; justify-content: center; }
+    body.ds-app.vis-scan-page .scanner-screen,
+    body.ds-app.vis-scan-page .scan-entry-card { padding: 15px; border-radius: 15px; }
+    body.ds-app.vis-scan-page .vis-upload-panel { align-items: stretch; flex-direction: column; }
+    body.ds-app.vis-scan-page .vis-upload-button { justify-content: center; width: 100%; }
+    body.ds-app.vis-scan-page .scanner-viewport { min-height: 300px; aspect-ratio: 3 / 4; }
+    body.ds-app.vis-scan-page .vis-result-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Blocking analysis feedback shared by capture and upload. */
+body.has-analysis-modal { overflow: hidden; }
+
+body.ds-app.vis-scan-page .scan-analysis-modal {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    width: min(420px, calc(100% - 32px));
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    border: 0;
+    border-radius: 22px;
+    background: #fff;
+    overflow: auto;
+    display: none;
+    place-items: center;
+    padding: 0;
+}
+
+body.ds-app.vis-scan-page .scan-analysis-modal[open] { display: block; }
+body.ds-app.vis-scan-page .scan-analysis-modal:not([open]) { display: none !important; }
+body.ds-app.vis-scan-page .scan-analysis-modal::backdrop { background: rgba(16,35,23,.5); backdrop-filter: blur(3px); }
+
+body.ds-app.vis-scan-page .scan-analysis-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(16, 35, 23, .48);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+body.ds-app.vis-scan-page .scan-analysis-dialog {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.85);
+    border-radius: 20px;
+    color: #1d3025;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(16,45,25,.28);
+    outline: none;
+}
+
+body.ds-app.vis-scan-page .scan-analysis-preview-shell {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #e8f1e9, #dce9de);
+}
+
+body.ds-app.vis-scan-page .scan-analysis-preview-shell img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+body.ds-app.vis-scan-page .scan-analysis-line {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    left: 10px;
+    height: 2px;
+    border-radius: 999px;
+    background: #70d68c;
+    box-shadow: 0 0 14px 4px rgba(88,199,119,.48);
+    animation: scan-analysis-sweep 2s ease-in-out infinite alternate;
+}
+
+body.ds-app.vis-scan-page .scan-analysis-success-icon,
+body.ds-app.vis-scan-page .scan-analysis-error-icon {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    display: none;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 34px;
+    box-shadow: 0 8px 24px rgba(25,74,39,.2);
+}
+body.ds-app.vis-scan-page .scan-analysis-success-icon { background: #38814c; }
+body.ds-app.vis-scan-page .scan-analysis-error-icon { background: #b45445; }
+
+body.ds-app.vis-scan-page .scan-analysis-heading { display: flex; align-items: center; gap: 12px; }
+body.ds-app.vis-scan-page .scan-analysis-heading > div { min-width: 0; }
+body.ds-app.vis-scan-page .scan-analysis-heading h2 { margin: 0 0 3px; color: #1d3025; font-size: 18px; }
+body.ds-app.vis-scan-page .scan-analysis-heading p { margin: 0; color: #52675a; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+
+body.ds-app.vis-scan-page .scan-analysis-pulse {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 12px;
+    color: #26743e;
+    background: #e6f3e9;
+    font-size: 21px;
+    animation: scan-analysis-pulse 1.35s ease-in-out infinite;
+}
+
+body.ds-app.vis-scan-page .scan-analysis-progress {
+    height: 5px;
+    margin-top: 18px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e7eee9;
+}
+body.ds-app.vis-scan-page .scan-analysis-progress span {
+    display: block;
+    width: 42%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2f7a45, #70c285);
+    animation: scan-analysis-progress 1.25s ease-in-out infinite;
+}
+
+body.ds-app.vis-scan-page .scan-analysis-hint { margin: 12px 0 0; color: #68796e; font-size: 12px; text-align: center; }
+body.ds-app.vis-scan-page .scan-analysis-modal:is(.is-error,.is-success) .scan-analysis-hint { display: none; }
+body.ds-app.vis-scan-page .scan-analysis-cancel {
+    display: block;
+    min-height: 44px;
+    margin: 8px auto 0;
+    padding: 6px 10px;
+    border: 0;
+    color: #587064;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+body.ds-app.vis-scan-page .scan-analysis-cancel:hover { color: #286f3d; text-decoration: underline; }
+body.ds-app.vis-scan-page .scan-analysis-error-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+body.ds-app.vis-scan-page .scan-analysis-error-actions[hidden],
+body.ds-app.vis-scan-page .scan-analysis-cancel[hidden] { display: none; }
+body.ds-app.vis-scan-page .scan-analysis-error-actions .vis-button { justify-content: center; min-height: 44px; padding: 8px 10px; font-size: 11px; }
+
+body.ds-app.vis-scan-page .scan-analysis-modal.is-success .scan-analysis-line,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-error .scan-analysis-line,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-success .scan-analysis-pulse,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-error .scan-analysis-pulse,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-success .scan-analysis-progress,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-error .scan-analysis-progress { display: none; }
+body.ds-app.vis-scan-page .scan-analysis-modal.is-success .scan-analysis-success-icon,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-error .scan-analysis-error-icon { display: grid; }
+body.ds-app.vis-scan-page .scan-analysis-modal.is-success .scan-analysis-preview-shell img,
+body.ds-app.vis-scan-page .scan-analysis-modal.is-error .scan-analysis-preview-shell img { filter: brightness(.62); }
+
+@keyframes scan-analysis-sweep {
+    from { transform: translateY(12px); }
+    to { transform: translateY(144px); }
+}
+@keyframes scan-analysis-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(58,133,78,.18); }
+    50% { transform: scale(1.06); box-shadow: 0 0 0 8px rgba(58,133,78,0); }
+}
+@keyframes scan-analysis-progress {
+    from { transform: translateX(-110%); }
+    to { transform: translateX(245%); }
+}
+
+@media (max-width: 480px) {
+    body.ds-app.vis-scan-page .scan-analysis-modal { padding: 0; }
+    body.ds-app.vis-scan-page .scan-analysis-dialog { padding: 20px; border-radius: 18px; }
+    body.ds-app.vis-scan-page .scan-analysis-preview-shell { height: 160px; }
+    body.ds-app.vis-scan-page .scan-analysis-error-actions { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.ds-app.vis-scan-page .scan-analysis-line,
+    body.ds-app.vis-scan-page .scan-analysis-pulse,
+    body.ds-app.vis-scan-page .scan-analysis-progress span { animation: none; }
+    body.ds-app.vis-scan-page .scan-analysis-line { top: 50%; }
+    body.ds-app.vis-scan-page .scan-analysis-progress span { width: 65%; }
+}
+
+/* Guided scan flow: Capture -> Review -> Details. */
+body.ds-app.vis-scan-page .scan-flow {
+    width: min(760px, 100%);
+    margin: 0 auto;
+}
+
+body.ds-app.vis-scan-page .scan-stepper {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+body.ds-app.vis-scan-page .scan-stepper li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;
+    color: #8a978f;
+    font-size: 11px;
+}
+
+body.ds-app.vis-scan-page .scan-stepper li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 15px;
+    left: calc(50% + 42px);
+    width: calc(100% - 84px);
+    height: 1px;
+    background: #d6e2d8;
+}
+
+body.ds-app.vis-scan-page .scan-stepper li > * { position: relative; z-index: 1; }
+body.ds-app.vis-scan-page .scan-stepper li span {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border: 1px solid #d6e2d8;
+    border-radius: 50%;
+    color: #718078;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+body.ds-app.vis-scan-page .scan-stepper li strong { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+body.ds-app.vis-scan-page .scan-stepper li.is-active { color: #246f3c; }
+body.ds-app.vis-scan-page .scan-stepper li.is-active span { border-color: #347d49; color: #fff; background: #347d49; box-shadow: 0 3px 10px rgba(36,111,60,.2); }
+body.ds-app.vis-scan-page .scan-stepper li.is-complete { color: #4f715a; }
+body.ds-app.vis-scan-page .scan-stepper li.is-complete span { border-color: #bcd7c2; color: #246f3c; background: #e7f3e9; }
+body.ds-app.vis-scan-page .scan-stepper li.is-skipped { color: #9ba59f; }
+body.ds-app.vis-scan-page .scan-stepper li.is-skipped span { border-style: dashed; color: #89958e; background: #f6f8f6; }
+
+body.ds-app.vis-scan-page .scan-flow .vis-scan-layout {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+}
+
+body.ds-app.vis-scan-page .scan-flow [data-stage] { display: none; }
+body.ds-app.vis-scan-page .scan-flow[data-current="capture"] [data-stage="capture"] { display: flex; }
+body.ds-app.vis-scan-page .scan-flow[data-current="review"] [data-stage="review"] { display: block; }
+body.ds-app.vis-scan-page .scan-flow[data-current="details"] [data-stage="details"] { display: block; }
+
+body.ds-app.vis-scan-page .scan-flow.is-analyzing .scanner-viewport { opacity: .72; }
+body.ds-app.vis-scan-page .scan-flow.is-analyzing :is(.capture-btn, .vis-upload-button) { opacity: .55; pointer-events: none; }
+
+body.ds-app.vis-scan-page .scanner-viewport {
+    min-height: 0;
+    max-height: 430px;
+    aspect-ratio: 4 / 3;
+}
+
+body.ds-app.vis-scan-page .ar-corner { border-color: rgba(255,255,255,.9); filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
+body.ds-app.vis-scan-page .ar-center-line { background: rgba(255,255,255,.62); box-shadow: 0 0 4px rgba(0,0,0,.3); }
+
+body.ds-app.vis-scan-page .scanner-controls .capture-btn { width: 100%; margin-left: 0; }
+body.ds-app.vis-scan-page .scan-skip-button,
+body.ds-app.vis-scan-page .scan-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 0;
+    color: #587064;
+    background: transparent;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+body.ds-app.vis-scan-page :is(.scan-skip-button, .scan-back-button):hover { color: #246f3c; text-decoration: underline; }
+
+body.ds-app.vis-scan-page .vis-scan-result {
+    margin: 0;
+    padding: 22px;
+    border: 1px solid #e0eae2;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(29,64,39,.07);
+}
+body.ds-app.vis-scan-page .vis-scan-result .vis-preview {
+    width: 100%;
+    max-height: 390px;
+    margin-bottom: 18px;
+    object-fit: contain;
+    border-radius: 14px;
+    background: #edf3ee;
+}
+body.ds-app.vis-scan-page .scan-result-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+body.ds-app.vis-scan-page .scan-result-heading h2 { margin: 0; color: #1d3025; font-size: 20px; }
+body.ds-app.vis-scan-page .scan-result-heading .vis-section-kicker { margin-bottom: 2px; }
+body.ds-app.vis-scan-page .scan-result-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; color: #246f3c; background: #e7f3e9; font-size: 21px; }
+body.ds-app.vis-scan-page .scan-result-note { display: flex; align-items: flex-start; gap: 7px; margin: 14px 0 0; color: #68796e; font-size: 11px; }
+body.ds-app.vis-scan-page .scan-result-note ion-icon { flex: 0 0 auto; margin-top: 2px; color: #347d49; font-size: 15px; }
+body.ds-app.vis-scan-page .scan-review-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 10px; margin-top: 18px; }
+body.ds-app.vis-scan-page .scan-review-actions .vis-button { justify-content: center; width: 100%; min-height: 48px; }
+
+body.ds-app.vis-scan-page .scan-entry-card { position: static; max-width: 620px; margin: 0 auto; }
+body.ds-app.vis-scan-page .scan-entry-card .scan-icon-circle {
+    color: #246f3c !important;
+    background: #e7f3e9 !important;
+    box-shadow: none !important;
+}
+body.ds-app.vis-scan-page .scan-entry-card .scan-icon-circle ion-icon { color: #246f3c; }
+body.ds-app.vis-scan-page .scan-field-label { display: block; margin: 0 0 6px; color: #40584a; font-size: 11px; font-weight: 750; }
+body.ds-app.vis-scan-page .scan-ai-reference { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; padding: 11px 12px; border: 1px solid #cfe2d3; border-radius: 10px; color: #2d6840; background: #eef7f0; font-size: 11px; font-weight: 650; }
+body.ds-app.vis-scan-page .scan-ai-reference[hidden] { display: none; }
+body.ds-app.vis-scan-page .scan-ai-reference ion-icon { flex: 0 0 auto; font-size: 17px; }
+body.ds-app.vis-scan-page .scan-entry-card .primary-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-filled {
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+}
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-filled :is(input, select) { background-color: #fff; }
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-locked {
+    border: 1px solid #d7e3da;
+    background: #fff;
+    box-shadow: none;
+}
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-locked :is(input, select) {
+    color: #244331;
+    background: #fff;
+    opacity: 1;
+    pointer-events: none;
+    -webkit-text-fill-color: #244331;
+}
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-locked input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-locked input[type="number"]::-webkit-inner-spin-button,
+body.ds-app.vis-scan-page .scan-entry-card .input-wrapper.is-ai-locked input[type="number"]::-webkit-outer-spin-button { margin: 0; appearance: none; }
+
+@media (max-width: 600px) {
+    body.ds-app.vis-scan-page .scan-stepper li { flex-direction: column; gap: 4px; font-size: 9px; }
+    body.ds-app.vis-scan-page .scan-stepper li:not(:last-child)::after { left: calc(50% + 22px); width: calc(100% - 44px); }
+    body.ds-app.vis-scan-page .scanner-viewport { height: auto; max-height: 38svh; min-height: 0; aspect-ratio: 4 / 3; }
+    body.ds-app.vis-scan-page .vis-scan-result { padding: 15px; border-radius: 15px; }
+    body.ds-app.vis-scan-page .vis-scan-result .vis-preview { max-height: 320px; }
+    body.ds-app.vis-scan-page .scan-review-actions { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Show guides only when a live stream is playing, including in Android WebView. */
+body.ds-app.vis-scan-page .scanner-top { margin-bottom: 16px; }
+body.ds-app.vis-scan-page .scanner-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 100%; padding: 20px; color: #405c49; text-align: center; background: #eef5f0; }
+body.ds-app.vis-scan-page .scanner-placeholder > ion-icon { font-size: 32px; color: #367d49; }
+body.ds-app.vis-scan-page .scanner-placeholder strong { font-size: 15px; }
+body.ds-app.vis-scan-page .scanner-placeholder p { margin: 0; font-size: 13px; line-height: 1.5; }
+body.ds-app.vis-scan-page .scanner-viewport:not([data-camera-state="live"]) :is(video, .ar-overlay, .shutter-flash) { display: none; }
+body.ds-app.vis-scan-page .scanner-viewport[data-camera-state="live"] .scanner-placeholder { display: none; }
+body.ds-app.vis-scan-page .scanner-screen:has(.scanner-viewport:not([data-camera-state="live"])) .scanner-controls { display: none; }
+body.ds-app.vis-scan-page .scanner-viewport video { position: absolute; inset: 0; display: block; }
+body.ds-app.vis-scan-page .scanner-message { line-height: 1.5; }
+body.ds-app.vis-scan-page .scan-skip-button { min-height: 44px; font-size: 12px; }
+
+/* Upload is the default; opening the camera is an explicit choice. */
+body.ds-app.vis-scan-page .scanner-viewport:not([data-camera-state="live"]) { height: auto; min-height: 0; max-height: none; aspect-ratio: auto; background: #f3f8f4; border: 1px dashed #b7d1be; }
+body.ds-app.vis-scan-page .scanner-placeholder { min-height: 220px; height: auto; padding: 28px 24px; background: transparent; }
+body.ds-app.vis-scan-page .scanner-placeholder p { max-width: 340px; }
+body.ds-app.vis-scan-page .scanner-placeholder small { color: #748178; font-size: 11px; }
+body.ds-app.vis-scan-page .scanner-message:empty { display: none; }
+body.ds-app.vis-scan-page :is(.capture-btn, .vis-upload-button, .scan-back-button)[hidden] { display: none; }
+body.ds-app.vis-scan-page .vis-upload-panel .capture-btn { width: 100%; min-width: 0; min-height: 48px; margin: 0; font: inherit; font-size: 13px; font-weight: 700; }
+body.ds-app.vis-scan-page .vis-upload-button:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 600px) {
+    body.ds-app.vis-scan-page .scanner-placeholder { min-height: 180px; padding: 24px 18px; }
+}

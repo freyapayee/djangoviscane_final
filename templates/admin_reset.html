@@ -6,16 +6,18 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Reset</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
 </head>
-<body>
+<body class="vis-auth-simple ds-app">
+    {% include 'components/app_header.html' %}
     <div class="card fade-in">
-        {% include 'farmer_language_switch.html' %}
-        <div style="text-align: center;">
-            <div style="background: #1E5BBF; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+
+        <div class="admin-login-header">
+            <div class="admin-login-icon-circle">
                 <ion-icon name="key-outline" style="font-size: 30px;"></ion-icon>
             </div>
             <h2 style="margin: 15px 0 5px;">Reset Admin Password</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 13px;">Verify admin details to update the password</p>
+            <p class="admin-login-subtitle">Superadmin-authorized password reset</p>
         </div>
 
         {% if error %}
@@ -26,22 +28,27 @@
         {% endif %}
 
         <form class="fade-in" method="POST" action="/admin-reset">
-            <div class="input-wrapper">
+            {{ csrf_input }}
+            <label class="ds-field-label" for="ds-admin_reset-identifier">Username or Email</label>
+<div class="input-wrapper">
                 <ion-icon name="person-outline"></ion-icon>
-                <input type="text" name="identifier" placeholder="Username or Email" required>
+                <input id="ds-admin_reset-identifier" type="text" name="identifier" placeholder="Username or Email" required>
             </div>
-            <div class="input-wrapper">
+            <label class="ds-field-label" for="ds-admin_reset-email">Registered Email</label>
+<div class="input-wrapper">
                 <ion-icon name="mail-outline"></ion-icon>
-                <input type="email" name="email" placeholder="Registered Email" required>
+                <input id="ds-admin_reset-email" type="email" name="email" placeholder="Registered Email" required>
             </div>
-            <div class="input-wrapper">
+            <label class="ds-field-label" for="ds-admin_reset-password">New Password</label>
+<div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" name="password" placeholder="New Password" required>
-            </div>
-            <div class="input-wrapper">
+                <input id="ds-admin_reset-password" type="password" name="password" placeholder="New Password" required>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_reset-password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
+            <label class="ds-field-label" for="ds-admin_reset-confirm_password">Confirm New Password</label>
+<div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" name="confirm_password" placeholder="Confirm New Password" required>
-            </div>
+                <input id="ds-admin_reset-confirm_password" type="password" name="confirm_password" placeholder="Confirm New Password" required>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_reset-confirm_password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
 
             <button type="submit" class="primary-btn">
                 Update Password
@@ -49,9 +56,10 @@
         </form>
 
         <div style="text-align: center; margin-top: 20px;">
-            <a href="/admin-login" style="color: rgba(255,255,255,0.5); font-size: 12px; text-decoration: none;">&larr; Back to Admin Login</a>
+            <a href="/admin-login" class="admin-login-back-link">&larr; Back to Admin Login</a>
         </div>
     </div>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

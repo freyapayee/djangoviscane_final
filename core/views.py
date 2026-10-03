@@ -10,12 +10,14 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.db.models import Count, Sum, Q
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Avg, Count, Sum, Q
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect as django_redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
 from .language import translate_recommendations
 from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, Notification, Scan, SystemConfig, User
@@ -31,6 +33,7 @@ from .services import (
     _parse_ratoon_value,
     api_predict_scan_payload,
     compute_agronomic_adjustment,
+    derive_scan_assessment,
     generate_recommendations,
     get_current_admin,
     get_model_updates_root,
@@ -112,7 +115,10 @@ def role_required(required_role):
         def wrapped(request, *args, **kwargs):
             admin_id = request.session.get("admin_id")
             admin = Admin.objects.filter(pk=admin_id, is_archived=False).first() if admin_id else None
-            if not admin or admin.role != required_role:
+            if not admin:
+                request.session.pop("admin_id", None)
+                return redirect("superadmin_login" if required_role == "superadmin" else "admin_login")
+            if admin.role != required_role:
                 return redirect("admin_portal")
             request.current_admin = admin
             return view(request, *args, **kwargs)
@@ -131,12 +137,10 @@ def current_admin(request):
     return get_current_admin(request)
 
 
-@csrf_exempt
 def portal(request):
     return render_template(request, "portal.html")
 
 
-@csrf_exempt
 def admin_access(request):
     return render_template(request, "admin_access.html")
 
@@ -151,14 +155,16 @@ def homepage(request):
     scans_today = scans_base_query.filter(created_at__date=today).count()
     pending_scans = scans_base_query.filter(status="pending").count()
     scans_last7 = list(scans_base_query.filter(created_at__gte=seven_days_ago))
-    recent_scans = list(scans_base_query.order_by("-created_at")[:3])
-    recent_cv_uploads = list(CvScanUpload.objects.filter(user_id=user.id).order_by("-created_at")[:12])
-    recent_scan_cards = []
-    for index, scan in enumerate(recent_scans):
-        recent_scan_cards.append({"scan": scan, "cv_upload": recent_cv_uploads[index] if index < len(recent_cv_uploads) else None})
-    if not recent_scan_cards and recent_cv_uploads:
-        for upload in recent_cv_uploads[:3]:
-            recent_scan_cards.append({"scan": None, "cv_upload": upload})
+    recent_query = scans_base_query.filter(hidden_from_recent=False).select_related("cv_upload").order_by("-created_at", "-id")
+    recent_page = Paginator(recent_query, 4).get_page(request.GET.get("recent_page"))
+    recent_scans = list(recent_page.object_list)
+    gallery_query = (
+        scans_base_query.filter(hidden_from_recent=False, cv_upload__isnull=False)
+        .select_related("cv_upload").order_by("-created_at", "-id")
+    )
+    gallery_page = Paginator(gallery_query, 4).get_page(request.GET.get("gallery_page"))
+    gallery_scans = gallery_page.object_list
+    recent_scan_cards = [{"scan": scan, "cv_upload": scan.cv_upload} for scan in recent_scans]
     agronomic_logs = list(AgronomicLog.objects.filter(user_id=user.id).order_by("-created_at")[:10])
     announcements = list(Notification.objects.order_by("-created_at")[:5])
     recommendations = request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS
@@ -179,6 +185,11 @@ def homepage(request):
     else:
         yield_est = "Low"
         harvest_window = "14-18 days"
+    page_message = request.GET.get("message")
+    picture_removed = request.GET.get("notice") == "picture_removed" or page_message in {
+        "Picture removed from recent scans.",
+        "Picture removed from recent scans. The saved assessment remains available.",
+    }
     return render_template(
         request,
         "homepage.html",
@@ -192,13 +203,16 @@ def homepage(request):
             "avg_maturity": avg_maturity,
             "recent_scans": recent_scans,
             "recent_scan_cards": recent_scan_cards,
-            "recent_cv_uploads": recent_cv_uploads,
+            "recent_page": recent_page,
+            "gallery_scans": gallery_scans,
+            "gallery_page": gallery_page,
             "agronomic_logs": agronomic_logs,
             "announcements": announcements,
             "recommendations": recommendations,
             "grouped_recommendations": grouped_recommendations,
-            "message": request.GET.get("message"),
+            "message": None if picture_removed else page_message,
             "error": request.GET.get("error"),
+            "picture_removed": picture_removed,
         },
     )
 
@@ -218,28 +232,64 @@ def farmer_agronomic_logs(request):
     return render_template(request, "farmer_agronomic_logs.html", {"user": user, "agronomic_logs": agronomic_logs})
 
 
-@csrf_exempt
 @farmer_login_required
+@require_POST
 def delete_cv_upload(request, upload_id):
+    def back_to_recent_scans(**message):
+        for page_name in ("recent_page", "gallery_page"):
+            page_number = request.GET.get(page_name, "")
+            if page_number.isdigit():
+                message[page_name] = page_number
+        response = redirect("homepage", **message)
+        response["Location"] += "#recent-scans"
+        return response
+
     user_id = request.session.get("user_id")
     upload = CvScanUpload.objects.filter(pk=upload_id, user_id=user_id).first()
     if not upload:
-        return redirect("homepage", error="Picture not found or already removed.")
-    file_path = get_static_root() / Path(upload.image_path)
+        return back_to_recent_scans(error="Picture not found or already removed.")
+    file_path = cv_image_path(upload.image_path)
     try:
-        upload.delete()
+        with transaction.atomic():
+            Scan.objects.filter(user_id=user_id, cv_upload_id=upload_id).update(hidden_from_recent=True)
+            upload.delete()
     except Exception:
-        return redirect("homepage", error="Unable to remove picture right now.")
+        return back_to_recent_scans(error="Unable to remove picture right now.")
     try:
         if file_path.is_file():
             file_path.unlink()
     except OSError:
         pass
-    return redirect("homepage", message="Picture removed from recent scans.")
+    return back_to_recent_scans(notice="picture_removed")
 
 
-@csrf_exempt
+def cv_image_path(relative_path):
+    root = settings.PRIVATE_UPLOAD_ROOT if relative_path.startswith("private/") else get_static_root()
+    root = Path(root).resolve()
+    path = (root / relative_path).resolve()
+    if not path.is_relative_to(root):
+        raise Http404("Image not found")
+    return path
+
+
+@require_GET
+def cv_upload_image(request, upload_id):
+    upload = CvScanUpload.objects.filter(pk=upload_id).first()
+    farmer = current_user(request)
+    admin = current_admin(request) if not request.farmer_only else None
+    if not upload or not ((farmer and upload.user_id == farmer.id) or admin):
+        raise Http404("Image not found")
+    path = cv_image_path(upload.image_path)
+    if not path.is_file():
+        raise Http404("Image not found")
+    response = FileResponse(path.open("rb"))
+    response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 @farmer_login_required
+@require_POST
 def api_scan_predict(request):
     uploaded_file = request.FILES.get("file") or request.FILES.get("image")
     if not uploaded_file or not uploaded_file.name:
@@ -248,7 +298,19 @@ def api_scan_predict(request):
         top_k = max(1, min(10, int(request.GET.get("top_k", DEFAULT_SCAN_PREDICT_TOP_K))))
     except (TypeError, ValueError):
         return JsonResponse({"error": "Invalid `top_k`. Provide an integer from 1 to 10."}, status=400)
+    if uploaded_file.size > settings.SCAN_MAX_IMAGE_BYTES:
+        return JsonResponse({"error": "Image must be 10 MB or smaller."}, status=413)
     file_bytes = uploaded_file.read()
+    from io import BytesIO
+    from PIL import Image, UnidentifiedImageError
+    try:
+        with Image.open(BytesIO(file_bytes)) as image:
+            if image.format not in {"JPEG", "PNG", "WEBP"} or image.width * image.height > 40_000_000:
+                return JsonResponse({"error": "Use a JPEG, PNG or WebP image under 40 megapixels."}, status=400)
+            uploaded_file.content_type = Image.MIME[image.format]
+            image.verify()
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        return JsonResponse({"error": "The uploaded file is not a valid image."}, status=400)
     response_payload, error_payload, error_status = request_prediction_service(
         uploaded_filename=uploaded_file.name,
         file_bytes=file_bytes,
@@ -272,17 +334,18 @@ def api_scan_predict(request):
                 "error": "Prediction service returned no recognizable prediction.",
                 "details": f"Response fields: {', '.join(response_keys) or 'none'}. Expected variety, maturity, and a prediction score.",
             }, status=502)
-        request.session["latest_cv_context"] = cv_context
         try:
-            save_prediction_context(request.session.get("user_id"), uploaded_file, file_bytes, decoded_payload)
+            cv_context = save_prediction_context(request.session.get("user_id"), uploaded_file, file_bytes, decoded_payload)
         except Exception:
             pass
+        request.session["latest_cv_context"] = cv_context
     return HttpResponse(response_body, status=status_code, content_type="application/json")
 
 
-@csrf_exempt
 @farmer_login_required
 def calculate_results(request):
+    if request.method != "POST":
+        return django_redirect("/homepage#calc-form")
     user = current_user(request)
     variety = request.POST.get("variety", "").strip()
     plowing_count = request.POST.get("plowing_count", "").strip()
@@ -372,23 +435,24 @@ def calculate_results(request):
     generated_recommendations = generate_recommendations(prediction_response=prediction_response, agronomic_input=recommendation_input, missing_fields=missing_fields, variety=normalized_variety)
     request.session["farmer_recommendations"] = generated_recommendations
     recommendations_summary = " | ".join(f"{item.get('category', 'General')}: {item.get('title', '')}" for item in generated_recommendations)
-    try:
-        AgronomicLog.objects.create(
-            user_id=user.id,
-            variety=normalized_variety or variety or None,
-            hectares=hectares or None,
-            plowing_count=plowing_count or None,
-            weeding_count=weeding_count or None,
-            fertilizer_count=fertilizer_count or None,
-            ratoon_stage=ratoon_stage or None,
-            rssi_infected=rssi_infected or None,
-            predicted_lkg_tc=prediction_response.get("predicted_lkg_tc"),
-            predicted_tc_ha=prediction_response.get("predicted_tc_ha"),
-            predicted_lkg=prediction_response.get("predicted_lkg"),
-            recommendations_summary=recommendations_summary or "No recommendation generated.",
-        )
-    except Exception:
-        pass
+    if has_complete_payload and prediction_response:
+        try:
+            AgronomicLog.objects.create(
+                user_id=user.id,
+                variety=normalized_variety or variety or None,
+                hectares=hectares or None,
+                plowing_count=plowing_count or None,
+                weeding_count=weeding_count or None,
+                fertilizer_count=fertilizer_count or None,
+                ratoon_stage=ratoon_stage or None,
+                rssi_infected=rssi_infected or None,
+                predicted_lkg_tc=prediction_response.get("predicted_lkg_tc"),
+                predicted_tc_ha=prediction_response.get("predicted_tc_ha"),
+                predicted_lkg=prediction_response.get("predicted_lkg"),
+                recommendations_summary=recommendations_summary or "No recommendation generated.",
+            )
+        except Exception:
+            pass
     def maturity_label(value):
         if value is None:
             return "Not provided"
@@ -456,7 +520,6 @@ def calculate_results(request):
     )
 
 
-@csrf_exempt
 @farmer_login_required
 def farmer_settings(request):
     user = current_user(request)
@@ -507,8 +570,8 @@ def farmer_settings(request):
     return render_template(request, "farmer_settings.html", {"user": user, "error": error, "success": success})
 
 
-@csrf_exempt
 @farmer_login_required
+@require_POST
 def farmer_feedback(request):
     user = current_user(request)
     feedback_message = request.POST.get("feedback_message", "").strip()
@@ -609,13 +672,41 @@ def admin_farmers(request):
                 log_audit(f"Farmer account activated: {user.fullname}", user_id=current.id if current else None)
                 return redirect("admin_farmers", message=f"{user.fullname} has been reactivated.")
             return redirect("admin_farmers", error="Unable to activate account.")
+        if action == "delete":
+            user = User.objects.filter(pk=request.POST.get("user_id"), is_archived=False).first()
+            if user:
+                user.is_archived = True
+                user.is_active = False
+                user.save(update_fields=["is_archived", "is_active"])
+                log_audit(f"Farmer account deleted: {user.fullname}", user_id=current.id if current else None)
+                return redirect("admin_farmers", message=f"{user.fullname}'s account has been deleted.")
+            return redirect("admin_farmers", error="Unable to delete account.")
+
     users_query = User.objects.filter(is_archived=False)
+    total_farmers = users_query.count()
+    active_count = users_query.filter(is_active=True).count()
+    inactive_count = users_query.filter(is_active=False).count()
     if search:
         users_query = users_query.filter(Q(fullname__icontains=search) | Q(email__icontains=search) | Q(phone__icontains=search) | Q(province__icontains=search) | Q(municipality__icontains=search) | Q(barangay__icontains=search))
-    users = list(users_query.order_by("-id"))
-    active_users = [user for user in users if user.is_active]
-    inactive_users = [user for user in users if not user.is_active]
-    return render_template(request, "admin_farmers.html", {"users": active_users, "inactive_users": inactive_users, "message": message, "error": error, "search": search, "current_admin": current_admin(request)})
+    paginator = Paginator(users_query.order_by("-id"), 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    page_numbers = [
+        None if str(number) == str(Paginator.ELLIPSIS) else number
+        for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)
+    ]
+    return render_template(request, "admin_farmers.html", {
+        "users": list(page_obj.object_list),
+        "page_obj": page_obj,
+        "page_numbers": page_numbers,
+        "total_farmers": total_farmers,
+        "active_count": active_count,
+        "inactive_count": inactive_count,
+        "message": message,
+        "error": error,
+        "search": search,
+        "search_query": urlencode({"search": search}) if search else "",
+        "current_admin": current_admin(request),
+    })
 
 
 @login_required
@@ -648,50 +739,187 @@ def admin_farmer_edit(request, user_id):
 
 @login_required
 def admin_monitoring(request):
-    logs = AgronomicLog.objects.select_related("user").order_by("-created_at")[:50]
+    search = request.GET.get("search", "").strip()
+    variety = request.GET.get("variety", "").strip()
+    status = request.GET.get("status", "").strip()
+    base_logs = AgronomicLog.objects.select_related("user").order_by("-created_at")
+    total_predictions = base_logs.count()
+    today_predictions = base_logs.filter(created_at__date=timezone.localdate()).count()
+    completed_predictions = base_logs.filter(predicted_lkg__isnull=False).count()
+    averages = base_logs.aggregate(avg_lkg_tc=Avg("predicted_lkg_tc"), avg_lkg_ha=Avg("predicted_tc_ha"))
+    variety_options = list(
+        base_logs.exclude(variety__isnull=True).exclude(variety="")
+        .values_list("variety", flat=True).distinct().order_by("variety")
+    )
+    logs = base_logs
+    if search:
+        logs = logs.filter(
+            Q(user__fullname__icontains=search)
+            | Q(variety__icontains=search)
+            | Q(rssi_infected__icontains=search)
+        )
+    if variety:
+        logs = logs.filter(variety=variety)
+    if status == "completed":
+        logs = logs.filter(predicted_lkg__isnull=False)
+    elif status == "pending":
+        logs = logs.filter(predicted_lkg__isnull=True)
+    paginator = Paginator(logs, 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
     monitoring_rows = []
-    for log in logs:
+    for log in page_obj.object_list:
         monitoring_rows.append({"farmer_name": log.user.fullname if log.user else f"User #{log.user_id}", "variety": log.variety or "N/A", "hectares": log.hectares or "N/A", "predicted_lkg_tc": round(log.predicted_lkg_tc, 2) if log.predicted_lkg_tc is not None else None, "predicted_tc_ha": round(log.predicted_tc_ha, 2) if log.predicted_tc_ha is not None else None, "predicted_lkg": round(log.predicted_lkg, 2) if log.predicted_lkg is not None else None, "rssi_infected": log.rssi_infected or "N/A", "created_at": log.created_at})
-    return render_template(request, "admin_monitoring.html", {"rows": monitoring_rows, "current_admin": current_admin(request)})
+    page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
+    filter_values = {"search": search, "variety": variety, "status": status}
+    query_string = urlencode({key: value for key, value in filter_values.items() if value})
+    return render_template(request, "admin_monitoring.html", {
+        "rows": monitoring_rows,
+        "page_obj": page_obj,
+        "page_numbers": page_numbers,
+        "query_string": query_string,
+        "search": search,
+        "selected_variety": variety,
+        "selected_status": status,
+        "variety_options": variety_options,
+        "total_predictions": total_predictions,
+        "today_predictions": today_predictions,
+        "completed_predictions": completed_predictions,
+        "avg_lkg_tc": round(averages["avg_lkg_tc"] or 0, 2),
+        "avg_lkg_ha": round(averages["avg_lkg_ha"] or 0, 2),
+        "current_admin": current_admin(request),
+    })
 
 
 @login_required
+@require_GET
 def admin_models(request):
+    config = get_system_config()
     admin = current_admin(request)
-    if admin and admin.role == "superadmin":
-        return redirect("superadmin_settings")
-    return redirect("admin_portal")
+    return render_template(
+        request,
+        "admin_models.html",
+        {
+            "config": config,
+            "model_deployed": bool(config.model_filename),
+            "can_manage_model": bool(admin and admin.role == "superadmin"),
+            "current_admin": admin,
+        },
+    )
 
 
 @login_required
 def admin_reports(request):
     logs = AgronomicLog.objects.select_related("user").order_by("-created_at")
     farmer_summary = {}
+    municipality_summary = {}
+    total_predictions = 0
+    total_lkg_tc = 0.0
+    total_tc_ha = 0.0
+    total_lkg = 0.0
+    lkg_tc_count = 0
+    tc_ha_count = 0
+    latest_prediction_at = None
     for log in logs:
-        entry = farmer_summary.setdefault(log.user_id, {"count": 0, "lkg_tc_count": 0, "tc_ha_count": 0, "total_lkg_tc": 0.0, "total_tc_ha": 0.0, "total_lkg": 0.0})
+        if not log.user or log.user.is_archived:
+            continue
+        entry = farmer_summary.setdefault(log.user_id, {"user": log.user, "count": 0, "lkg_tc_count": 0, "tc_ha_count": 0, "total_lkg_tc": 0.0, "total_tc_ha": 0.0, "total_lkg": 0.0})
         entry["count"] += 1
+        total_predictions += 1
+        if latest_prediction_at is None:
+            latest_prediction_at = log.created_at
         if log.predicted_lkg_tc is not None:
             entry["lkg_tc_count"] += 1
             entry["total_lkg_tc"] += float(log.predicted_lkg_tc)
+            total_lkg_tc += float(log.predicted_lkg_tc)
+            lkg_tc_count += 1
         if log.predicted_tc_ha is not None:
             entry["tc_ha_count"] += 1
             entry["total_tc_ha"] += float(log.predicted_tc_ha)
+            total_tc_ha += float(log.predicted_tc_ha)
+            tc_ha_count += 1
         if log.predicted_lkg is not None:
             entry["total_lkg"] += float(log.predicted_lkg)
+            total_lkg += float(log.predicted_lkg)
+        municipality = log.user.municipality or "Unspecified"
+        location = municipality_summary.setdefault(municipality, {"name": municipality, "predictions": 0, "farmer_ids": set(), "total_lkg": 0.0})
+        location["predictions"] += 1
+        location["farmer_ids"].add(log.user_id)
+        if log.predicted_lkg is not None:
+            location["total_lkg"] += float(log.predicted_lkg)
     rows = []
     for user_id, summary in farmer_summary.items():
-        user = User.objects.filter(pk=user_id, is_archived=False).first()
-        if not user:
-            continue
+        user = summary["user"]
         rows.append({"name": user.fullname, "municipality": user.municipality or "N/A", "barangay": user.barangay or "N/A", "predictions": summary["count"], "avg_lkg_tc": round(summary["total_lkg_tc"] / summary["lkg_tc_count"], 2) if summary["lkg_tc_count"] else 0, "avg_lkg_ha": round(summary["total_tc_ha"] / summary["tc_ha_count"], 2) if summary["tc_ha_count"] else 0, "total_lkg": round(summary["total_lkg"], 2)})
     rows = sorted(rows, key=lambda item: item["predictions"], reverse=True)
-    return render_template(request, "admin_reports.html", {"rows": rows, "current_admin": current_admin(request)})
+    max_location_predictions = max((item["predictions"] for item in municipality_summary.values()), default=0)
+    locations = []
+    for item in sorted(municipality_summary.values(), key=lambda value: value["predictions"], reverse=True)[:5]:
+        locations.append({
+            "name": item["name"],
+            "predictions": item["predictions"],
+            "farmers": len(item["farmer_ids"]),
+            "total_lkg": round(item["total_lkg"], 2),
+            "share": round((item["predictions"] / max_location_predictions) * 100) if max_location_predictions else 0,
+        })
+    report = {
+        "farms": len(rows),
+        "municipalities": len(municipality_summary),
+        "total_predictions": total_predictions,
+        "avg_lkg_tc": round(total_lkg_tc / lkg_tc_count, 2) if lkg_tc_count else 0,
+        "avg_lkg_ha": round(total_tc_ha / tc_ha_count, 2) if tc_ha_count else 0,
+        "total_lkg": round(total_lkg, 2),
+        "latest_prediction_at": latest_prediction_at,
+        "top_farm": rows[0] if rows else None,
+    }
+    search = request.GET.get("search", "").strip()
+    municipality_filter = request.GET.get("municipality", "").strip()
+    municipality_options = sorted({row["municipality"] for row in rows if row["municipality"] != "N/A"})
+    filtered_rows = rows
+    if search:
+        lowered_search = search.lower()
+        filtered_rows = [
+            row for row in filtered_rows
+            if lowered_search in row["name"].lower()
+            or lowered_search in row["municipality"].lower()
+            or lowered_search in row["barangay"].lower()
+        ]
+    if municipality_filter:
+        filtered_rows = [row for row in filtered_rows if row["municipality"] == municipality_filter]
+
+    if request.GET.get("download") == "csv":
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Farmer", "Municipality", "Barangay", "Predictions", "Average LKG/TC", "Average LKG/HA", "Total Predicted LKG"])
+        for row in filtered_rows:
+            writer.writerow([row["name"], row["municipality"], row["barangay"], row["predictions"], row["avg_lkg_tc"], row["avg_lkg_ha"], row["total_lkg"]])
+        response = HttpResponse(output.getvalue(), content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="viscane-farm-performance.csv"'
+        return response
+
+    paginator = Paginator(filtered_rows, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
+    filter_values = {"search": search, "municipality": municipality_filter}
+    query_string = urlencode({key: value for key, value in filter_values.items() if value})
+    report["filtered_farms"] = len(filtered_rows)
+    return render_template(request, "admin_reports.html", {
+        "rows": list(page_obj.object_list),
+        "report": report,
+        "locations": locations,
+        "page_obj": page_obj,
+        "page_numbers": page_numbers,
+        "query_string": query_string,
+        "search": search,
+        "selected_municipality": municipality_filter,
+        "municipality_options": municipality_options,
+        "current_admin": current_admin(request),
+    })
 
 
-@csrf_exempt
 @login_required
 def admin_communications(request):
-    message = None
+    message = request.GET.get("message")
+    error = request.GET.get("error")
     if request.method == "POST":
         title = request.POST.get("title", "").strip()
         content = request.POST.get("message", "").strip()
@@ -699,17 +927,39 @@ def admin_communications(request):
             current = current_admin(request)
             Notification.objects.create(title=title, message=content, created_by=current.id if current else None)
             log_audit(f"Announcement published: {title}", user_id=current.id if current else None)
-            message = "Announcement published."
-    notifications = list(Notification.objects.order_by("-created_at")[:10])
-    feedback_entries = list(Feedback.objects.order_by("-created_at")[:20])
+            return redirect("admin_communications", message="Announcement published successfully.")
+        return redirect("admin_communications", error="Add both a title and message before publishing.")
+
+    search = request.GET.get("search", "").strip()
+    notifications = list(Notification.objects.order_by("-created_at")[:8])
+    feedback_query = Feedback.objects.order_by("-created_at")
+    if search:
+        matching_users = User.objects.filter(fullname__icontains=search).values_list("id", flat=True)
+        feedback_query = feedback_query.filter(Q(message__icontains=search) | Q(user_id__in=matching_users))
+    paginator = Paginator(feedback_query, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    feedback_entries = list(page_obj.object_list)
     feedback = []
     for entry in feedback_entries:
         farmer = User.objects.filter(pk=entry.user_id).first() if entry.user_id else None
         feedback.append({"farmer_label": farmer.fullname if farmer else (f"Farmer ID {entry.user_id}" if entry.user_id else "Unknown"), "message": entry.message, "created_at": entry.created_at})
-    return render_template(request, "admin_communications.html", {"notifications": notifications, "feedback": feedback, "message": message, "current_admin": current_admin(request)})
+    page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
+    return render_template(request, "admin_communications.html", {
+        "notifications": notifications,
+        "feedback": feedback,
+        "page_obj": page_obj,
+        "page_numbers": page_numbers,
+        "search": search,
+        "query_string": urlencode({"search": search}) if search else "",
+        "total_announcements": Notification.objects.count(),
+        "total_feedback": Feedback.objects.count(),
+        "active_recipients": User.objects.filter(is_archived=False, is_active=True).count(),
+        "message": message,
+        "error": error,
+        "current_admin": current_admin(request),
+    })
 
 
-@csrf_exempt
 def admin_login(request):
     if not Admin.objects.filter(is_archived=False).exists():
         return redirect("admin_setup")
@@ -721,13 +971,14 @@ def admin_login(request):
         admin = Admin.objects.filter(Q(username__iexact=identifier) | Q(email__iexact=identifier), is_archived=False).first()
         if admin and verify_and_upgrade_password(admin, password, "password_hash"):
             admin.save(update_fields=["password_hash"])
+            request.session.cycle_key()
+            request.session.pop("user_id", None)
             request.session["admin_id"] = admin.id
             return redirect("admin_portal")
         error = "Invalid admin credentials. Please try again."
     return render_template(request, "admin_login.html", {"error": error, "success": success})
 
 
-@csrf_exempt
 def superadmin_login(request):
     if not Admin.objects.filter(is_archived=False).exists():
         return redirect("admin_setup")
@@ -742,6 +993,8 @@ def superadmin_login(request):
             if admin.role != "superadmin":
                 error = "Your account is not authorized for superadmin access."
             else:
+                request.session.cycle_key()
+                request.session.pop("user_id", None)
                 request.session["admin_id"] = admin.id
                 return redirect("superadmin_portal")
         else:
@@ -749,7 +1002,6 @@ def superadmin_login(request):
     return render_template(request, "superadmin_login.html", {"error": error, "success": success})
 
 
-@csrf_exempt
 def admin_setup(request):
     if Admin.objects.filter(is_archived=False).exists():
         return redirect("admin_login")
@@ -769,13 +1021,15 @@ def admin_setup(request):
             from django.contrib.auth.hashers import make_password
 
             admin = Admin.objects.create(username=username, email=email, password_hash=make_password(password), role="superadmin")
+            request.session.cycle_key()
+            request.session.pop("user_id", None)
             request.session["admin_id"] = admin.id
             log_audit(f"Superadmin account created: {admin.username}", user_id=admin.id)
             return redirect("admin_portal")
     return render_template(request, "admin_setup.html", {"error": error})
 
 
-@csrf_exempt
+@role_required("superadmin")
 def admin_register(request):
     error = None
     if request.method == "POST":
@@ -805,7 +1059,7 @@ def admin_register(request):
     return render_template(request, "admin_register.html", {"error": error})
 
 
-@csrf_exempt
+@role_required("superadmin")
 def superadmin_register(request):
     error = None
     if request.method == "POST":
@@ -832,7 +1086,7 @@ def superadmin_register(request):
     return render_template(request, "superadmin_register.html", {"error": error})
 
 
-@csrf_exempt
+@role_required("superadmin")
 def admin_reset(request):
     error = None
     success = request.GET.get("success")
@@ -841,7 +1095,9 @@ def admin_reset(request):
         email = request.POST.get("email", "").strip().lower()
         new_password = request.POST.get("password", "")
         confirm = request.POST.get("confirm_password", "")
-        if new_password != confirm:
+        if len(new_password) < 8:
+            error = "Password must be at least 8 characters."
+        elif new_password != confirm:
             error = "Passwords do not match."
         else:
             admin = Admin.objects.filter(Q(username__iexact=identifier) | Q(email__iexact=identifier)).first()
@@ -883,7 +1139,6 @@ def superadmin_portal(request):
     return render_template(request, "superadmin.html", {"total_users": total_users, "active_user_count": active_user_count, "deactivated_user_count": deactivated_user_count, "archived_user_count": archived_user_count, "total_admins": total_admins, "active_farmers": active_farmers, "total_scans": total_scans, "total_prediction_logs": total_prediction_logs, "total_estimated_lkg": total_estimated_lkg, "pending_scans": pending_scans, "admins": admins, "users": users, "archived_users": archived_users, "deactivated_users": deactivated_users, "recent_scans": recent_scans, "recent_predictions": recent_predictions, "superadmin_cv_uploads": superadmin_cv_uploads, "create_error": create_error, "create_success": create_success, "current_admin": current_admin(request)})
 
 
-@csrf_exempt
 @role_required("superadmin")
 def superadmin_create_admin(request):
     current = current_admin(request)
@@ -912,7 +1167,6 @@ def superadmin_create_admin(request):
     return redirect("superadmin_portal", create_success=f"{role.title()} account created successfully.")
 
 
-@csrf_exempt
 @role_required("superadmin")
 def superadmin_update_role(request):
     admin = Admin.objects.filter(pk=request.POST.get("admin_id")).first()
@@ -925,7 +1179,6 @@ def superadmin_update_role(request):
     return redirect("superadmin_portal")
 
 
-@csrf_exempt
 @role_required("superadmin")
 def superadmin_archive_admin(request):
     admin = Admin.objects.filter(pk=request.POST.get("admin_id")).first()
@@ -937,7 +1190,6 @@ def superadmin_archive_admin(request):
     return redirect("superadmin_portal")
 
 
-@csrf_exempt
 @role_required("superadmin")
 def superadmin_archive_user(request):
     user = User.objects.filter(pk=request.POST.get("user_id")).first()
@@ -972,7 +1224,6 @@ def superadmin_user_details(request, user_id):
     return render_template(request, "superadmin_user_details.html", {"user": user, "scans": scans, "agronomic_logs": agronomic_logs, "feedback_entries": feedback_entries, "audit_logs": audit_logs, "activity_items": activity_items[:25], "current_admin": current_admin(request)})
 
 
-@csrf_exempt
 @role_required("superadmin")
 def superadmin_restore_user(request):
     user = User.objects.filter(pk=request.POST.get("user_id")).first()
@@ -981,15 +1232,16 @@ def superadmin_restore_user(request):
         user.is_archived = False
         user.save(update_fields=["is_archived"])
         log_audit(f"User account restored: {user.fullname}", user_id=current.id if current else None)
+    if user:
+        return redirect("superadmin_user_details", user_id=user.id)
     return redirect("superadmin_portal")
 
 
 def admin_logout(request):
-    request.session.pop("admin_id", None)
+    request.session.flush()
     return redirect("portal")
 
 
-@csrf_exempt
 def auth(request):
     mode = request.GET.get("mode", "login")
     if request.method == "POST":
@@ -1011,6 +1263,8 @@ def auth(request):
             from django.contrib.auth.hashers import make_password
 
             new_user = User.objects.create(fullname=fullname, email=email, phone=phone, password=make_password(password), province=province, municipality=municipality, barangay=barangay)
+            request.session.cycle_key()
+            request.session.pop("admin_id", None)
             request.session["user_id"] = new_user.id
             return redirect("auth_register_success")
         email = request.POST.get("email", "").strip().lower()
@@ -1018,6 +1272,8 @@ def auth(request):
         user = User.objects.filter(email=email).first()
         if user and not user.is_archived and user.is_active and verify_and_upgrade_password(user, password, "password"):
             user.save(update_fields=["password"])
+            request.session.cycle_key()
+            request.session.pop("admin_id", None)
             request.session["user_id"] = user.id
             return redirect("homepage")
         if user and user.is_archived:
@@ -1039,22 +1295,40 @@ def auth_register_success(request):
 
 
 def logout(request):
-    request.session.pop("user_id", None)
+    request.session.flush()
     return redirect("portal")
 
 
-@csrf_exempt
 @farmer_login_required
 def scan_new(request):
     error = None
+    plot_name = ""
+    grade = ""
+    maturity_pct = ""
+    status = ""
+    ai_prediction_applied = False
+    cv_context = {}
     if request.method == "POST":
         plot_name = request.POST.get("plot_name", "").strip()
         grade = request.POST.get("grade", "").strip().upper()
         maturity_pct = request.POST.get("maturity_pct", "").strip()
-        status = request.POST.get("status", "pending").strip().lower()
-        if not plot_name or not grade or not maturity_pct:
+        status = request.POST.get("status", "").strip().lower()
+        ai_prediction_applied = request.POST.get("ai_prediction_applied", "") in {"1", "true", "True"}
+        if ai_prediction_applied:
+            cv_context = request.session.get("latest_cv_context") or {}
+            derived_assessment = derive_scan_assessment(
+                cv_context.get("maturity_status"),
+                cv_context.get("confidence"),
+            )
+            if derived_assessment:
+                grade = derived_assessment["grade"]
+                maturity_pct = str(derived_assessment["maturity_pct"])
+                status = derived_assessment["status"]
+            else:
+                error = "AI assessment is unavailable. Please scan the image again."
+        if not error and (not plot_name or not grade or not maturity_pct):
             error = "Please complete all fields."
-        else:
+        elif not error:
             try:
                 maturity_value = int(maturity_pct)
             except ValueError:
@@ -1062,13 +1336,23 @@ def scan_new(request):
             if maturity_value is None or maturity_value < 0 or maturity_value > 100:
                 error = "Maturity must be between 0 and 100."
             else:
-                Scan.objects.create(user_id=request.session.get("user_id"), plot_name=plot_name, grade=grade, maturity_pct=maturity_value, status=status)
+                upload_id = cv_context.get("upload_id") if ai_prediction_applied else None
+                cv_upload = CvScanUpload.objects.filter(pk=upload_id, user_id=request.session.get("user_id")).first() if upload_id else None
+                Scan.objects.create(user_id=request.session.get("user_id"), cv_upload=cv_upload, plot_name=plot_name, grade=grade, maturity_pct=maturity_value, status=status)
                 log_audit(f"User {request.session.get('user_id')} uploaded a scan for {plot_name}", user_id=request.session.get("user_id"))
                 return redirect("homepage")
-    return render_template(request, "scan_new.html", {"error": error})
+    return render_template(request, "scan_new.html", {
+        "error": error,
+        "plot_name": plot_name,
+        "grade": grade,
+        "maturity_pct": maturity_pct,
+        "status": status,
+        "ai_prediction_applied": ai_prediction_applied and bool(cv_context),
+        "cv_variety": cv_context.get("variety", ""),
+        "cv_maturity_status": cv_context.get("maturity_status", ""),
+    })
 
 
-@csrf_exempt
 @role_required("superadmin")
 def superadmin_settings(request):
     config = get_system_config()

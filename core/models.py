@@ -36,6 +36,8 @@ class Admin(models.Model):
 
 class Scan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="scans")
+    cv_upload = models.ForeignKey("CvScanUpload", on_delete=models.SET_NULL, related_name="scans", null=True, blank=True)
+    hidden_from_recent = models.BooleanField(default=False)
     plot_name = models.CharField(max_length=80)
     grade = models.CharField(max_length=2)
     maturity_pct = models.IntegerField()

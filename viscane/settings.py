@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from urllib.parse import urlparse, unquote
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,6 +79,9 @@ def parse_database_url(database_url):
 SECRET_KEY = os.getenv("VISCANE_SECRET_KEY", "change-this-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes", "on"}
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if host.strip()]
+FARMER_ONLY = os.getenv("VISCANE_FARMER_ONLY", "false").lower() in {"1", "true", "yes", "on"}
+if not DEBUG and (SECRET_KEY == "change-this-key" or "*" in ALLOWED_HOSTS):
+    raise ImproperlyConfigured("Production requires VISCANE_SECRET_KEY and explicit DJANGO_ALLOWED_HOSTS.")
 
 INSTALLED_APPS = [
     "django.contrib.sessions",
@@ -87,6 +91,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "core.mobile.FarmerPortalMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -133,7 +138,20 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = PROJECT_ASSET_DIR / "media"
+PRIVATE_UPLOAD_ROOT = Path(os.getenv("VISCANE_PRIVATE_UPLOAD_ROOT", str(BASE_DIR / ".private")))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv("DJANGO_HSTS_INCLUDE_SUBDOMAINS", "false").lower() == "true"
+SECURE_HSTS_PRELOAD = os.getenv("DJANGO_HSTS_PRELOAD", "false").lower() == "true"
+CSRF_TRUSTED_ORIGINS = [value.strip() for value in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if value.strip()]
+# Enable only behind a proxy that strips and sets this header itself.
+if os.getenv("DJANGO_TRUST_PROXY", "false").lower() == "true":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SCAN_MAX_IMAGE_BYTES = 10 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024

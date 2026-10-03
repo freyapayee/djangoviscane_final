@@ -2,19 +2,20 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-login-premium.css') }}?v=2">
 </head>
-<body>
-    <div class="card fade-in">
-        {% include 'farmer_language_switch.html' %}
+<body class="vis-auth-simple ds-app vis-admin-login-page">
+    <main class="card fade-in" aria-labelledby="admin-login-title">
+
         <div class="admin-login-header">
             <div class="admin-login-icon-circle">
-                <ion-icon name="shield-checkmark-outline" class="admin-login-icon"></ion-icon>
+                <svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#shield-checkmark-outline"></use></svg>
             </div>
-            <h2 class="admin-login-title">Admin Console</h2>
+            <h1 id="admin-login-title" class="admin-login-title">Admin Console</h1>
             <p class="admin-login-subtitle">Secure access to system controls</p>
         </div>
 
@@ -26,31 +27,33 @@
         {% endif %}
 
         <form class="fade-in" method="POST" action="/admin-login">
-            <div class="input-wrapper">
-                <ion-icon name="person-outline"></ion-icon>
-                <input type="text" name="identifier" placeholder="Username or Email" required>
+            {{ csrf_input }}
+            <label class="ds-field-label" for="ds-admin_login-identifier">Username or Email</label>
+<div class="input-wrapper">
+                <svg viewBox="0 0 24 24" class="console-icon console-field-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#person-outline"></use></svg>
+                <input id="ds-admin_login-identifier" type="text" name="identifier" placeholder="Enter your username or email" autocomplete="username" required>
             </div>
-            <div class="input-wrapper">
-                <ion-icon name="lock-closed-outline"></ion-icon>
-                <input type="password" name="password" placeholder="Password" required>
-            </div>
+            <label class="ds-field-label" for="ds-admin_login-password">Password</label>
+<div class="input-wrapper">
+                <svg viewBox="0 0 24 24" class="console-icon console-field-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#lock-outline"></use></svg>
+                <input id="ds-admin_login-password" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_login-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#eye-outline"></use><path class="console-eye-slash" d="m3 3 18 18"/></svg></button></div>
 
             <button type="submit" class="primary-btn">
-                Sign In as Admin
+                Sign In as Admin <span aria-hidden="true">&rarr;</span>
             </button>
         </form>
 
-        <div class="admin-login-link-row">
-            <a href="/admin-reset" class="admin-login-link">Forgot password?</a>
-        </div>
-        <div class="admin-login-link-row">
-            <a href="/admin-register" class="admin-login-link">Admin registration</a>
+        <div class="console-support-links">
+            <a href="/admin-reset" class="admin-login-link"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#lock-outline"></use></svg>Forgot password?</a>
+            <a href="/admin-register" class="admin-login-link"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#person-outline"></use></svg>Admin registration</a>
         </div>
 
         <div class="admin-login-footer">
             <a href="/admin-access" class="admin-login-back-link">&larr; Back to Admin Access</a>
         </div>
-    </div>
+    </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

@@ -6,8 +6,11 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Edit Farmer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
 </head>
-<body class="admin-layout">
+<body class="admin-layout has-vis-sidebar ds-app">
+    {% include 'components/app_header.html' %}
+    {% include 'components/admin_navigation.html' %}
     <div class="dashboard-bg"></div>
 
     <header class="dashboard-header">
@@ -22,18 +25,10 @@
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
-                <a class="btn light" href="/admin">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    Admin
-                </a>
+
                 <a class="btn light" href="/admin/farmers">
                     <ion-icon name="arrow-back-outline"></ion-icon>
                     Farmers
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
                 </a>
             </div>
         </div>
@@ -41,6 +36,7 @@
 
     <main class="dashboard-container fade-in">
         <form class="panel" method="POST">
+            {{ csrf_input }}
             <div class="panel-header">
                 <div>
                     <h3 class="panel-title">{{ user.fullname }}</h3>
@@ -73,5 +69,6 @@
         <div class="footer-link">VISCANE Admin | Farmer Account Management</div>
     </main>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

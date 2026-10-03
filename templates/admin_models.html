@@ -1,65 +1,42 @@
 <!DOCTYPE html>
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>VISCANE | Model Updates</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}">
+    <title>VISCANE | AI Models</title>
 </head>
-<body class="admin-layout">
-    <div class="dashboard-bg"></div>
+<body class="admin-layout has-vis-sidebar ds-app vis-management-dashboard vis-admin-section vis-admin-models">
+    {% include 'components/admin_navigation.html' %}
+    <header class="dashboard-header admin-section-header"><div class="header-content">
+        <div class="brand admin-section-heading"><div class="brand-icon"><ion-icon name="hardware-chip-outline"></ion-icon></div><div><p class="brand-title">AI Models</p><p class="brand-subtitle">Deployment visibility, governance, and model lifecycle status.</p></div></div>
+    </div></header>
 
-    <header class="dashboard-header">
-        <div class="header-content">
-            <div class="brand">
-                <div class="brand-icon">
-                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                </div>
-                <div>
-                    <p class="brand-title">Model Updates</p>
-                    <p class="brand-subtitle">Receive retrained models from superadmin</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
-                <a class="btn light" href="/admin">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    Admin
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <main class="dashboard-container fade-in">
-        {% if message %}
-            <div class="form-success">{{ message }}</div>
-        {% endif %}
-
-        <section class="panel">
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title">Deploy New Model</h3>
-                    <p class="panel-subtitle">Upload the latest model package</p>
-                </div>
-            </div>
-            <div class="stat-label">Current Model</div>
-            <div class="stat-helper">{{ config.model_filename if config.model_filename else 'No model deployed yet.' }}</div>
-            <form method="POST" enctype="multipart/form-data">
-                <input class="stat-input" type="file" name="model_file" required>
-                <button class="btn primary" type="submit" style="margin-top: 12px;">
-                    <ion-icon name="cloud-upload-outline"></ion-icon>
-                    Upload Model
-                </button>
-            </form>
+    <main class="dashboard-container fade-in admin-section-workspace">
+        <section class="admin-summary-grid three-up" aria-label="Model summary">
+            <article class="admin-summary-card"><span class="admin-summary-icon {% if model_deployed %}is-green{% else %}is-amber{% endif %}"><ion-icon name="{% if model_deployed %}checkmark-circle-outline{% else %}alert-circle-outline{% endif %}"></ion-icon></span><div><p>Deployment status</p><strong class="summary-text">{{ 'Active' if model_deployed else 'Not deployed' }}</strong><small>{{ 'Model package available' if model_deployed else 'Awaiting model package' }}</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-blue"><ion-icon name="calendar-outline"></ion-icon></span><div><p>Last configuration update</p><strong class="summary-text">{{ config.updated_at.strftime('%b %d, %Y') if config.updated_at else 'Not available' }}</strong><small>{{ config.updated_at.strftime('%I:%M %p') if config.updated_at else 'No update recorded' }}</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-violet"><ion-icon name="shield-checkmark-outline"></ion-icon></span><div><p>Deployment access</p><strong class="summary-text">{{ 'Authorized' if can_manage_model else 'View only' }}</strong><small>{{ 'Superadmin controls enabled' if can_manage_model else 'Managed by superadmin' }}</small></div></article>
         </section>
 
-        <div class="footer-link">VISCANE Admin | Model Updates</div>
+        <section class="model-hero panel">
+            <div class="model-hero-icon"><ion-icon name="cube-outline"></ion-icon><span class="{% if model_deployed %}is-active{% endif %}"></span></div>
+            <div class="model-hero-copy"><span class="admin-eyebrow">Production model</span><h2>{{ config.model_filename if config.model_filename else 'No model package deployed' }}</h2><p>{% if model_deployed %}This package is registered as the current model used by VISCANE prediction workflows.{% else %}Predictions require a model package to be deployed by a superadmin.{% endif %}</p>
+                <div class="model-meta-row"><span><ion-icon name="radio-button-on-outline"></ion-icon>{{ 'Operational' if model_deployed else 'Action required' }}</span><span><ion-icon name="business-outline"></ion-icon>{{ config.system_name }}</span>{% if config.updated_at %}<span><ion-icon name="time-outline"></ion-icon>Updated {{ config.updated_at.strftime('%b %d, %Y') }}</span>{% endif %}</div>
+            </div>
+            {% if can_manage_model %}<a class="btn primary model-manage-button" href="/superadmin/settings"><ion-icon name="settings-outline"></ion-icon>Manage deployment</a>{% else %}<span class="model-access-note"><ion-icon name="lock-closed-outline"></ion-icon>View-only access</span>{% endif %}
+        </section>
+
+        <section class="model-details-grid">
+            <article class="panel model-info-panel"><div class="admin-panel-heading"><div><span class="admin-eyebrow">Governance</span><h2 class="panel-title">Deployment controls</h2><p class="panel-subtitle">Clear ownership protects production predictions.</p></div><span class="admin-panel-icon"><ion-icon name="shield-checkmark-outline"></ion-icon></span></div>
+                <ul class="model-check-list"><li><ion-icon name="checkmark-circle-outline"></ion-icon><div><strong>Restricted publishing</strong><span>Only superadmins can upload or replace the active model package.</span></div></li><li><ion-icon name="checkmark-circle-outline"></ion-icon><div><strong>Audit visibility</strong><span>Deployment updates are recorded in the administrative audit log.</span></div></li><li><ion-icon name="checkmark-circle-outline"></ion-icon><div><strong>Single active package</strong><span>The registered filename identifies the current production model.</span></div></li></ul>
+            </article>
+            <article class="panel model-lifecycle-panel"><div class="admin-panel-heading"><div><span class="admin-eyebrow">Lifecycle</span><h2 class="panel-title">How updates reach production</h2><p class="panel-subtitle">A simple, governed deployment workflow.</p></div></div>
+                <ol class="model-timeline"><li class="is-complete"><span>1</span><div><strong>Validate</strong><small>Review the retrained package</small></div></li><li class="{% if model_deployed %}is-complete{% endif %}"><span>2</span><div><strong>Deploy</strong><small>Superadmin publishes the file</small></div></li><li class="{% if model_deployed %}is-complete{% endif %}"><span>3</span><div><strong>Monitor</strong><small>Track prediction outputs</small></div></li></ol>
+                <a class="model-secondary-link" href="/admin/monitoring">Open prediction monitoring<ion-icon name="arrow-forward-outline"></ion-icon></a>
+            </article>
+        </section>
+        <div class="footer-link">VISCANE Admin · AI Models</div>
     </main>
-    {% include 'hiligaynon_runtime.html' %}
-</body>
-</html>
+    {% include 'hiligaynon_runtime.html' %}<script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+</body></html>

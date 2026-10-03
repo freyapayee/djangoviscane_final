@@ -1,0 +1,235 @@
+/* Reference-led farmer dashboard. All assessment controls retain their original hooks. */
+body.ds-app.vis-farmer-dashboard {
+    background: #f3f8f6; color: #142735; padding: 28px 24px 0;
+    --accent: #078735; --accent-strong: #08772f; --accent-soft: #eaf6ed;
+}
+body.ds-app.vis-farmer-dashboard .dashboard-header,
+body.ds-app.vis-farmer-dashboard .dashboard-container { width: min(1120px,100%); max-width: 1120px; }
+body.ds-app.vis-farmer-dashboard .dashboard-header { padding: 0; margin: 0 auto 26px; background: transparent; border: 0; box-shadow: none; border-radius: 0; }
+body.ds-app.vis-farmer-dashboard .header-content { align-items: center; gap: 16px; }
+body.ds-app.vis-farmer-dashboard .brand-title { font-size: 30px; letter-spacing: -.035em; color: #102331; margin: 0 0 4px; }
+body.ds-app.vis-farmer-dashboard .brand-subtitle { color: #687789 !important; font-size: 14px; }
+body.ds-app.vis-farmer-dashboard .header-actions { align-items: center; gap: 8px; }
+body.ds-app.vis-farmer-dashboard .farmer-language-switch { margin: 0; }
+body.ds-app.vis-farmer-dashboard .header-actions select { width: 126px; height: 44px; min-height: 44px; }
+body.ds-app.vis-farmer-dashboard .header-actions .btn { min-height: 44px; padding: 8px 12px; font-size: 14px; background: white; }
+body.ds-app.vis-farmer-dashboard .farmer-info-chip { background: transparent; border: 0; color: #405367; font-size: 13px; padding: 8px; }
+body.ds-app.vis-farmer-dashboard .dashboard-container { padding-bottom: 112px; }
+body.ds-app.vis-farmer-dashboard :is(.panel,.stat-card,.hero-panel) { background: white; border: 1px solid #edf3ef; box-shadow: 0 5px 20px rgba(35,74,51,.035); border-radius: 20px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.ds-app.vis-farmer-dashboard .panel { padding: 24px; margin-bottom: 20px; }
+body.ds-app.vis-farmer-dashboard .panel-header { margin-bottom: 20px; gap: 16px; align-items: flex-start; }
+body.ds-app.vis-farmer-dashboard .panel-title { font-size: 22px; letter-spacing: -.025em; color: #142735; }
+body.ds-app.vis-farmer-dashboard .panel-subtitle { margin: 6px 0 0; font-size: 14px; color: #617185 !important; }
+body.ds-app.vis-farmer-dashboard .badge { background: #edf8ef; border: 0; color: #138239; font-size: 12px; padding: 7px 10px; border-radius: 10px; white-space: normal; }
+body.ds-app.vis-farmer-dashboard .hero-panel {
+    position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start;
+    padding: 26px 30px; min-height: 240px; margin-bottom: 20px; gap: 18px;
+    background: linear-gradient(115deg,#fbfffc 5%,#ebf8ed 65%,#c5e8c9);
+}
+body.ds-app.vis-farmer-dashboard .hero-content { width: 65%; position: relative; z-index: 1; }
+body.ds-app.vis-farmer-dashboard .hero-content h2 { font-size: 28px; margin: 8px 0; letter-spacing: -.03em; }
+body.ds-app.vis-farmer-dashboard .hero-content > p { font-size: 15px; margin: 0; color: #617185; }
+body.ds-app.vis-farmer-dashboard .hero-badge { color: #137c36; background: #e0f1e1; font-size: 12px; padding: 5px 10px; box-shadow: none; }
+body.ds-app.vis-farmer-dashboard .quick-grid { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 0; }
+body.ds-app.vis-farmer-dashboard .quick-tile { min-height: 32px; padding: 4px 0; background: transparent; border: 0; box-shadow: none; color: #30774a; font-size: 13px; display: inline-flex; gap: 6px; }
+body.ds-app.vis-farmer-dashboard .hero-actions { position: relative; z-index: 1; display: flex; width: 65%; gap: 12px; }
+body.ds-app.vis-farmer-dashboard .hero-actions .btn { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; padding: 10px 14px; box-shadow: none; }
+body.ds-app.vis-farmer-dashboard .hero-actions .btn.primary { background: #078735; color: white; border-color: #078735; }
+body.ds-app.vis-farmer-dashboard .hero-actions .btn.ghost { background: rgba(255,255,255,.8); color: #078735; border-color: #078735; }
+.farmer-scan-art { position: absolute; inset: 0 0 0 auto; width: 34%; z-index: 0; background: url('../images/access-cane.svg') right center / auto 125% no-repeat; pointer-events: none; }
+.farmer-scan-phone { position: absolute; right: 23%; top: 22px; width: 136px; height: 260px; border: 7px solid #d6ded8; border-radius: 24px; transform: rotate(9deg); background: url('../background1.png') 20% center / auto 100%; box-shadow: 0 10px 24px rgba(21,71,31,.17); }
+.farmer-scan-phone::before { content: ''; position: absolute; width: 56px; height: 12px; top: 0; left: calc(50% - 28px); background: #263d31; border-radius: 0 0 9px 9px; }
+.farmer-scan-phone span { position: absolute; inset: 70px 18px; border: 2px solid #a1f1a8; border-radius: 14px; background: rgba(191,255,198,.14); }
+body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-bottom: 20px; }
+body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) > .stat-card { padding: 20px; display: flex; flex-direction: column; gap: 4px; }
+.farmer-summary-icon { width: 40px; height: 40px; padding: 9px; box-sizing: border-box; fill: none; stroke: #078735; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; background: #e5f5e9; border-radius: 12px; margin-bottom: 4px; }
+.accent-blue .farmer-summary-icon { stroke: #167bea; background: #e7f2ff; }
+.accent-orange .farmer-summary-icon { stroke: #d88916; background: #fff1d6; }
+body.ds-app.vis-farmer-dashboard .stat-card::after { display: none; }
+body.ds-app.vis-farmer-dashboard .stat-label { font-size: 13px; color: #243746; letter-spacing: 0; margin: 0 0 8px; font-weight: 600; }
+body.ds-app.vis-farmer-dashboard .stat-value { font-size: 30px; color: #132637; margin: 0; line-height: 1.25; }
+body.ds-app.vis-farmer-dashboard .stat-meta { font-size: 12px; color: #6c7d8c; }
+body.ds-app.vis-farmer-dashboard .stat-card.accent-orange { background: linear-gradient(120deg,white,#fffaf0); }
+body.ds-app.vis-farmer-dashboard .stat-card.accent-blue { background: linear-gradient(120deg,white,#f5faff); }
+body.ds-app.vis-farmer-dashboard #calc-form { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 20px 24px; margin: 0; }
+body.ds-app.vis-farmer-dashboard #calc-form > .stat-card { padding: 0 !important; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+body.ds-app.vis-farmer-dashboard #calc-form .stat-card-variety { grid-column: span 1 !important; }
+body.ds-app.vis-farmer-dashboard #calc-form .stat-card-tons { grid-column: 1 / -1 !important; }
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger,.selector-trigger) {
+    min-height: 68px; height: auto; margin: 0; padding: 10px 14px; border: 1px solid #dce8e2; border-radius: 10px;
+    background: #f5faf7; box-shadow: none; justify-content: space-between; text-align: left; transform: none;
+}
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger,.selector-trigger):hover { border-color: #6dae83; background: #edf7ef; box-shadow: none; transform: none; }
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger-label,.variety-trigger:not(.is-selected) .variety-trigger-label) { flex-direction: row; justify-content: flex-start; gap: 10px; }
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger-copy,.selector-trigger-content) { align-items: flex-start; text-align: left; gap: 3px; }
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger-kicker,.selector-trigger-title) { color: #127b37; font-size: 12px; letter-spacing: 0; }
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger-value,.selector-trigger-value) { color: #526579; font-size: 13px; line-height: 1.4; }
+body.ds-app.vis-farmer-dashboard :is(.variety-trigger-icon,.selector-trigger-icon) { background: transparent; color: #677a8b; flex: 0 0 24px; width: 24px; height: 24px; }
+body.ds-app.vis-farmer-dashboard .variety-trigger-preview.is-visible { width: 36px; height: 36px; flex-basis: 36px; border-radius: 8px; box-shadow: none; }
+body.ds-app.vis-farmer-dashboard .variety-helper { font-size: 12px; color: #708274; min-height: 0; margin-top: 6px; }
+body.ds-app.vis-farmer-dashboard :is(.variety-panel-inner,.selector-panel-inner) { padding: 12px; border: 1px solid #dce8e2; border-radius: 12px; box-shadow: 0 8px 20px rgba(35,74,51,.07); }
+body.ds-app.vis-farmer-dashboard .selector-option { min-height: 48px; padding: 12px; color: #254b32; border: 1px solid #d7e6da; background: #f0f8f1; border-radius: 10px; }
+body.ds-app.vis-farmer-dashboard .selector-option[aria-pressed=true] { border-color: #078735; background: #dbefde; color: #086b2d; }
+body.ds-app.vis-farmer-dashboard .stat-inline { gap: 12px; }
+body.ds-app.vis-farmer-dashboard #tons-calc-btn { min-height: 48px; border-radius: 10px; background: #078735; color: white; font-size: 16px; box-shadow: none; }
+body.ds-app.vis-farmer-dashboard .section-grid.two-col { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; margin-bottom: 0; }
+body.ds-app.vis-farmer-dashboard #recent-scans { grid-template-columns: minmax(0,1fr); }
+body.ds-app.vis-farmer-dashboard .recent-item { padding: 16px 0; border-bottom: 1px solid #edf2ef; background: transparent; gap: 14px; }
+body.ds-app.vis-farmer-dashboard .recent-grade { width: 48px; height: 48px; min-width: 48px; border-radius: 12px; background: #e5f4e8; color: #0c8234; font-size: 14px; box-shadow: none; }
+body.ds-app.vis-farmer-dashboard .tag { background: #e4f5e8; color: #078735; border-radius: 14px; }
+body.ds-app.vis-farmer-dashboard .tag.warning { background: #fff3da; color: #90600c; }
+body.ds-app.vis-farmer-dashboard .icon-link-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+body.ds-app.vis-farmer-dashboard .icon-link-card { padding: 16px; border: 0; border-radius: 12px; background: #eef8f0; box-shadow: none; min-width: 0; }
+body.ds-app.vis-farmer-dashboard .icon-link-badge { background: transparent; color: #078735; box-shadow: none; }
+body.ds-app.vis-farmer-dashboard .icon-link-copy strong { color: #163426; font-size: 15px; }
+body.ds-app.vis-farmer-dashboard .sra-highlight { padding: 0 0 16px; background: transparent; border: 0; box-shadow: none; gap: 14px; }
+body.ds-app.vis-farmer-dashboard .sra-highlight-image { width: 86px; height: 86px; flex: 0 0 86px; border-radius: 12px; }
+body.ds-app.vis-farmer-dashboard .sra-highlight-title { font-size: 15px; color: #1d3543; }
+body.ds-app.vis-farmer-dashboard .sra-link { background: #f1f7f3; color: #19783a; border: 0; font-size: 12px; padding: 8px; }
+body.ds-app.vis-farmer-dashboard .feedback-panel { margin-bottom: 20px; }
+body.ds-app.vis-farmer-dashboard .farmer-bottom-nav { width: min(1120px,calc(100% - 32px)); bottom: max(10px,env(safe-area-inset-bottom)); padding: 8px 12px; gap: 8px; border-radius: 20px; background: rgba(255,255,255,.97); border: 1px solid #edf3ef; box-shadow: 0 4px 24px rgba(35,74,51,.09); }
+body.ds-app.vis-farmer-dashboard .farmer-bottom-link { min-height: 56px; border-radius: 12px; font-size: 12px; color: #64758a; }
+body.ds-app.vis-farmer-dashboard .farmer-bottom-link span { min-height: 0; overflow-wrap: normal; }
+body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #eaf6ed; color: #078735; }
+@media (max-width: 900px) {
+    body.ds-app.vis-farmer-dashboard .header-actions { width: auto; }
+}
+@media (max-width: 700px) {
+    body.ds-app.vis-farmer-dashboard .section-grid.two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+    body.ds-app.vis-farmer-dashboard {
+        padding-top: max(14px,env(safe-area-inset-top));
+        padding-right: max(12px,env(safe-area-inset-right));
+        padding-bottom: 0;
+        padding-left: max(12px,env(safe-area-inset-left));
+    }
+    body.ds-app.vis-farmer-dashboard .dashboard-header { margin-bottom: 16px; }
+    body.ds-app.vis-farmer-dashboard .header-content { gap: 10px; }
+    body.ds-app.vis-farmer-dashboard .brand-title { font-size: 22px; line-height: 1.2; }
+    body.ds-app.vis-farmer-dashboard .brand-subtitle { font-size: 12px !important; line-height: 1.35; }
+    body.ds-app.vis-farmer-dashboard .header-actions {
+        width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 8px;
+    }
+    body.ds-app.vis-farmer-dashboard .header-date-weather { order: 0; margin-right: auto; padding: 5px 0; font-size: 12px; }
+    body.ds-app.vis-farmer-dashboard .header-actions .btn { min-height: 40px; padding: 7px 10px; font-size: 12px; }
+    body.ds-app.vis-farmer-dashboard .dashboard-container { padding-bottom: 96px; }
+    body.ds-app.vis-farmer-dashboard .hero-panel { min-height: 0; padding: 16px; gap: 12px; border-radius: 16px; }
+    body.ds-app.vis-farmer-dashboard .hero-content { width: 100%; padding-right: 48px; }
+    .farmer-scan-art { width: 24%; opacity: .25; }
+    .farmer-scan-phone { width: 78px; height: 156px; right: -38px; border-width: 5px; }
+    body.ds-app.vis-farmer-dashboard .hero-actions { width: 100%; gap: 8px; }
+    body.ds-app.vis-farmer-dashboard .hero-actions .btn { min-height: 44px; font-size: 12px; padding: 8px 7px; }
+    body.ds-app.vis-farmer-dashboard .hero-content h2 { font-size: 22px; margin: 6px 0; }
+    body.ds-app.vis-farmer-dashboard .hero-content > p { font-size: 13px; }
+    body.ds-app.vis-farmer-dashboard .hero-badge { font-size: 11px; padding: 4px 8px; }
+    body.ds-app.vis-farmer-dashboard .quick-grid { margin-top: 10px; gap: 4px 10px; }
+    body.ds-app.vis-farmer-dashboard .quick-tile { min-height: 28px; font-size: 11px; }
+    body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) { gap: 8px; }
+    body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) > .stat-card { padding: 14px 10px; border-radius: 14px; }
+    body.ds-app.vis-farmer-dashboard .stat-value { font-size: 23px; overflow-wrap: anywhere; }
+    body.ds-app.vis-farmer-dashboard .stat-label { font-size: 12px; }
+    body.ds-app.vis-farmer-dashboard .stat-meta { font-size: 11px; }
+    body.ds-app.vis-farmer-dashboard .panel { padding: 16px; border-radius: 16px; }
+    body.ds-app.vis-farmer-dashboard .panel-title { font-size: 18px; }
+    body.ds-app.vis-farmer-dashboard #calc-form { grid-template-columns: minmax(0,1fr) !important; gap: 18px; }
+    body.ds-app.vis-farmer-dashboard .farmer-bottom-nav {
+        width: calc(100% - 20px); bottom: max(8px,env(safe-area-inset-bottom));
+        padding: 6px 3px; gap: 2px; border-radius: 17px;
+    }
+    body.ds-app.vis-farmer-dashboard .farmer-bottom-link { min-height: 50px; font-size: 9px; padding: 3px 0; }
+    body.ds-app.vis-farmer-dashboard .farmer-bottom-link ion-icon { font-size: 20px; }
+    body.ds-app.vis-farmer-dashboard .sra-highlight { flex-direction: row; }
+    body.ds-app.vis-farmer-dashboard .sra-highlight-image { width: 72px; height: 72px; flex-basis: 72px; }
+}
+
+/* Keep saved scan photos identifiable and readable at every viewport size. */
+body.ds-app.vis-farmer-dashboard .scan-gallery-block { margin-top: 0; padding-top: 24px; border-top: 0; }
+body.ds-app.vis-farmer-dashboard .scan-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+    gap: 16px;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-item {
+    min-width: 0;
+    border: 1px solid #dfeae2;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: none;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-item .scan-gallery-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding: 14px 14px 12px;
+    color: #203a2b;
+    font-size: 14px;
+    line-height: 1.35;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-plot {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #183628;
+    font-size: 16px;
+    font-weight: 700;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-date {
+    color: #627468;
+    font-size: 13px;
+    white-space: nowrap;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-item img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    max-height: 220px;
+    object-fit: contain;
+    background: #edf3ee;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-details {
+    display: grid;
+    gap: 6px;
+    padding: 12px 14px 14px;
+    color: #415549;
+    font-size: 14px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+body.ds-app.vis-farmer-dashboard .scan-gallery-details strong { color: #284b34; }
+body.ds-app.vis-farmer-dashboard :is(#scan-gallery, #recent-scans) { scroll-margin-top: 20px; }
+body.ds-app.vis-farmer-dashboard .scan-section-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e6eee8;
+}
+body.ds-app.vis-farmer-dashboard .scan-section-pagination :is(a, .is-disabled) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 88px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid #b8d9c1;
+    border-radius: 10px;
+    color: #16743a;
+    font-size: 14px;
+    font-weight: 650;
+    text-decoration: none;
+}
+body.ds-app.vis-farmer-dashboard .scan-section-pagination a:hover { background: #edf8ef; }
+body.ds-app.vis-farmer-dashboard .scan-section-pagination .is-disabled { border-color: #e5ebe6; color: #8a9890; }
+body.ds-app.vis-farmer-dashboard .scan-page-count { color: #4f6355; font-size: 13px; white-space: nowrap; }
+@media (max-width: 600px) {
+    body.ds-app.vis-farmer-dashboard .scan-gallery-block { padding-top: 16px; }
+    body.ds-app.vis-farmer-dashboard .scan-gallery-grid { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-farmer-dashboard .scan-gallery-item img { height: 240px; max-height: 240px; }
+}

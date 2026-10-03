@@ -1,0 +1,189 @@
+/* Welcome reference composition; scoped to the application entry screen. */
+body.ds-app.vis-landing {
+    padding: 24px;
+    background: linear-gradient(rgba(16,54,26,.06),rgba(16,54,26,.06)), url('../background1.png') center / cover fixed;
+}
+body.ds-app.vis-landing .vis-landing-shell { min-height: calc(100svh - 48px); padding: 14px 0; }
+/* Android already pads the WebView for system bars and the camera cutout. */
+html.vis-native-app body.ds-app.vis-landing { padding: 16px; }
+html.vis-native-app body.ds-app.vis-landing .vis-landing-shell {
+    min-height: calc(100dvh - 32px);
+    padding: 0;
+    display: grid;
+    place-items: center;
+}
+body.ds-app.vis-landing .vis-landing-main {
+    position: relative; width: min(900px,100%); padding: 26px 30px 22px;
+    border-radius: 28px; border: 2px solid rgba(255,255,255,.86);
+    background: linear-gradient(145deg,rgba(255,255,255,.86),rgba(228,246,255,.77) 48%,rgba(233,243,204,.81));
+    box-shadow: 0 20px 65px rgba(30,70,35,.16), inset 0 1px 0 white;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+body.ds-app.vis-landing .ds-entry-toolbar { position: absolute; right: 22px; top: 18px; width: auto; margin: 0; }
+body.ds-app.vis-landing .ds-entry-toolbar select { width: 138px; height: 44px; min-height: 44px; border-radius: 18px; background: rgba(255,255,255,.76); border-color: white; }
+body.ds-app.vis-landing .ds-entry-toolbar .farmer-language-switch { position: relative; }
+body.ds-app.vis-landing .vis-landing-language { display: none; }
+body.ds-app.vis-landing .ds-entry-logo {
+    width: 92px; height: 92px; border-radius: 50%; border: 3px solid rgba(255,255,255,.7);
+    box-shadow: 0 8px 20px rgba(56,133,73,.14); object-fit: cover;
+}
+body.ds-app.vis-landing .vis-hero-copy { margin: 0 0 20px; }
+body.ds-app.vis-landing .vis-hero-copy h1 { font-size: clamp(30px,2.6vw,40px); margin: 8px 0 4px; letter-spacing: -.035em; color: #081c3c; font-weight: 750; }
+body.ds-app.vis-landing .vis-hero-copy h1 span { color: #075326; }
+body.ds-app.vis-landing .vis-hero-copy p { font-size: 18px; color: #506780; }
+body.ds-app.vis-landing .vis-role-grid { gap: 16px; }
+body.ds-app.vis-landing .vis-role-card {
+    position: relative; isolation: isolate; overflow: hidden; padding: 20px 24px; gap: 7px;
+    border: 2px solid rgba(255,255,255,.83); border-radius: 20px;
+    background: linear-gradient(125deg,rgba(255,255,255,.88),rgba(224,255,220,.73));
+    box-shadow: 0 8px 20px rgba(31,118,58,.08);
+}
+body.ds-app.vis-landing .vis-role-card.is-admin { background: linear-gradient(125deg,rgba(247,253,255,.92),rgba(180,224,255,.83)); }
+body.ds-app.vis-landing .vis-role-icon { width: 54px; height: 54px; border-radius: 50%; background: #d8f5d5; font-size: 28px; margin-bottom: 2px; }
+body.ds-app.vis-landing .is-admin .vis-role-icon { background: #c7e8ff; color: #087af1; }
+body.ds-app.vis-landing .vis-role-card h2 { font-size: 24px; color: #075326; letter-spacing: -.03em; }
+body.ds-app.vis-landing .vis-role-card.is-admin h2 { color: #0b2256; }
+body.ds-app.vis-landing .vis-role-card p { font-size: 16px; line-height: 1.42; max-width: 245px; color: #465e76; margin-bottom: 6px; }
+body.ds-app.vis-landing .vis-role-card .vis-button {
+    align-self: stretch; min-height: 52px; margin-top: auto; padding: 10px 14px;
+    background: linear-gradient(120deg,#29a449,#06742c); border: 0; border-radius: 14px;
+    color: white; font-size: 16px; font-weight: 650; box-shadow: 0 5px 12px rgba(32,156,62,.17);
+}
+body.ds-app.vis-landing .vis-role-card.is-admin .vis-button { background: linear-gradient(120deg,#319bff,#0067ed); box-shadow: 0 5px 12px rgba(0,107,237,.18); }
+.welcome-card-art { position: absolute; z-index: -1; right: -5px; bottom: 14px; width: 46%; height: 86%; pointer-events: none; }
+.welcome-cane { opacity: .36; }
+.welcome-analytics { opacity: .38; bottom: 35px; }
+body.ds-app.vis-landing .vis-landing-actions { border-top: 1px solid rgba(255,255,255,.7); padding-top: 10px; margin-top: 18px; }
+body.ds-app.vis-landing .vis-landing-actions .vis-button { min-height: 32px; padding: 2px 8px; border: 0; background: transparent; color: #075326; font-size: 14px; }
+body.ds-app.vis-landing .vis-landing-note { margin: 3px 0 0; font-size: 12px; color: #546d7f; }
+@media (max-width: 800px) {
+    body.ds-app.vis-landing { padding: 20px; }
+    body.ds-app.vis-landing .vis-landing-main { padding: 22px; }
+    body.ds-app.vis-landing .vis-role-card { padding: 18px; }
+    body.ds-app.vis-landing .vis-role-card h2 { font-size: 23px; }
+    body.ds-app.vis-landing .vis-role-card .vis-button { font-size: 16px; }
+    body.ds-app.vis-landing .ds-entry-logo { width: 82px; height: 82px; }
+    body.ds-app.vis-landing .ds-entry-toolbar { position: static; width: 100%; margin-bottom: 12px; }
+    body.ds-app.vis-landing .vis-hero-copy p { font-size: 18px; }
+}
+/* Phones are the farmer entry point. The admin card remains unchanged on
+   tablet and desktop layouts from 768px upward. */
+@media (max-width: 767px), (max-height: 500px) and (hover: none) and (pointer: coarse) {
+    body.ds-app.vis-landing .vis-role-grid {
+        grid-template-columns: minmax(0,1fr);
+        width: 100%;
+        max-width: 520px;
+        margin-inline: auto;
+    }
+    body.ds-app.vis-landing .vis-role-card.is-admin { display: none; }
+    body.ds-app.vis-landing .vis-role-card:not(.is-admin) { width: 100%; }
+}
+@media (max-width: 600px) {
+    body.ds-app.vis-landing {
+        padding-top: max(16px,env(safe-area-inset-top));
+        padding-right: max(16px,env(safe-area-inset-right));
+        padding-bottom: max(16px,env(safe-area-inset-bottom));
+        padding-left: max(16px,env(safe-area-inset-left));
+        background-attachment: scroll;
+    }
+    body.ds-app.vis-landing .vis-landing-shell {
+        min-height: calc(100svh - 32px); min-height: calc(100dvh - 32px);
+        padding: 0; display: grid; place-items: center;
+    }
+    body.ds-app.vis-landing .vis-landing-main {
+        width: min(100%,360px); margin: 0 auto; padding: 14px; border-radius: 20px;
+        backdrop-filter: none; -webkit-backdrop-filter: none;
+    }
+    body.ds-app.vis-landing .ds-entry-toolbar {
+        display: none;
+    }
+    body.ds-app.vis-landing .vis-landing-language {
+        display: block; position: absolute; z-index: 3;
+        top: 14px; right: 14px; width: 80px; height: 44px; margin: 0;
+    }
+    body.ds-app.vis-landing .vis-language-popover { display: block; position: relative; }
+    body.ds-app.vis-landing .vis-language-popover summary {
+        width: 80px; height: 44px; margin: 0; padding: 0 13px;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        border: 1px solid rgba(91,139,104,.18); border-radius: 999px;
+        background: rgba(244,250,242,.82); color: #3c694c;
+        box-shadow: 0 2px 7px rgba(19,52,31,.07); cursor: pointer;
+        list-style: none; -webkit-tap-highlight-color: transparent;
+    }
+    body.ds-app.vis-landing .vis-language-popover summary::-webkit-details-marker { display: none; }
+    body.ds-app.vis-landing .vis-language-popover summary::marker { content: ""; }
+    body.ds-app.vis-landing .vis-language-popover summary svg {
+        width: 18px; height: 18px; fill: none; stroke: currentColor;
+        stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+    }
+    body.ds-app.vis-landing .vis-language-popover summary span {
+        font-size: 13px; font-weight: 700; letter-spacing: .04em;
+    }
+    body.ds-app.vis-landing .vis-language-popover[open] summary {
+        background: rgba(238,248,238,.96); color: #075326;
+    }
+    body.ds-app.vis-landing .vis-language-backdrop {
+        position: fixed; inset: 0; z-index: 1000; width: 100%; height: 100%; padding: 0;
+        border: 0; border-radius: 0; background: rgba(8,24,14,.35);
+        backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    }
+    body.ds-app.vis-landing .vis-language-menu {
+        position: fixed; left: 12px; right: 12px; bottom: max(12px,env(safe-area-inset-bottom));
+        z-index: 1001; width: auto; max-width: 420px; margin: 0 auto; padding: 10px;
+        border: 1px solid rgba(255,255,255,.95); border-radius: 20px;
+        background: rgba(255,255,255,.98); box-shadow: 0 18px 45px rgba(10,35,18,.28);
+    }
+    body.ds-app.vis-landing .vis-language-menu-header {
+        min-height: 44px; padding: 4px 4px 8px 10px; display: flex;
+        align-items: center; justify-content: space-between; color: #173b25;
+    }
+    body.ds-app.vis-landing .vis-language-menu-header strong { font-size: 16px; }
+    body.ds-app.vis-landing .vis-language-menu-header button {
+        width: 40px; min-height: 40px; padding: 0; display: grid; place-items: center;
+        border: 0; border-radius: 50%; background: #eef5ed; color: #365248; font-size: 16px;
+    }
+    body.ds-app.vis-landing .vis-language-menu > button {
+        width: 100%; min-height: 52px; padding: 10px 14px; display: flex;
+        align-items: center; justify-content: space-between; border: 0; border-radius: 9px;
+        background: transparent; color: #1f2933; font-family: inherit;
+        font-size: 15px; font-weight: 600; line-height: 1.3; text-align: left;
+    }
+    body.ds-app.vis-landing .vis-language-menu > button.is-selected {
+        background: #e8f2e8; color: #075326;
+    }
+    body.ds-app.vis-landing .vis-hero-copy { margin-bottom: 14px; padding-top: 0; }
+    body.ds-app.vis-landing .ds-entry-logo { width: 58px; height: 58px; border-width: 3px; }
+    body.ds-app.vis-landing .vis-hero-copy h1 {
+        margin: 7px 0 4px; font-size: clamp(21px,6.5vw,25px); line-height: 1.18;
+        overflow-wrap: anywhere;
+    }
+    body.ds-app.vis-landing .vis-hero-copy p { font-size: 13px; line-height: 1.35; }
+    body.ds-app.vis-landing .vis-role-grid { gap: 12px; }
+    body.ds-app.vis-landing .vis-role-card {
+        min-height: 0; padding: 14px; gap: 7px; border-radius: 16px;
+        align-items: center; text-align: center;
+    }
+    body.ds-app.vis-landing .vis-role-card h2 { font-size: 20px; line-height: 1.2; }
+    body.ds-app.vis-landing .vis-role-card p {
+        max-width: 270px; margin: 0 auto 4px; font-size: 14px; line-height: 1.4;
+    }
+    body.ds-app.vis-landing .vis-role-icon { width: 42px; height: 42px; font-size: 22px; }
+    body.ds-app.vis-landing .vis-role-card .vis-button {
+        width: 100%; min-height: 46px; padding: 9px 12px; border-radius: 13px; font-size: 15px;
+    }
+    body.ds-app.vis-landing .welcome-card-art { width: 38%; height: 72%; opacity: .16; }
+    body.ds-app.vis-landing .vis-landing-actions { margin-top: 10px; padding-top: 6px; }
+    body.ds-app.vis-landing .vis-landing-actions .vis-button { min-height: 44px; font-size: 13px; }
+    body.ds-app.vis-landing .vis-landing-note { max-width: 290px; margin: 0 auto; font-size: 11px; line-height: 1.35; }
+}
+@media (max-width: 360px) {
+    body.ds-app.vis-landing {
+        padding-left: max(12px,env(safe-area-inset-left));
+        padding-right: max(12px,env(safe-area-inset-right));
+    }
+    body.ds-app.vis-landing .vis-landing-main { padding: 12px; border-radius: 18px; }
+    body.ds-app.vis-landing .ds-entry-logo { width: 54px; height: 54px; }
+    body.ds-app.vis-landing .vis-role-card { padding: 12px; }
+    body.ds-app.vis-landing .vis-role-card p { max-width: 100%; }
+    body.ds-app.vis-landing .welcome-card-art { opacity: .14; }
+}

@@ -6,266 +6,218 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Farmer Account Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-farmers.css') }}">
 </head>
-<body class="admin-layout admin-farmers-page">
-    <div class="dashboard-bg"></div>
+<body class="admin-layout admin-farmers-page has-vis-sidebar ds-app vis-management-dashboard vis-admin-farmers">
+    {% include 'components/admin_navigation.html' %}
 
-    <header class="dashboard-header">
+    <header class="dashboard-header farmers-page-header">
         <div class="header-content">
-            <div class="brand">
-                <div class="brand-icon">
-                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                </div>
+            <div class="brand farmers-page-heading">
+                <div class="brand-icon" aria-hidden="true"><ion-icon name="people-outline"></ion-icon></div>
                 <div>
-                    <p class="brand-title">Farmer Account Management</p>
-                    <p class="brand-subtitle">Create, edit, and reset farmer accounts</p>
+                    <p class="brand-title">Farmer Accounts</p>
+                    <p class="brand-subtitle">Create accounts, manage access, and keep farmer information up to date.</p>
                 </div>
-            </div>
-            <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
-                <a class="btn light" href="/admin">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    Admin
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
-                </a>
             </div>
         </div>
     </header>
 
-    <main class="dashboard-container fade-in">
-        {% if message %}
-            <div class="form-success">{{ message }}</div>
-        {% endif %}
-        {% if error %}
-            <div class="form-error">{{ error }}</div>
-        {% endif %}
+    <main class="dashboard-container fade-in farmers-workspace">
+        <div class="farmers-alerts" aria-live="polite">
+            {% if message %}<div class="form-success"><ion-icon name="checkmark-circle-outline"></ion-icon><span>{{ message }}</span></div>{% endif %}
+            {% if error %}<div class="form-error"><ion-icon name="alert-circle-outline"></ion-icon><span>{{ error }}</span></div>{% endif %}
+        </div>
 
-        <section class="section-grid two-col farmer-management-grid">
-            <div class="farmer-management-side">
-                <form class="panel create-farmer-panel" method="POST">
-                    <input type="hidden" name="action" value="create">
-                    <div class="panel-header">
-                        <div>
-                            <h3 class="panel-title">Create Farmer Account</h3>
-                            <p class="panel-subtitle">Add new farmer credentials</p>
-                        </div>
-                        <button class="btn primary" type="submit">
-                            <ion-icon name="person-add-outline"></ion-icon>
-                            Create
-                        </button>
-                    </div>
-                    <div class="stat-label">Full Name</div>
-                    <input class="stat-input" type="text" name="fullname" required>
-                    <div class="stat-label">Email Address</div>
-                    <input class="stat-input" type="email" name="email" required>
-                    <div class="stat-label">Phone Number</div>
-                    <input class="stat-input" type="text" name="phone" required>
-                    <div class="stat-label">Province</div>
-                    <input class="stat-input" type="text" name="province" placeholder="Negros Occidental">
-                    <div class="stat-label">Municipality</div>
-                    <input class="stat-input" type="text" name="municipality" placeholder="Isabela">
-                    <div class="stat-label">Barangay</div>
-                    <input class="stat-input" type="text" name="barangay">
-                    <div class="stat-label">Temporary Password</div>
-                    <input class="stat-input" type="text" name="password" required>
-                </form>
+        <section class="farmer-summary-grid" aria-label="Farmer account summary">
+            <article class="farmer-summary-card">
+                <span class="summary-icon summary-icon-total"><ion-icon name="people-outline"></ion-icon></span>
+                <div><p>Total Farmers</p><strong>{{ total_farmers }}</strong></div>
+            </article>
+            <article class="farmer-summary-card">
+                <span class="summary-icon summary-icon-active"><ion-icon name="checkmark-circle-outline"></ion-icon></span>
+                <div><p>Active Accounts</p><strong>{{ active_count }}</strong></div>
+            </article>
+            <article class="farmer-summary-card">
+                <span class="summary-icon summary-icon-inactive"><ion-icon name="pause-circle-outline"></ion-icon></span>
+                <div><p>Deactivated</p><strong>{{ inactive_count }}</strong></div>
+            </article>
+        </section>
 
-                <div class="panel deactivated-accounts-panel">
-                    <div class="panel-header">
-                        <div>
-                            <h3 class="panel-title">Deactivated Accounts</h3>
-                            <p class="panel-subtitle">Reactivate farmers with suspended access</p>
-                        </div>
-                        <span class="badge"><ion-icon name="pause-circle-outline"></ion-icon>{{ inactive_users|length }} deactivated</span>
-                    </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Farmer</th>
-                                <th>Status</th>
-                                <th class="actions-column">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if inactive_users %}
-                                {% for user in inactive_users %}
-                                    <tr>
-                                        <td>
-                                            <strong>{{ user.fullname }}</strong><br>
-                                            <span class="list-meta">{{ user.email }}</span>
-                                        </td>
-                                        <td><span class="tag alert">Inactive</span></td>
-                                        <td class="actions-cell">
-                                            <form method="POST" action="/admin/farmers" class="admin-inline-form">
-                                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                <input type="hidden" name="action" value="activate">
-                                                <button class="tag success" type="submit" onclick="return confirm('Reactivate this farmer account?')">
-                                                    Activate
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="3">No deactivated farmer accounts.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
+        <section class="panel create-farmer-panel" id="create-farmer">
+            <div class="panel-header create-farmer-header">
+                <div>
+                    <span class="section-eyebrow">New account</span>
+                    <h2 class="panel-title">Create Farmer Account</h2>
+                    <p class="panel-subtitle">Enter the farmer’s contact information, location, and temporary sign-in credentials.</p>
                 </div>
             </div>
-
-            <div class="panel account-actions-panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Account Actions</h3>
-                        <p class="panel-subtitle">Edit, reset, or deactivate active farmer accounts</p>
-                    </div>
-                    <span class="badge"><ion-icon name="people-outline"></ion-icon>{{ users|length }} farmers</span>
+            <form method="POST" class="create-farmer-form">
+                {{ csrf_input }}
+                <input type="hidden" name="action" value="create">
+                <div class="farmer-form-grid">
+                    <label class="farmer-field farmer-field-wide">
+                        <span>Full name <em>Required</em></span>
+                        <input class="stat-input" type="text" name="fullname" autocomplete="name" placeholder="e.g. Juan Dela Cruz" required>
+                    </label>
+                    <label class="farmer-field">
+                        <span>Email address <em>Required</em></span>
+                        <input class="stat-input" type="email" name="email" autocomplete="email" placeholder="farmer@example.com" required>
+                    </label>
+                    <label class="farmer-field">
+                        <span>Phone number <em>Required</em></span>
+                        <input class="stat-input" type="tel" name="phone" autocomplete="tel" placeholder="09XX XXX XXXX" required>
+                    </label>
+                    <label class="farmer-field">
+                        <span>Province</span>
+                        <input class="stat-input" type="text" name="province" autocomplete="address-level1" placeholder="Negros Occidental">
+                    </label>
+                    <label class="farmer-field">
+                        <span>Municipality</span>
+                        <input class="stat-input" type="text" name="municipality" autocomplete="address-level2" placeholder="Isabela">
+                    </label>
+                    <label class="farmer-field">
+                        <span>Barangay</span>
+                        <input class="stat-input" type="text" name="barangay" autocomplete="address-level3" placeholder="Enter barangay">
+                    </label>
+                    <label class="farmer-field">
+                        <span>Temporary password <em>Required</em></span>
+                        <input class="stat-input" type="text" name="password" autocomplete="new-password" placeholder="Create a temporary password" required>
+                    </label>
                 </div>
-                <form class="admin-search-row" method="GET" action="/admin/farmers">
-                    <button class="btn primary" type="submit">
+                <div class="create-farmer-footer">
+                    <p><ion-icon name="information-circle-outline"></ion-icon>The farmer can use these credentials immediately after account creation.</p>
+                    <button class="btn primary" type="submit"><ion-icon name="person-add-outline"></ion-icon>Create Farmer Account</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel account-actions-panel" aria-labelledby="farmer-accounts-title">
+            <div class="accounts-toolbar">
+                <div>
+                    <span class="section-eyebrow">Directory</span>
+                    <h2 class="panel-title" id="farmer-accounts-title">Farmer Accounts</h2>
+                    <p class="panel-subtitle">{{ page_obj.paginator.count }} account{% if page_obj.paginator.count != 1 %}s{% endif %}{% if search %} matching “{{ search }}”{% endif %}</p>
+                </div>
+                <form class="admin-search-row" method="GET" action="/admin/farmers" role="search">
+                    <label class="search-control">
                         <ion-icon name="search-outline"></ion-icon>
-                        Search
-                    </button>
-                    <input class="stat-input" type="text" name="search" placeholder="Search by name, email, phone, or address" value="{{ search or '' }}">
+                        <span class="visually-hidden">Search farmer accounts</span>
+                        <input class="stat-input" type="search" name="search" placeholder="Search name, email, phone, or address" value="{{ search or '' }}">
+                    </label>
+                    {% if search %}<a class="btn ghost" href="/admin/farmers">Clear</a>{% endif %}
+                    <button class="btn primary" type="submit">Search</button>
                 </form>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Farmer</th>
-                            <th>Cellphone</th>
-                            <th>Registered Address</th>
-                            <th>Registered<br>Date</th>
-                            <th>Status</th>
-                            <th class="actions-column">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if users %}
+            </div>
+
+            {% if users %}
+                <div class="farmer-table-wrap" role="region" aria-label="Farmer accounts" tabindex="0">
+                    <table class="data-table farmer-accounts-table">
+                        <thead><tr>
+                            <th scope="col">Farmer</th><th scope="col">Contact</th><th scope="col">Registered address</th>
+                            <th scope="col">Registered</th><th scope="col">Status</th><th scope="col" class="actions-column">Actions</th>
+                        </tr></thead>
+                        <tbody>
                             {% for user in users %}
                                 <tr>
-                                    <td>
-                                        <strong>{{ user.fullname }}</strong><br>
-                                        <span class="list-meta">{{ user.email }}</span>
-                                    </td>
-                                    <td>{{ user.phone or 'N/A' }}</td>
-                                    <td>{{ user.barangay or 'N/A' }}, {{ user.municipality or 'N/A' }}, {{ user.province or 'N/A' }}</td>
-                                    <td>
-                                        {% if user.created_at %}
-                                            {{ user.created_at.strftime('%b %d, %Y') }}
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                    <td><span class="tag success">Active</span></td>
-                                    <td class="actions-cell">
-                                        <div class="admin-action-row">
-                                            <div class="admin-action-pair">
-                                                <a class="tag" href="/admin/farmers/{{ user.id }}/edit">Edit</a>
-                                                <button
-                                                    class="tag warning reset-trigger"
-                                                    type="button"
-                                                    data-user-id="{{ user.id }}"
-                                                    data-user-name="{{ user.fullname }}"
-                                                >
-                                                    Reset
-                                                </button>
-                                            </div>
-                                            <form method="POST" action="/admin/farmers" class="admin-inline-form">
-                                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                <input type="hidden" name="action" value="deactivate">
-                                                <button class="tag alert" type="submit" onclick="return confirm('Deactivate this farmer account?')">
-                                                    Deactivate
-                                                </button>
-                                            </form>
+                                    <td data-label="Farmer"><div class="farmer-identity"><span class="farmer-avatar" aria-hidden="true">{{ user.fullname[:1]|upper }}</span><div><strong>{{ user.fullname }}</strong><span>{{ user.email }}</span></div></div></td>
+                                    <td data-label="Contact"><span class="cell-primary">{{ user.phone or 'Not provided' }}</span></td>
+                                    <td data-label="Registered address"><span class="cell-primary farmer-address">{% if user.barangay or user.municipality or user.province %}{{ user.barangay or '' }}{% if user.barangay and (user.municipality or user.province) %}, {% endif %}{{ user.municipality or '' }}{% if user.municipality and user.province %}, {% endif %}{{ user.province or '' }}{% else %}Not provided{% endif %}</span></td>
+                                    <td data-label="Registered"><span class="cell-primary">{{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'N/A' }}</span></td>
+                                    <td data-label="Status">{% if user.is_active %}<span class="account-status is-active"><span></span>Active</span>{% else %}<span class="account-status is-inactive"><span></span>Deactivated</span>{% endif %}</td>
+                                    <td data-label="Actions" class="actions-cell">
+                                        <div class="farmer-action-row">
+                                            <a class="farmer-action-btn" href="/admin/farmers/{{ user.id }}/edit" aria-label="Edit {{ user.fullname }}"><ion-icon name="create-outline"></ion-icon><span>Edit</span></a>
+                                            <button class="farmer-action-btn account-action-trigger" type="button" data-action="reset" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="key-outline"></ion-icon><span>Reset</span></button>
+                                            {% if user.is_active %}
+                                                <button class="farmer-action-btn is-warning account-action-trigger" type="button" data-action="deactivate" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="pause-circle-outline"></ion-icon><span>Deactivate</span></button>
+                                            {% else %}
+                                                <button class="farmer-action-btn is-positive account-action-trigger" type="button" data-action="activate" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="play-circle-outline"></ion-icon><span>Activate</span></button>
+                                            {% endif %}
+                                            <button class="farmer-action-btn is-danger account-action-trigger" type="button" data-action="delete" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="trash-outline"></ion-icon><span>Delete</span></button>
                                         </div>
                                     </td>
                                 </tr>
                             {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="6">No farmers registered yet.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                        </tbody>
+                    </table>
+                </div>
 
-        <div class="footer-link">VISCANE Admin | Farmer Account Management</div>
+                <nav class="farmer-pagination" aria-label="Farmer account pages">
+                    {% if page_obj.has_previous() %}<a class="pagination-control" href="?page={{ page_obj.previous_page_number() }}{% if search_query %}&{{ search_query }}{% endif %}"><ion-icon name="chevron-back-outline"></ion-icon>Previous</a>{% else %}<span class="pagination-control is-disabled"><ion-icon name="chevron-back-outline"></ion-icon>Previous</span>{% endif %}
+                    <div class="pagination-pages">
+                        {% for page_number in page_numbers %}
+                            {% if page_number %}<a href="?page={{ page_number }}{% if search_query %}&{{ search_query }}{% endif %}" class="pagination-page{% if page_number == page_obj.number %} is-current{% endif %}"{% if page_number == page_obj.number %} aria-current="page"{% endif %}>{{ page_number }}</a>{% else %}<span class="pagination-ellipsis" aria-hidden="true">…</span>{% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if page_obj.has_next() %}<a class="pagination-control" href="?page={{ page_obj.next_page_number() }}{% if search_query %}&{{ search_query }}{% endif %}">Next<ion-icon name="chevron-forward-outline"></ion-icon></a>{% else %}<span class="pagination-control is-disabled">Next<ion-icon name="chevron-forward-outline"></ion-icon></span>{% endif %}
+                </nav>
+            {% else %}
+                <div class="farmer-empty-state">
+                    <div class="empty-state-illustration" aria-hidden="true"><ion-icon name="people-outline"></ion-icon><span><ion-icon name="search-outline"></ion-icon></span></div>
+                    <h3>No farmer accounts found</h3>
+                    <p>{% if search %}No accounts match “{{ search }}”. Try another search or clear the filter.{% else %}Create the first farmer account to begin managing access.{% endif %}</p>
+                    {% if search %}<a class="btn ghost" href="/admin/farmers">Clear Search</a>{% else %}<a class="btn primary" href="#create-farmer"><ion-icon name="person-add-outline"></ion-icon>Create Farmer Account</a>{% endif %}
+                </div>
+            {% endif %}
+        </section>
+        <div class="footer-link">VISCANE Admin · Farmer Account Management</div>
     </main>
 
-    <div class="dashboard-modal" id="reset-confirmation-modal" aria-hidden="true">
-        <div class="dashboard-modal-backdrop" data-close-reset-modal="true"></div>
-        <div class="dashboard-modal-card panel admin-reset-modal" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
-            <button class="dashboard-modal-close admin-modal-close-dark" type="button" aria-label="Close password reset confirmation" data-close-reset-modal="true">
-                <ion-icon name="close-outline"></ion-icon>
-            </button>
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title" id="reset-modal-title">Confirm Password Reset</h3>
-                    <p class="panel-subtitle">This will reset the farmer account password to the default value.</p>
-                </div>
-            </div>
-
-            <p class="admin-reset-copy">
-                You are about to reset <strong id="reset-user-name">this farmer</strong> to the default password <strong>12345</strong>.
-            </p>
-
+    <div class="dashboard-modal account-confirmation-modal" id="account-confirmation-modal" aria-hidden="true">
+        <div class="dashboard-modal-backdrop" data-close-account-modal></div>
+        <div class="dashboard-modal-card panel" role="dialog" aria-modal="true" aria-labelledby="account-modal-title" aria-describedby="account-modal-description" tabindex="-1">
+            <button class="dashboard-modal-close admin-modal-close-dark" type="button" aria-label="Close confirmation" data-close-account-modal><ion-icon name="close-outline"></ion-icon></button>
+            <span class="confirmation-modal-icon"><ion-icon name="alert-circle-outline"></ion-icon></span>
+            <h2 class="panel-title" id="account-modal-title">Confirm action</h2>
+            <p id="account-modal-description">Are you sure you want to continue?</p>
             <form method="POST" action="/admin/farmers" class="admin-reset-actions">
-                <input type="hidden" name="action" value="reset">
-                <input type="hidden" name="user_id" id="reset-user-id">
-                <button class="btn ghost" type="button" data-close-reset-modal="true">Cancel</button>
-                <button class="btn primary" type="submit">
-                    <ion-icon name="refresh-outline"></ion-icon>
-                    Confirm Reset
-                </button>
+                {{ csrf_input }}<input type="hidden" name="action" id="account-action"><input type="hidden" name="user_id" id="account-user-id">
+                <button class="btn ghost" type="button" data-close-account-modal>Cancel</button><button class="btn primary" id="account-confirm-button" type="submit">Confirm</button>
             </form>
         </div>
     </div>
 
     <script>
         (() => {
-            const modal = document.getElementById('reset-confirmation-modal');
-            const userNameTarget = document.getElementById('reset-user-name');
-            const userIdTarget = document.getElementById('reset-user-id');
-            const triggers = document.querySelectorAll('.reset-trigger');
-            const closers = document.querySelectorAll('[data-close-reset-modal]');
-
-            if (!modal || !userNameTarget || !userIdTarget) {
-                return;
-            }
-
-            function setModalState(isOpen) {
+            const modal = document.getElementById('account-confirmation-modal');
+            const modalCard = modal?.querySelector('[role="dialog"]');
+            const title = document.getElementById('account-modal-title');
+            const description = document.getElementById('account-modal-description');
+            const actionInput = document.getElementById('account-action');
+            const userIdInput = document.getElementById('account-user-id');
+            const confirmButton = document.getElementById('account-confirm-button');
+            let lastTrigger = null;
+            const actions = {
+                reset: ['Reset farmer password?', (name) => `Are you sure you want to reset ${name}’s password to the temporary password 12345?`, 'Reset Password', 'is-primary'],
+                deactivate: ['Deactivate farmer account?', (name) => `Are you sure you want to deactivate ${name}’s account? They will no longer be able to sign in.`, 'Deactivate Account', 'is-warning'],
+                activate: ['Reactivate farmer account?', (name) => `Reactivate ${name}’s account and restore their access to VISCANE?`, 'Activate Account', 'is-positive'],
+                delete: ['Delete farmer account?', (name) => `Are you sure you want to delete ${name}’s account? The account will be removed from this directory.`, 'Delete Account', 'is-danger']
+            };
+            function setOpen(isOpen) {
+                if (!modal) return;
                 modal.classList.toggle('is-open', isOpen);
                 modal.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
                 document.body.classList.toggle('modal-open', isOpen);
+                if (isOpen) window.setTimeout(() => confirmButton?.focus(), 0); else lastTrigger?.focus();
             }
-
-            triggers.forEach((button) => {
-                button.addEventListener('click', () => {
-                    userNameTarget.textContent = button.dataset.userName || 'this farmer';
-                    userIdTarget.value = button.dataset.userId || '';
-                    setModalState(true);
-                });
-            });
-
-            closers.forEach((button) => {
-                button.addEventListener('click', () => setModalState(false));
-            });
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && modal.classList.contains('is-open')) {
-                    setModalState(false);
-                }
-            });
+            document.querySelectorAll('.account-action-trigger').forEach((button) => button.addEventListener('click', () => {
+                const action = button.dataset.action;
+                const content = actions[action];
+                if (!content) return;
+                lastTrigger = button;
+                title.textContent = content[0]; description.textContent = content[1](button.dataset.userName || 'this farmer');
+                actionInput.value = action; userIdInput.value = button.dataset.userId || ''; confirmButton.textContent = content[2];
+                confirmButton.className = `btn primary ${content[3]}`; modalCard.className = `dashboard-modal-card panel ${content[3]}`;
+                setOpen(true);
+            }));
+            document.querySelectorAll('[data-close-account-modal]').forEach((button) => button.addEventListener('click', () => setOpen(false)));
+            document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal?.classList.contains('is-open')) setOpen(false); });
         })();
     </script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

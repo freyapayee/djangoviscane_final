@@ -1,44 +1,52 @@
 <!DOCTYPE html>
-<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}"{% if 'ViscaneFarmer/' in request.headers.get('User-Agent', '') %} class="vis-native-app"{% endif %}>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="VISCANE uses artificial intelligence to analyze sugarcane quality and provide instant grading recommendations.">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>VISCANE | Welcome</title>
+    <title>VISCANE | AI Sugarcane Quality Grading</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome-premium.css') }}?v=13">
 </head>
-<body>
-    <div class="card fade-in">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="background: var(--primary-green); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); overflow: hidden;">
-                <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <h2 style="margin: 20px 0 5px;">{{ farmer_text('Welcome to VISCANE') }}</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px;">{{ farmer_text('Select your portal to continue') }}</p>
-            {% include 'farmer_language_switch.html' %}
-        </div>
+<body class="vis-landing ds-app">
+    <a class="vis-skip-link" href="#main-content">Skip to main content</a>
+    <div class="vis-landing-shell">
 
-        <div class="portal-item" onclick="location.href='/auth?mode=login'">
-            <div class="icon-circle" style="background: #43A047;">
-                <ion-icon name="person-outline" style="font-size: 28px;"></ion-icon>
+        <main id="main-content" class="vis-landing-main">
+            {% include 'components/entry_toolbar.html' %}
+            {% include 'components/landing_language_popover.html' %}
+            <div class="vis-hero-copy">
+                <img class="ds-entry-logo" src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE logo">
+                <h1>{% if is_hiligaynon() %}{{ farmer_text('Welcome to VISCANE') }}{% else %}Welcome to <span>VISCANE</span>{% endif %}</h1>
+                <p>{{ farmer_text('AI-Based Sugarcane Quality Grading System') }}</p>
             </div>
-            <h3 style="margin: 0; font-size: 18px;">{{ farmer_text('Farmer Portal') }}</h3>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 5px;">{{ farmer_text('Access AI-powered quality analysis') }}</p>
-        </div>
-
-        <div class="portal-item" onclick="location.href='/admin-access'">
-            <div class="icon-circle" style="background: #1E88E5;">
-                <ion-icon name="settings-outline" style="font-size: 28px;"></ion-icon>
+            <section class="vis-role-grid" aria-label="Choose your portal">
+                <article class="vis-role-card">
+                    <svg class="welcome-card-art welcome-cane" viewBox="0 0 200 280" fill="none" aria-hidden="true"><path d="M140 280C133 196 124 122 150 38" stroke="#56A44B" stroke-width="4"/><path d="M148 82Q114 27 167 0Q146 41 148 82ZM139 150Q96 67 73 79Q112 102 139 150ZM138 196Q172 97 192 81Q181 155 138 196ZM140 230Q101 153 27 161Q98 177 140 230ZM147 270Q167 184 199 168Q186 235 147 270Z" fill="#79C665"/><path d="M174 280Q135 104 198 41Q175 125 174 280Z" fill="#AEDC98"/></svg>
+                    <div class="vis-role-icon" aria-hidden="true">&#127793;</div>
+                    <h2>{{ farmer_text('Farmer Portal') }}</h2>
+                    <p>{{ farmer_text('Upload sugarcane images and receive AI-powered quality analysis.') }}</p>
+                    <a class="vis-button" href="/auth?mode=login">{{ farmer_text('Continue as Farmer') }}<span aria-hidden="true">&rarr;</span></a>
+                </article>
+                {% if not request.farmer_only %}
+                <article class="vis-role-card is-admin">
+                    <svg class="welcome-card-art welcome-analytics" viewBox="0 0 200 240" fill="none" aria-hidden="true"><path d="M10 211V43Q10 34 20 31L198 1V197" stroke="#88C6FC" stroke-width="3"/><g fill="#66B3FA"><rect x="30" y="127" width="16" height="24" rx="3"/><rect x="60" y="108" width="16" height="43" rx="3"/><rect x="90" y="88" width="16" height="63" rx="3"/><rect x="120" y="65" width="16" height="86" rx="3"/><rect x="150" y="36" width="16" height="115" rx="3"/></g><path d="M12 210Q46 157 73 181T127 188T171 160" stroke="#1788EF" stroke-width="2"/><g fill="#1788EF"><circle cx="12" cy="210" r="5"/><circle cx="57" cy="175" r="5"/><circle cx="127" cy="188" r="5"/><circle cx="171" cy="160" r="5"/></g></svg>
+                    <div class="vis-role-icon" aria-hidden="true">&#9881;</div>
+                    <h2>Admin Portal</h2>
+                    <p>Manage users, monitor predictions, and review system activity.</p>
+                    <a class="vis-button is-secondary" href="/admin-access">Continue as Admin<span aria-hidden="true">&rarr;</span></a>
+                </article>
+                {% endif %}
+            </section>
+            <div class="vis-landing-actions">
+                <a class="vis-button is-tonal" href="#system-overview">Learn about VISCANE AI <span aria-hidden="true">&rarr;</span></a>
             </div>
-            <h3 style="margin: 0; font-size: 18px;">Admin Portal</h3>
-            <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 5px;">Manage users and system performance</p>
-        </div>
-
-        <div style="margin-top: 25px;">
-            <button class="outline-btn">System Overview</button>
-            <button class="outline-btn">Manual vs AI Comparison</button>
-        </div>
+            <p id="system-overview" class="vis-landing-note">Capture or upload a stalk image, receive an AI assessment, and keep a clear record of every scan.</p>
+        </main>
     </div>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

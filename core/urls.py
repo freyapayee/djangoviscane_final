@@ -10,6 +10,7 @@ urlpatterns = [
     path("farmer/recommendations", views.farmer_recommendations, name="farmer_recommendations"),
     path("farmer/agronomic-logs", views.farmer_agronomic_logs, name="farmer_agronomic_logs"),
     path("farmer/cv-upload/<int:upload_id>/delete", views.delete_cv_upload, name="delete_cv_upload"),
+    path("farmer/cv-upload/<int:upload_id>/image", views.cv_upload_image, name="cv_upload_image"),
     path("api/scan/predict", views.api_scan_predict, name="api_scan_predict"),
     path("calculate", views.calculate_results, name="calculate_results"),
     path("farmer/settings", views.farmer_settings, name="farmer_settings"),

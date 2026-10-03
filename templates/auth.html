@@ -2,32 +2,47 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Authentication</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth-premium.css') }}?v=6">
 </head>
-<body>
-    <div class="card fade-in">
+<body class="vis-auth-page ds-app">
+    <a class="vis-skip-link" href="#auth-card">Skip to authentication form</a>
+    <main class="vis-auth-shell {{ 'is-register' if mode == 'register' else 'is-login' }}" data-auth-shell>
+        <section class="vis-auth-intro" aria-label="About VISCANE">
+            {% include 'components/brand.html' %}
+            <h1>{% if is_hiligaynon() %}{{ farmer_text('AI guidance for better sugarcane decisions.') }}{% else %}AI guidance for better sugarcane <span class="auth-headline-accent">decisions.</span>{% endif %}</h1>
+            <p>{{ farmer_text('Capture crop conditions, receive clear quality insights, and keep your farm records in one place.') }}</p>
+            <div class="vis-auth-benefits" aria-label="VISCANE benefits">
+                <div class="vis-auth-benefit"><ion-icon name="camera-outline"></ion-icon><span>{{ farmer_text('Image analysis') }}</span></div>
+                <div class="vis-auth-benefit"><ion-icon name="sparkles-outline"></ion-icon><span>{{ farmer_text('AI quality grading') }}</span></div>
+                <div class="vis-auth-benefit"><ion-icon name="time-outline"></ion-icon><span>{{ farmer_text('Farm history') }}</span></div>
+            </div>
+        </section>
+        <section class="vis-auth-panel">
+    <div id="auth-card" class="vis-auth-card fade-in">
         <div class="auth-header">
             <div class="auth-logo-circle">
                 <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" class="auth-logo-img">
             </div>
             <h2 class="auth-title">VISCANE</h2>
             <p class="auth-subtitle">An Edge-Based AI for Sugarcane Quality Grading</p>
-            {% include 'farmer_language_switch.html' %}
+
         </div>
 
         <div class="toggle-wrapper">
             <div id="pill-bg" class="pill {{ 'register' if mode == 'register' }}"></div>
-            <button id="login-btn" class="toggle-btn {{ 'active' if mode == 'login' }}" 
-                    hx-get="/auth?mode=login" hx-target="#form-container" onclick="moveToggle('login')">{{ farmer_text('Login') }}</button>
-            <button id="register-btn" class="toggle-btn {{ 'active' if mode == 'register' }}" 
-                    hx-get="/auth?mode=register" hx-target="#form-container" onclick="moveToggle('register')">{{ farmer_text('Register') }}</button>
+            <a href="/auth?mode=login" id="login-btn" class="toggle-btn {{ 'active' if mode == 'login' }}"
+                    hx-get="/auth?mode=login" hx-target="#form-container" onclick="moveToggle('login')">{{ farmer_text('Login') }}</a>
+            <a href="/auth?mode=register" id="register-btn" class="toggle-btn {{ 'active' if mode == 'register' }}"
+                    hx-get="/auth?mode=register" hx-target="#form-container" onclick="moveToggle('register')">{{ farmer_text('Register') }}</a>
         </div>
 
-        <div id="form-container">
+        <div id="form-container" aria-live="polite">
             {% include 'auth_form.html' %}
         </div>
 
@@ -39,13 +54,20 @@
             <a href="/" class="auth-back-link">&larr; {{ farmer_text('Back to Selection') }}</a>
         </div>
     </div>
+        </section>
+    </main>
 
     <script>
         function moveToggle(mode) {
             const pill = document.getElementById('pill-bg');
             const loginBtn = document.getElementById('login-btn');
             const regBtn = document.getElementById('register-btn');
-            if (mode === 'register') {
+            const shell = document.querySelector('[data-auth-shell]');
+            const isRegister = mode === 'register';
+
+            shell?.classList.toggle('is-register', isRegister);
+            shell?.classList.toggle('is-login', !isRegister);
+            if (isRegister) {
                 pill.classList.add('register');
                 regBtn.classList.add('active');
                 loginBtn.classList.remove('active');
@@ -57,5 +79,6 @@
         }
     </script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

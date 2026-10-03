@@ -12,11 +12,17 @@ packages. Docker uses Python 3.11.
 cp .env.example .env.local
 python3 -m venv .venv-local
 .venv-local/bin/python -m pip install --only-binary=:all: -r requirements.txt
+.venv-local/bin/python manage.py migrate
 .venv-local/bin/python manage.py runserver 0.0.0.0:5000
 ```
 
 The binary-only install makes pip stop with a clear error instead of spending a
 long time compiling scientific packages when a prebuilt wheel is unavailable.
+
+For Windows, follow [WINDOWS_SETUP.md](WINDOWS_SETUP.md). Local databases,
+private uploads and TLS keys are excluded from Git; run migrations on a new
+checkout to create its database. Android client source and build instructions
+are in the [Flask/Android repository](https://github.com/freyapayee/falshviscane).
 
 ## Docker
 

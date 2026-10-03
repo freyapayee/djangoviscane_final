@@ -78,6 +78,27 @@ class FarmerLanguageTests(SimpleTestCase):
         self.assertIn("Mga ginabanta lamang ini nga resulta.", hiligaynon)
         self.assertIn("pag-usisa sa laboratoryo", hiligaynon)
 
+    def test_settings_language_sheet_is_not_inside_transformed_container(self):
+        request = RequestFactory().get("/farmer/settings")
+        request.session = {}
+        user = SimpleNamespace(
+            fullname="Test Farmer",
+            email="farmer@example.invalid",
+            phone="09123456789",
+            province="Negros Occidental",
+            municipality="Isabela",
+            barangay="Amin",
+        )
+
+        html = get_template("farmer_settings.html").render(
+            {"request": request, "user": user, "error": None, "success": None},
+            request,
+        )
+
+        self.assertIn('class="settings-language-sheet"', html)
+        self.assertIn('class="dashboard-container farmer-mobile-shell"', html)
+        self.assertNotIn('class="dashboard-container fade-in farmer-mobile-shell"', html)
+
     def test_farming_guide_translations_preserve_numbers_and_named_terms(self):
         for source, translation in {**RECOMMENDATION_GUIDES, **RECOMMENDATION_META}.items():
             with self.subTest(source=source):

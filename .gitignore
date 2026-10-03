@@ -7,3 +7,11 @@ __pycache__/
 *.pyc
 .DS_Store
 /instance/viscane.db
+.local/
+staticfiles/
+.venv*/
+static/uploads/
+.private/
+*.pem
+*.sqlite3
+*.sqlite3-*

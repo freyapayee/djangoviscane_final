@@ -2,7 +2,7 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>VISCANE | Farmer Dashboard</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -1523,10 +1523,62 @@
                 font-size: 21px;
             }
         }
+        .scan-feedback-toast {
+            position: fixed;
+            top: calc(20px + env(safe-area-inset-top));
+            right: 20px;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: min(360px, calc(100vw - 32px));
+            padding: 14px 12px 14px 16px;
+            border: 1px solid #b9dcc3;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 12px 34px rgba(21, 54, 34, .16);
+            color: #245b35;
+            font-size: 14px;
+            font-weight: 650;
+            line-height: 1.4;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+
+        .scan-feedback-toast > ion-icon { font-size: 22px; flex: none; }
+        .scan-feedback-toast span { flex: 1; }
+        .scan-feedback-toast button {
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+        }
+        .scan-feedback-toast button:hover { background: #edf7ef; }
+        .scan-feedback-toast.is-dismissing { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+        @media (max-width: 600px) {
+            .scan-feedback-toast { right: 16px; left: 16px; width: auto; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .scan-feedback-toast { transition: none; }
+        }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
 </head>
-<body class="farmer-layout">
+<body class="farmer-layout ds-app vis-farmer-dashboard">
     <div class="dashboard-bg"></div>
+    {% if picture_removed %}
+        <div class="scan-feedback-toast" id="scan-feedback-toast" role="status" aria-live="polite">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            <span>{{ farmer_text('Picture removed from recent scans.') }}</span>
+            <button type="button" aria-label="Dismiss notification" id="scan-feedback-dismiss"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
+        </div>
+    {% endif %}
 
     <header class="dashboard-header">
         <div class="header-content">
@@ -1541,7 +1593,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
                 <div class="farmer-info-chip header-date-weather" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
@@ -1563,6 +1614,7 @@
         {% endif %}
 
         <section class="hero-panel">
+            <div class="farmer-scan-art" aria-hidden="true"><div class="farmer-scan-phone"><span></span></div></div>
             <div class="hero-content">
                 <div class="hero-badge">
                     <ion-icon name="sparkles"></ion-icon>
@@ -1571,6 +1623,9 @@
                 <h2>{{ farmer_text('Scan Sugarcane') }}</h2>
                 <p>{{ farmer_text('Capture for AI maturity analysis') }}</p>
                 <div class="quick-grid">
+                    <a class="quick-tile" href="/scan/new"><ion-icon name="camera-outline"></ion-icon><span>{{ farmer_text('Scan Sugarcane') }}</span></a>
+                    <a class="quick-tile" href="#recent-scans"><ion-icon name="time-outline"></ion-icon><span>{{ farmer_text('View History') }}</span></a>
+                    <a class="quick-tile" href="/farmer/recommendations"><ion-icon name="bulb-outline"></ion-icon><span>{{ farmer_text('Recommendations') }}</span></a>
                 </div>
             </div>
             <div class="hero-actions">
@@ -1585,6 +1640,27 @@
             </div>
         </section>
 
+        <section class="stats-grid" aria-label="Farm scan summary">
+            <div class="stat-card accent-green">
+                <svg class="farmer-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#document-text-outline"></use></svg>
+                <div class="stat-label">{{ farmer_text('Scans Today') }}</div>
+                <div class="stat-value">{{ scans_today }}</div>
+                <div class="stat-meta">{{ farmer_text('Completed assessments') }}</div>
+            </div>
+            <div class="stat-card accent-blue">
+                <svg class="farmer-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#shield-checkmark-outline"></use></svg>
+                <div class="stat-label">{{ farmer_text('Average Quality') }}</div>
+                <div class="stat-value">{{ avg_maturity }}%</div>
+                <div class="stat-meta">{{ farmer_text('Seven-day maturity average') }}</div>
+            </div>
+            <div class="stat-card accent-orange">
+                <svg class="farmer-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#bar-chart-outline"></use></svg>
+                <div class="stat-label">{{ farmer_text('Latest Result') }}</div>
+                <div class="stat-value">{{ recent_scans[0].grade if recent_scans else '—' }}</div>
+                <div class="stat-meta">{{ farmer_text('Most recent scan grade') }}</div>
+            </div>
+        </section>
+
         <section class="panel assessment-panel">
             <div class="panel-header assessment-panel-header">
                 <div>
@@ -1595,6 +1671,7 @@
             </div>
 
         <form id="calc-form" class="stats-grid stats-grid-inputs assessment-grid" action="{{ url_for('calculate_results') }}" method="post">
+    {{ csrf_input }}
             <div class="stat-card stat-card-variety">
                 <div class="stat-label">{{ farmer_text('Variety') }}</div>
                 <input type="hidden" name="variety" id="variety-input" required>
@@ -1759,6 +1836,116 @@
         </form>
         </section>
 
+        <section id="recent-scans" class="section-grid two-col">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">{{ farmer_text('Recent Scans') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Latest sugarcane assessments') }}</p>
+                    </div>
+                    <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ farmer_text('Updated 10 min ago') }}</span>
+                </div>
+                {% if recent_scan_cards %}
+                    {% for card in recent_scan_cards %}
+                        {% set scan = card.scan %}
+                        {% set cv_upload = card.cv_upload %}
+                        <div class="recent-item">
+                            <div class="recent-grade">{{ scan.grade if scan else 'CV' }}</div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0;">{{ scan.plot_name if scan else (cv_upload.original_filename or farmer_text('Uploaded Scan')) }}</h4>
+                                {% if scan %}
+                                    <div class="list-meta">{{ scan.created_at.strftime('%b %d, %I:%M %p') }} | <strong>{{ farmer_text('Maturity') }}</strong> {{ scan.maturity_pct }}%</div>
+                                {% elif cv_upload %}
+                                    <div class="list-meta">{{ cv_upload.created_at.strftime('%b %d, %I:%M %p') if cv_upload.created_at else farmer_text('Date unavailable') }} | <strong>{{ farmer_text('Computer vision upload') }}</strong></div>
+                                {% endif %}
+                                {% if cv_upload %}
+                                    <div class="list-meta"><strong>{{ farmer_text('Uploaded:') }}</strong> {{ cv_upload.original_filename or 'image' }}</div>
+                                    <div class="list-meta"><strong>{{ farmer_text('Variety:') }}</strong> {{ cv_upload.variety or farmer_text('Unknown') }} | <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((cv_upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</div>
+                                    <form method="POST" action="{{ url_for('delete_cv_upload', upload_id=cv_upload.id) }}?recent_page={{ recent_page.number }}&gallery_page={{ gallery_page.number }}" class="recent-picture-remove-form" onsubmit='return confirm({{ farmer_text("Remove this uploaded picture from recent scans?") | tojson }});'>
+                                        {{ csrf_input }}
+                                        <button type="submit" class="tag alert">{{ farmer_text('Remove Picture') }}</button>
+                                    </form>
+                                {% elif scan %}
+                                    <div class="list-meta">{{ farmer_text('No picture attached to this assessment.') }}</div>
+                                {% endif %}
+                            </div>
+                            {% if scan and scan.status == 'ready' %}
+                                <span class="tag success">{{ farmer_text('Ready') }}</span>
+                            {% elif scan and scan.status == 'monitor' %}
+                                <span class="tag warning">{{ farmer_text('Monitor') }}</span>
+                            {% elif scan %}
+                                <span class="tag">{{ farmer_text('Healthy') }}</span>
+                            {% else %}
+                                <span class="tag">{{ farmer_text('Uploaded') }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    {% if recent_page.has_other_pages() %}
+                        <nav class="scan-section-pagination" aria-label="{{ farmer_text('Recent Scans') }} pagination">
+                            {% if recent_page.has_previous() %}
+                                <a href="?recent_page={{ recent_page.previous_page_number() }}&gallery_page={{ gallery_page.number }}#recent-scans"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</a>
+                            {% else %}
+                                <span class="is-disabled"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</span>
+                            {% endif %}
+                            <span class="scan-page-count" aria-live="polite">{{ recent_page.number }} / {{ recent_page.paginator.num_pages }}</span>
+                            {% if recent_page.has_next() %}
+                                <a href="?recent_page={{ recent_page.next_page_number() }}&gallery_page={{ gallery_page.number }}#recent-scans">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></a>
+                            {% else %}
+                                <span class="is-disabled">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></span>
+                            {% endif %}
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="list-meta">{{ farmer_text('No recent scans to show. Start a new assessment.') }}</div>
+                {% endif %}
+            </div>
+
+            <div id="scan-gallery" class="panel scan-gallery-block">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">{{ farmer_text('Scan Gallery') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Recent uploaded sugarcane scans') }}</p>
+                    </div>
+                </div>
+                {% if gallery_scans %}
+                    <div class="scan-gallery-grid">
+                        {% for scan in gallery_scans %}
+                            {% set upload = scan.cv_upload %}
+                            <figure class="scan-gallery-item">
+                                <figcaption class="scan-gallery-heading">
+                                    <strong class="scan-gallery-plot">{{ scan.plot_name }}</strong>
+                                    <span class="scan-gallery-date">{{ scan.created_at.strftime('%b %d, %Y') }}</span>
+                                </figcaption>
+                                <img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="{{ farmer_text('Sugarcane scan for') }} {{ scan.plot_name }}" loading="lazy">
+                                <div class="scan-gallery-details">
+                                    <span><strong>{{ farmer_text('Variety:') }}</strong> {{ upload.variety or farmer_text('Unknown') }}</span>
+                                    <span><strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</span>
+                                </div>
+                            </figure>
+                        {% endfor %}
+                    </div>
+                    {% if gallery_page.has_other_pages() %}
+                        <nav class="scan-section-pagination" aria-label="{{ farmer_text('Scan Gallery') }} pagination">
+                            {% if gallery_page.has_previous() %}
+                                <a href="?gallery_page={{ gallery_page.previous_page_number() }}&recent_page={{ recent_page.number }}#scan-gallery"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</a>
+                            {% else %}
+                                <span class="is-disabled"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</span>
+                            {% endif %}
+                            <span class="scan-page-count" aria-live="polite">{{ gallery_page.number }} / {{ gallery_page.paginator.num_pages }}</span>
+                            {% if gallery_page.has_next() %}
+                                <a href="?gallery_page={{ gallery_page.next_page_number() }}&recent_page={{ recent_page.number }}#scan-gallery">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></a>
+                            {% else %}
+                                <span class="is-disabled">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></span>
+                            {% endif %}
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="list-meta">{{ farmer_text('No uploaded scans yet.') }}</div>
+                {% endif %}
+            </div>
+
+        </section>
+
         <section class="section-grid two-col">
             <div class="panel">
                 <div class="panel-header">
@@ -1844,80 +2031,9 @@
             </div>
         </section>
 
-        <section class="section-grid two-col">
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">{{ farmer_text('Recent Scans') }}</h3>
-                        <p class="panel-subtitle">{{ farmer_text('Latest sugarcane assessments') }}</p>
-                    </div>
-                    <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ farmer_text('Updated 10 min ago') }}</span>
-                </div>
-                {% if recent_scan_cards %}
-                    {% for card in recent_scan_cards %}
-                        {% set scan = card.scan %}
-                        {% set cv_upload = card.cv_upload %}
-                        <div class="recent-item">
-                            <div class="recent-grade">{{ scan.grade if scan else 'CV' }}</div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">{{ scan.plot_name if scan else (cv_upload.original_filename or farmer_text('Uploaded Scan')) }}</h4>
-                                {% if scan %}
-                                    <div class="list-meta">{{ scan.created_at.strftime('%b %d, %I:%M %p') }} | <strong>{{ farmer_text('Maturity') }}</strong> {{ scan.maturity_pct }}%</div>
-                                {% elif cv_upload %}
-                                    <div class="list-meta">{{ cv_upload.created_at.strftime('%b %d, %I:%M %p') if cv_upload.created_at else farmer_text('Date unavailable') }} | <strong>{{ farmer_text('Computer vision upload') }}</strong></div>
-                                {% endif %}
-                                {% if cv_upload %}
-                                    <div class="list-meta"><strong>{{ farmer_text('Uploaded:') }}</strong> {{ cv_upload.original_filename or 'image' }}</div>
-                                    <div class="list-meta"><strong>{{ farmer_text('Variety:') }}</strong> {{ cv_upload.variety or farmer_text('Unknown') }} | <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((cv_upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</div>
-                                    <form method="POST" action="{{ url_for('delete_cv_upload', upload_id=cv_upload.id) }}" class="recent-picture-remove-form" onsubmit='return confirm({{ farmer_text("Remove this uploaded picture from recent scans?") | tojson }});'>
-                                        <button type="submit" class="tag alert">{{ farmer_text('Remove Picture') }}</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                            {% if scan and scan.status == 'ready' %}
-                                <span class="tag success">{{ farmer_text('Ready') }}</span>
-                            {% elif scan and scan.status == 'monitor' %}
-                                <span class="tag warning">{{ farmer_text('Monitor') }}</span>
-                            {% elif scan %}
-                                <span class="tag">{{ farmer_text('Healthy') }}</span>
-                            {% else %}
-                                <span class="tag">{{ farmer_text('Uploaded') }}</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="list-meta">{{ farmer_text('No scans yet. Start your first analysis.') }}</div>
-                {% endif %}
-            </div>
-
-            <div class="panel scan-gallery-block">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">{{ farmer_text('Scan Gallery') }}</h3>
-                        <p class="panel-subtitle">{{ farmer_text('Recent uploaded sugarcane scans') }}</p>
-                    </div>
-                </div>
-                {% if recent_cv_uploads %}
-                    <div class="scan-gallery-grid">
-                        {% for upload in recent_cv_uploads %}
-                            <figure class="scan-gallery-item">
-                                <img src="{{ url_for('static', filename=upload.image_path) }}" alt="Uploaded sugarcane scan" loading="lazy">
-                                <figcaption>
-                                    <strong>{{ farmer_text('Variety:') }}</strong> {{ upload.variety or farmer_text('Unknown') }}<br>
-                                    <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}
-                                </figcaption>
-                            </figure>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="list-meta">{{ farmer_text('No uploaded scans yet.') }}</div>
-                {% endif %}
-            </div>
-
-        </section>
-
         <section class="panel feedback-panel">
             <form method="POST" action="/farmer/feedback">
+    {{ csrf_input }}
                 <div class="panel-header">
                     <div>
                         <h3 class="panel-title">{{ farmer_text('Feedback Box') }}</h3>
@@ -1955,23 +2071,32 @@
         </a>
     </nav>
 
-    <div id="camera-overlay" class="camera-overlay" aria-hidden="true">
-        <div class="camera-shell">
+    <div id="camera-overlay" class="camera-overlay" aria-hidden="true" data-camera-state="idle">
+        <div class="camera-shell" role="dialog" aria-modal="true" aria-labelledby="camera-title" aria-describedby="camera-instructions">
             <div class="camera-header">
-                <div class="camera-title">Align the Sugarcane Stalk</div>
+                <div class="camera-title" id="camera-title">{{ farmer_text('Scan Sugarcane') }}</div>
                 <button type="button" class="camera-close" id="close-camera-btn">Close</button>
             </div>
+            <p class="camera-instructions" id="camera-instructions">Keep the sugarcane stalk in frame, with good light and a clear background.</p>
             <div class="camera-viewport">
                 <video id="camera-stream" playsinline autoplay muted></video>
                 <img id="camera-preview-image" class="camera-preview-image" alt="Captured or uploaded sugarcane preview">
                 <canvas id="camera-canvas" hidden></canvas>
                 <div class="camera-flash" id="camera-flash" aria-hidden="true"></div>
+                <div class="camera-empty-state" role="status" aria-live="polite">
+                    <span class="camera-empty-icon" aria-hidden="true">&#128247;</span>
+                    <strong id="camera-state-title">Opening camera…</strong>
+                    <span id="camera-state-help">Allow camera access, or choose a photo below.</span>
+                </div>
             </div>
             <div class="camera-controls">
                 <button class="camera-capture" id="upload-photo-btn" type="button">
                     Upload Picture
                 </button>
                 <input id="upload-photo-input" type="file" accept="image/*" hidden>
+                <button class="camera-capture camera-primary" id="capture-btn" type="button" disabled hidden>Capture</button>
+                <button class="camera-capture camera-primary" id="native-camera-btn" type="button">{{ farmer_text('Take Photo') }}</button>
+                <input id="native-camera-input" type="file" accept="image/*" capture="environment" hidden>
             </div>
             <div class="camera-upload-status" id="camera-upload-status" role="status" aria-live="polite"></div>
             <div class="cv-results-panel" id="cv-results-panel" hidden>
@@ -1988,12 +2113,30 @@
     </div>
     <script>
         (() => {
+            const toast = document.getElementById('scan-feedback-toast');
+            if (!toast) return;
+            const url = new URL(window.location.href);
+            url.searchParams.delete('notice');
+            if (url.searchParams.get('message')?.startsWith('Picture removed from recent scans.')) {
+                url.searchParams.delete('message');
+            }
+            window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+            const dismiss = () => {
+                toast.classList.add('is-dismissing');
+                window.setTimeout(() => toast.remove(), 220);
+            };
+            document.getElementById('scan-feedback-dismiss').addEventListener('click', dismiss);
+            window.setTimeout(dismiss, 4500);
+        })();
+        (() => {
             const uiStrings = {{ farmer_catalog() | tojson }};
             const uiText = (text) => uiStrings[text] || text;
             const openCameraBtn = document.getElementById('open-camera-btn');
             const cameraOverlay = document.getElementById('camera-overlay');
             const closeCameraBtn = document.getElementById('close-camera-btn');
             const captureBtn = document.getElementById('capture-btn');
+            const nativeCameraBtn = document.getElementById('native-camera-btn');
+            const nativeCameraInput = document.getElementById('native-camera-input');
             const uploadPhotoBtn = document.getElementById('upload-photo-btn');
             const uploadPhotoInput = document.getElementById('upload-photo-input');
             const cameraStream = document.getElementById('camera-stream');
@@ -2035,6 +2178,8 @@
             let isUploading = false;
             let isCameraReady = false;
             let previewObjectUrl = null;
+            let cameraSession = 0;
+            let cameraReturnFocus = null;
 
             const setVarietyPanelState = (isOpen) => {
                 if (!varietyPanel || !varietyTrigger) {
@@ -2108,6 +2253,7 @@
                 previewObjectUrl = URL.createObjectURL(blobOrFile);
                 cameraPreviewImage.src = previewObjectUrl;
                 cameraPreviewImage.classList.add('is-visible');
+                cameraOverlay.dataset.cameraState = 'preview';
             };
 
             const renderCvResultPanel = (bestPrediction) => {
@@ -2305,14 +2451,16 @@
 
             const setCaptureAvailability = (available) => {
                 isCameraReady = !!available;
+                captureBtn.hidden = !available;
+                nativeCameraBtn.hidden = !!available;
                 if (!captureBtn) {
                     return;
                 }
                 captureBtn.disabled = !available || isUploading;
-                captureBtn.textContent = uiText('Capture');
+                captureBtn.textContent = uiText(available && cameraOverlay.dataset.cameraState === 'preview' ? 'Retake' : 'Capture');
             };
 
-            const startCamera = async () => {
+            const startCamera = async (session) => {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error('Camera not supported');
                 }
@@ -2329,10 +2477,16 @@
                     }
                 };
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (session !== cameraSession || !cameraOverlay.classList.contains('is-active')) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    return;
+                }
                 activeStream = stream;
                 cameraStream.srcObject = stream;
                 await cameraStream.play();
+                if (session !== cameraSession) return;
                 setCaptureAvailability(true);
+                cameraOverlay.dataset.cameraState = 'live';
                 const [track] = stream.getVideoTracks();
                 if (track && track.getCapabilities && track.applyConstraints) {
                     const capabilities = track.getCapabilities();
@@ -2355,26 +2509,41 @@
                     return;
                 }
                 isStarting = true;
+                const session = ++cameraSession;
+                cameraReturnFocus = document.activeElement;
                 setCameraButtonState(true);
                 setCameraStatus('');
                 setPreviewImage(null);
+                if (cvResultsPanel) cvResultsPanel.hidden = true;
                 setCaptureAvailability(false);
                 cameraOverlay.classList.add('is-active');
                 cameraOverlay.setAttribute('aria-hidden', 'false');
                 document.body.classList.add('camera-open');
+                cameraOverlay.dataset.cameraState = 'loading';
+                document.getElementById('camera-state-title').textContent = 'Opening camera…';
+                document.getElementById('camera-state-help').textContent = 'Allow camera access, or choose a photo below.';
+                closeCameraBtn.focus();
                 try {
-                    await startCamera();
+                    await startCamera(session);
                 } catch (err) {
+                    if (session !== cameraSession) return;
                     stopCamera();
                     setCaptureAvailability(false);
-                    setCameraStatus(uiText('Camera preview is not available. You can still upload a photo.'), 'success');
+                    cameraOverlay.dataset.cameraState = 'unavailable';
+                    document.getElementById('camera-state-title').textContent = 'Camera preview unavailable';
+                    document.getElementById('camera-state-help').textContent = 'Use Take Photo to open your device camera, or upload a picture.';
                 } finally {
-                    setCameraButtonState(false);
-                    isStarting = false;
+                    if (session === cameraSession) {
+                        setCameraButtonState(false);
+                        isStarting = false;
+                    }
                 }
             };
 
             const closeCamera = () => {
+                ++cameraSession;
+                isStarting = false;
+                setCameraButtonState(false);
                 stopCamera();
                 if (cameraOverlay) {
                     cameraOverlay.classList.remove('is-active');
@@ -2383,6 +2552,7 @@
                 document.body.classList.remove('camera-open');
                 setCameraStatus('');
                 setPreviewImage(null);
+                cameraReturnFocus?.focus();
             };
 
             const triggerFlash = () => {
@@ -2398,6 +2568,7 @@
             };
 
             const setCaptureButtonState = (loading) => {
+                nativeCameraBtn.disabled = loading;
                 if (captureBtn) {
                     if (loading) {
                         captureBtn.disabled = true;
@@ -2471,7 +2642,7 @@
                     return '';
                 }
                 return entries
-                    .map((entry) => `${entry.modelName}: ${entry.className} (${displayMaturityStatus(entry.maturityStatus)}) • ${entry.confidenceLabel}`)
+                    .map((entry) => `${entry.modelName}: ${entry.className} (${displayMaturityStatus(entry.maturityStatus)}) â€¢ ${entry.confidenceLabel}`)
                     .join(' | ');
             };
 
@@ -2518,8 +2689,8 @@
                 } catch (error) {
                     setCameraStatus(error?.message || 'Capture upload failed.', 'error');
                 } finally {
-                    setCaptureButtonState(false);
                     isUploading = false;
+                    setCaptureButtonState(false);
                 }
             };
 
@@ -2614,7 +2785,7 @@
                 setCameraStatus(uiText('Uploading photo for prediction...'));
                 const response = await fetch('/api/scan/predict?top_k=3', {
                     method: 'POST',
-                    headers: { Accept: 'application/json' },
+                    headers: { Accept: 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                     body: formData,
                 });
 
@@ -2668,8 +2839,35 @@
                 closeCameraBtn.addEventListener('click', closeCamera);
             }
 
+            nativeCameraBtn.addEventListener('click', () => {
+                if (!isUploading) nativeCameraInput.click();
+            });
+            cameraOverlay.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    closeCamera();
+                } else if (event.key === 'Tab') {
+                    const controls = Array.from(cameraOverlay.querySelectorAll('button:not(:disabled)'))
+                        .filter((button) => button.getClientRects().length);
+                    const first = controls[0], last = controls[controls.length - 1];
+                    if (event.shiftKey && document.activeElement === first) {
+                        event.preventDefault(); last.focus();
+                    } else if (!event.shiftKey && document.activeElement === last) {
+                        event.preventDefault(); first.focus();
+                    }
+                }
+            });
+
             if (captureBtn) {
                 captureBtn.addEventListener('click', () => {
+                    if (isCameraReady && cameraOverlay.dataset.cameraState === 'preview') {
+                        setPreviewImage(null);
+                        cameraOverlay.dataset.cameraState = 'live';
+                        setCameraStatus('');
+                        cvResultsPanel.hidden = true;
+                        setCaptureAvailability(true);
+                        return;
+                    }
                     if (!isCameraReady) {
                         setCameraStatus(uiText('Please use Upload Picture.'), 'success');
                         return;
@@ -2683,6 +2881,11 @@
             }
 
             if (uploadPhotoBtn && uploadPhotoInput) {
+                document.getElementById('native-camera-input')?.addEventListener('change', (event) => {
+                    uploadPhotoInput.files = event.target.files;
+                    uploadPhotoInput.dispatchEvent(new Event('change'));
+                    event.target.value = '';
+                });
                 uploadPhotoBtn.addEventListener('click', () => {
                     if (!isUploading) {
                         openUploadPicker();
@@ -2694,6 +2897,11 @@
                     if (!selectedFile || isUploading) {
                         return;
                     }
+                    ++cameraSession;
+                    isStarting = false;
+                    setCameraButtonState(false);
+                    stopCamera();
+                    setCaptureAvailability(false);
                     isUploading = true;
                     setCaptureButtonState(true);
                     setCameraStatus('Preparing selected image...');
@@ -2704,8 +2912,8 @@
                     } catch (error) {
                         setCameraStatus(error?.message || 'Image upload failed.', 'error');
                     } finally {
-                        setCaptureButtonState(false);
                         isUploading = false;
+                        setCaptureButtonState(false);
                         uploadPhotoInput.value = '';
                     }
                 });
@@ -2715,7 +2923,16 @@
             window.addEventListener('beforeunload', stopCamera);
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
+                    ++cameraSession;
+                    isStarting = false;
+                    setCameraButtonState(false);
                     stopCamera();
+                    setCaptureAvailability(false);
+                    if (['live', 'loading'].includes(cameraOverlay.dataset.cameraState)) {
+                        cameraOverlay.dataset.cameraState = 'unavailable';
+                        document.getElementById('camera-state-title').textContent = 'Camera paused';
+                        document.getElementById('camera-state-help').textContent = 'Use Take Photo, upload a picture, or reopen the preview.';
+                    }
                 }
             });
 
@@ -2723,5 +2940,6 @@
     </script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
 </body>
 </html>

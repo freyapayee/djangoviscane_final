@@ -1,0 +1,77 @@
+/* Dashboard camera dialog: scoped to override the legacy circular controls. */
+body.ds-app.vis-farmer-dashboard .camera-overlay {
+    padding: 16px;
+    background: rgba(12, 27, 18, .66);
+    align-items: center;
+    overscroll-behavior: contain;
+}
+body.ds-app.vis-farmer-dashboard .camera-shell {
+    width: min(620px, 100%);
+    min-height: 0;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 20px;
+    gap: 14px;
+    overflow-y: auto;
+    border: 1px solid #dce7df;
+    border-radius: 22px;
+    background: #fff;
+    color: #203b2a;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .3);
+}
+body.ds-app.vis-farmer-dashboard .camera-header { flex: 0 0 auto; }
+body.ds-app.vis-farmer-dashboard .camera-title { color: #183523; font-size: 20px; font-weight: 700; }
+body.ds-app.vis-farmer-dashboard .camera-close {
+    min-width: 64px; min-height: 44px; padding: 10px 14px;
+    border: 1px solid #d3e2d7; border-radius: 12px;
+    color: #254b32; background: #f0f6f1; font: inherit; font-size: 14px; font-weight: 600;
+}
+body.ds-app.vis-farmer-dashboard .camera-instructions { margin: 0; color: #586e60; font-size: 14px; line-height: 1.5; }
+body.ds-app.vis-farmer-dashboard .camera-viewport {
+    flex: 0 0 auto; height: clamp(180px, 46dvh, 420px); min-height: 0;
+    aspect-ratio: auto; border-radius: 16px; border: 1px solid #cbd9ce;
+    background: #13241b;
+}
+body.ds-app.vis-farmer-dashboard .camera-viewport :is(video, .camera-preview-image) {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    margin: 0; object-fit: contain;
+}
+body.ds-app.vis-farmer-dashboard .camera-preview-image:not(.is-visible) { display: none; }
+body.ds-app.vis-farmer-dashboard .camera-empty-state {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    padding: 24px; color: #fff; text-align: center;
+}
+body.ds-app.vis-farmer-dashboard .camera-empty-icon { font-size: 36px; }
+body.ds-app.vis-farmer-dashboard .camera-empty-state strong { font-size: 18px; }
+body.ds-app.vis-farmer-dashboard .camera-empty-state > span:last-child { max-width: 340px; color: #d5e5da; font-size: 14px; }
+body.ds-app.vis-farmer-dashboard .camera-overlay:is([data-camera-state="live"], [data-camera-state="preview"]) .camera-empty-state { display: none; }
+body.ds-app.vis-farmer-dashboard .camera-overlay:not([data-camera-state="live"]) video { visibility: hidden; }
+body.ds-app.vis-farmer-dashboard .camera-controls {
+    display: flex; flex-wrap: nowrap; gap: 12px; flex: 0 0 auto;
+}
+body.ds-app.vis-farmer-dashboard .camera-controls .camera-capture {
+    display: flex; align-items: center; justify-content: center;
+    flex: 1; width: auto; height: auto; min-width: 0; min-height: 48px;
+    padding: 12px; border: 1px solid #b7cebf; border-radius: 12px;
+    color: #255c36; background: #f2f8f3; font: inherit;
+    font-size: 14px; font-weight: 650; line-height: 1.4; text-align: center;
+}
+body.ds-app.vis-farmer-dashboard .camera-controls .camera-primary { color: #fff; background: #26713e; border-color: #26713e; }
+body.ds-app.vis-farmer-dashboard .camera-controls [hidden] { display: none; }
+body.ds-app.vis-farmer-dashboard .camera-shell button:focus-visible { outline: 3px solid #91ba9d; outline-offset: 3px; }
+body.ds-app.vis-farmer-dashboard .camera-upload-status { margin: 0; color: #50695a; font-size: 14px; }
+body.ds-app.vis-farmer-dashboard .camera-upload-status:empty { display: none; }
+body.ds-app.vis-farmer-dashboard .camera-upload-status.is-error { color: #a52828; }
+body.ds-app.vis-farmer-dashboard .camera-upload-status.is-success { color: #246b3a; }
+body.ds-app.vis-farmer-dashboard .cv-results-panel { margin: 0; background: #f0f7f2; border: 1px solid #cbded0; box-shadow: none; text-align: center; }
+body.ds-app.vis-farmer-dashboard .cv-results-meta { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 600px) {
+    body.ds-app.vis-farmer-dashboard .camera-overlay { padding: 12px; }
+    body.ds-app.vis-farmer-dashboard .camera-shell { padding: 16px; border-radius: 18px; max-height: calc(100dvh - 24px); gap: 12px; }
+    body.ds-app.vis-farmer-dashboard .camera-title { font-size: 18px; }
+}
+@media (max-height: 500px) {
+    body.ds-app.vis-farmer-dashboard .camera-viewport { height: 150px; }
+    body.ds-app.vis-farmer-dashboard .camera-shell { gap: 10px; }
+}

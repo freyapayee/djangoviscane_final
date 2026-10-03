@@ -1,87 +1,64 @@
 <!DOCTYPE html>
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>VISCANE | Data Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}">
+    <title>VISCANE | Prediction Monitoring</title>
 </head>
-<body class="admin-layout">
-    <div class="dashboard-bg"></div>
-
-    <header class="dashboard-header">
+<body class="admin-layout has-vis-sidebar ds-app vis-management-dashboard vis-admin-section vis-admin-monitoring">
+    {% include 'components/admin_navigation.html' %}
+    <header class="dashboard-header admin-section-header">
         <div class="header-content">
-            <div class="brand">
-                <div class="brand-icon">
-                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                </div>
-                <div>
-                    <p class="brand-title">Data Monitoring</p>
-                    <p class="brand-subtitle">Agronomic inputs and predictive outputs</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                {% include 'farmer_language_switch.html' %}
-                <a class="btn light" href="/admin">
-                    <ion-icon name="grid-outline"></ion-icon>
-                    Admin
-                </a>
-                <a class="btn light" href="/admin-logout">
-                    <ion-icon name="power"></ion-icon>
-                    Logout
-                </a>
-            </div>
+            <div class="brand admin-section-heading"><div class="brand-icon"><ion-icon name="pulse-outline"></ion-icon></div><div><p class="brand-title">Prediction Monitoring</p><p class="brand-subtitle">Track agronomic submissions, model outputs, and pending calculations.</p></div></div>
         </div>
     </header>
 
-    <main class="dashboard-container fade-in">
-        <section class="panel">
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title">Latest Prediction Logs</h3>
-                    <p class="panel-subtitle">User-input based LKG predictions</p>
-                </div>
-                <span class="badge"><ion-icon name="pulse-outline"></ion-icon>Live</span>
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Farmer</th>
-                        <th>Variety</th>
-                        <th>Hectares</th>
-                        <th>Pred LKG/TC</th>
-                        <th>Pred LKG/HA</th>
-                        <th>Pred Total LKG</th>
-                        <th>RSSI</th>
-                        <th>Captured</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if rows %}
-                        {% for row in rows %}
-                            <tr>
-                                <td>{{ row.farmer_name }}</td>
-                                <td>{{ row.variety }}</td>
-                                <td>{{ row.hectares }}</td>
-                                <td>{{ row.predicted_lkg_tc if row.predicted_lkg_tc is not none else 'Pending' }}</td>
-                                <td>{{ row.predicted_tc_ha if row.predicted_tc_ha is not none else 'Pending' }}</td>
-                                <td>{{ row.predicted_lkg if row.predicted_lkg is not none else 'Pending' }}</td>
-                                <td>{{ row.rssi_infected }}</td>
-                                <td>{{ row.created_at.strftime('%b %d, %I:%M %p') }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="8">No prediction data available.</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+    <main class="dashboard-container fade-in admin-section-workspace">
+        <section class="admin-summary-grid four-up" aria-label="Prediction summary">
+            <article class="admin-summary-card"><span class="admin-summary-icon is-blue"><ion-icon name="analytics-outline"></ion-icon></span><div><p>Total predictions</p><strong>{{ total_predictions|default(rows|length, true) }}</strong><small>All submitted records</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-green"><ion-icon name="calendar-outline"></ion-icon></span><div><p>Captured today</p><strong>{{ today_predictions|default(0, true) }}</strong><small>New activity today</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-violet"><ion-icon name="checkmark-done-outline"></ion-icon></span><div><p>Completed</p><strong>{{ completed_predictions|default(0, true) }}</strong><small>With total LKG output</small></div></article>
+            <article class="admin-summary-card"><span class="admin-summary-icon is-amber"><ion-icon name="speedometer-outline"></ion-icon></span><div><p>Average LKG/TC</p><strong>{{ '%.2f'|format(avg_lkg_tc|default(0, true)) }}</strong><small>Average LKG/HA {{ '%.2f'|format(avg_lkg_ha|default(0, true)) }}</small></div></article>
         </section>
 
-        <div class="footer-link">VISCANE Admin | Data Monitoring</div>
+        <section class="panel admin-data-panel">
+            <div class="admin-panel-heading">
+                <div><span class="admin-eyebrow">Live data</span><h2 class="panel-title">Prediction Logs</h2><p class="panel-subtitle">{% if page_obj is defined %}{{ page_obj.paginator.count }} record{% if page_obj.paginator.count != 1 %}s{% endif %}{% else %}{{ rows|length }} record{% if rows|length != 1 %}s{% endif %}{% endif %} match the current view.</p></div>
+                <span class="admin-live-badge"><span></span>Live</span>
+            </div>
+            <form class="admin-filter-bar" method="GET" action="/admin/monitoring">
+                <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search predictions</span><input type="search" name="search" value="{{ search|default('') }}" placeholder="Search farmer, variety, or RSSI"></label>
+                <label><span class="visually-hidden">Filter by variety</span><select name="variety"><option value="">All varieties</option>{% for option in variety_options|default([]) %}<option value="{{ option }}"{% if option == selected_variety %} selected{% endif %}>{{ option }}</option>{% endfor %}</select></label>
+                <label><span class="visually-hidden">Filter by status</span><select name="status"><option value="">All statuses</option><option value="completed"{% if selected_status == 'completed' %} selected{% endif %}>Completed</option><option value="pending"{% if selected_status == 'pending' %} selected{% endif %}>Pending</option></select></label>
+                {% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
+                <button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
+            </form>
+
+            {% if rows %}
+            <div class="admin-responsive-table" role="region" aria-label="Prediction logs" tabindex="0">
+                <table class="data-table"><thead><tr><th>Farmer</th><th>Variety</th><th>Area</th><th>LKG/TC</th><th>LKG/HA</th><th>Total LKG</th><th>RSSI</th><th>Status</th><th>Captured</th></tr></thead>
+                <tbody>{% for row in rows %}<tr>
+                    <td data-label="Farmer"><strong>{{ row.farmer_name }}</strong></td>
+                    <td data-label="Variety"><span class="admin-value-pill">{{ row.variety }}</span></td>
+                    <td data-label="Area">{{ row.hectares }} ha</td>
+                    <td data-label="LKG/TC">{{ row.predicted_lkg_tc if row.predicted_lkg_tc is not none else 'N/A' }}</td>
+                    <td data-label="LKG/HA">{{ row.predicted_tc_ha if row.predicted_tc_ha is not none else 'N/A' }}</td>
+                    <td data-label="Total LKG"><strong>{{ row.predicted_lkg if row.predicted_lkg is not none else 'N/A' }}</strong></td>
+                    <td data-label="RSSI"><span class="admin-rssi{% if row.rssi_infected|string|lower in ['yes', 'true', 'infected'] %} is-alert{% endif %}">{{ row.rssi_infected }}</span></td>
+                    <td data-label="Status">{% if row.predicted_lkg is not none %}<span class="admin-status is-success"><span></span>Completed</span>{% else %}<span class="admin-status is-pending"><span></span>Pending</span>{% endif %}</td>
+                    <td data-label="Captured"><time datetime="{{ row.created_at.isoformat() }}">{{ row.created_at.strftime('%b %d, %Y') }}<small>{{ row.created_at.strftime('%I:%M %p') }}</small></time></td>
+                </tr>{% endfor %}</tbody></table>
+            </div>
+            {% if page_obj is defined %}{% include 'components/admin_pagination.html' %}{% endif %}
+            {% else %}
+            <div class="admin-empty-state"><span><ion-icon name="pulse-outline"></ion-icon></span><h3>No prediction logs found</h3><p>{% if search or selected_variety or selected_status %}Try clearing or changing the active filters.{% else %}Prediction activity will appear after farmers submit agronomic data.{% endif %}</p>{% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear filters</a>{% endif %}</div>
+            {% endif %}
+        </section>
+        <div class="footer-link">VISCANE Admin | Prediction Monitoring</div>
     </main>
-    {% include 'hiligaynon_runtime.html' %}
-</body>
-</html>
+    {% include 'hiligaynon_runtime.html' %}<script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+</body></html>

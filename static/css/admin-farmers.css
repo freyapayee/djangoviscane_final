@@ -1,0 +1,368 @@
+/* Farmer account management: wide, task-focused admin workspace. */
+body.ds-app.vis-admin-farmers {
+    --farmers-green: #14733b;
+    --farmers-green-dark: #0d5b2d;
+    --farmers-green-soft: #e9f6ed;
+    --farmers-ink: #172a21;
+    --farmers-muted: #68786f;
+    --farmers-border: #dfe9e2;
+    --farmers-canvas: #f4f7f5;
+    background: var(--farmers-canvas);
+}
+
+body.ds-app.vis-admin-farmers .dashboard-bg { display: none; }
+body.ds-app.vis-admin-farmers .dashboard-header,
+body.ds-app.vis-admin-farmers .dashboard-container {
+    width: min(1380px, calc(100% - 40px));
+    max-width: 1380px;
+}
+
+body.ds-app.vis-admin-farmers .farmers-page-header { margin-bottom: 20px; }
+body.ds-app.vis-admin-farmers .farmers-page-heading .brand-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    border-radius: 14px;
+    background: var(--farmers-green-soft);
+    color: var(--farmers-green);
+    font-size: 24px;
+}
+
+body.ds-app.vis-admin-farmers .farmers-page-heading .brand-title { font-size: clamp(26px, 3vw, 34px); }
+body.ds-app.vis-admin-farmers .farmers-page-heading .brand-subtitle { max-width: 650px; }
+body.ds-app.vis-admin-farmers .farmers-workspace { padding-bottom: 72px; }
+body.ds-app.vis-admin-farmers .farmers-alerts:empty { display: none; }
+body.ds-app.vis-admin-farmers .farmers-alerts { display: grid; gap: 10px; margin-bottom: 18px; }
+body.ds-app.vis-admin-farmers .farmers-alerts :is(.form-success, .form-error) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 13px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+body.ds-app.vis-admin-farmers .farmers-alerts ion-icon { flex: 0 0 auto; font-size: 20px; }
+
+.farmer-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.farmer-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    min-height: 112px;
+    padding: 20px 22px;
+    border: 1px solid var(--farmers-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(30, 70, 45, .04);
+}
+
+.farmer-summary-card p { margin: 0 0 4px; color: var(--farmers-muted); font-size: 13px; font-weight: 650; }
+.farmer-summary-card strong { color: var(--farmers-ink); font-size: 30px; line-height: 1; letter-spacing: -.04em; }
+.summary-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    border-radius: 13px;
+    font-size: 24px;
+}
+.summary-icon-total { background: #eaf1fb; color: #3468a8; }
+.summary-icon-active { background: #e8f7ed; color: #168044; }
+.summary-icon-inactive { background: #fff3df; color: #a66513; }
+
+body.ds-app.vis-admin-farmers .panel {
+    margin-bottom: 20px;
+    padding: clamp(22px, 2.6vw, 32px);
+    border-radius: 18px;
+    border-color: var(--farmers-border);
+}
+
+.section-eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--farmers-green);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+body.ds-app.vis-admin-farmers .panel-title { color: var(--farmers-ink); font-size: 22px; letter-spacing: -.02em; }
+body.ds-app.vis-admin-farmers .panel-subtitle { color: var(--farmers-muted); font-size: 13px; line-height: 1.5; }
+body.ds-app.vis-admin-farmers .create-farmer-header { margin-bottom: 24px; }
+.farmer-form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.farmer-field { display: grid; min-width: 0; gap: 8px; }
+.farmer-field-wide { grid-column: span 2; }
+.farmer-field > span { color: #344d41; font-size: 13px; font-weight: 700; }
+.farmer-field em { margin-left: 4px; color: #9b4d42; font-size: 10px; font-style: normal; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+body.ds-app.vis-admin-farmers .farmer-field .stat-input {
+    width: 100%;
+    height: 48px;
+    min-height: 48px;
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid #d5e2d9;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--farmers-ink) !important;
+    font-size: 14px;
+    line-height: 48px;
+    box-shadow: none;
+}
+body.ds-app.vis-admin-farmers .farmer-field .stat-input:focus,
+body.ds-app.vis-admin-farmers .search-control .stat-input:focus {
+    border-color: #52a26f;
+    outline: 3px solid rgba(37, 139, 76, .12);
+}
+.create-farmer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #edf2ee;
+}
+.create-farmer-footer p { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--farmers-muted); font-size: 12px; }
+.create-farmer-footer p ion-icon { color: var(--farmers-green); font-size: 18px; }
+.create-farmer-footer .btn { min-height: 46px; padding-inline: 18px; }
+
+.accounts-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+body.ds-app.vis-admin-farmers .admin-search-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: min(100%, 630px);
+    margin: 0;
+    gap: 8px;
+}
+.search-control { position: relative; display: block; flex: 1 1 380px; min-width: 240px; }
+.search-control > ion-icon { position: absolute; top: 50%; left: 14px; z-index: 1; color: #6b7e73; font-size: 19px; transform: translateY(-50%); pointer-events: none; }
+body.ds-app.vis-admin-farmers .search-control .stat-input {
+    width: 100%;
+    height: 46px;
+    min-height: 46px;
+    margin: 0;
+    padding: 0 14px 0 43px;
+    border: 1px solid #d5e2d9;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--farmers-ink) !important;
+    font-size: 13px;
+}
+body.ds-app.vis-admin-farmers .admin-search-row .btn { width: auto; height: 46px; min-height: 46px; padding: 0 16px; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+.farmer-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--farmers-border);
+    border-radius: 14px;
+    background: #fff;
+}
+body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table {
+    width: 100%;
+    min-width: 1020px;
+    table-layout: auto;
+}
+body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table th {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--farmers-border);
+    background: #f6f9f7;
+    color: #596d62;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .045em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td {
+    width: auto;
+    padding: 16px;
+    border-right: 0;
+    border-bottom: 1px solid #edf2ef;
+    color: var(--farmers-ink);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: left;
+    vertical-align: middle;
+}
+body.ds-app.vis-admin-farmers .farmer-accounts-table tbody tr { transition: background .16s ease; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table tbody tr:hover { background: #f9fbfa; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table tbody tr:last-child td { border-bottom: 0; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(1) { min-width: 220px; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(2) { min-width: 110px; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(3) { min-width: 195px; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(4) { min-width: 105px; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(5) { min-width: 105px; }
+body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(6) { min-width: 285px; }
+.farmer-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.farmer-avatar { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; background: var(--farmers-green-soft); color: var(--farmers-green-dark); font-size: 14px; font-weight: 800; }
+.farmer-identity div { min-width: 0; }
+.farmer-identity strong, .farmer-identity span { display: block; }
+.farmer-identity strong { margin-bottom: 2px; color: var(--farmers-ink); font-size: 13px; }
+.farmer-identity div span { color: var(--farmers-muted); font-size: 12px; overflow-wrap: anywhere; }
+.cell-primary { color: #364b40; }
+.farmer-address { display: block; max-width: 260px; }
+.account-status { display: inline-flex; align-items: center; gap: 7px; min-height: 27px; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 750; white-space: nowrap; }
+.account-status > span { width: 7px; height: 7px; border-radius: 50%; }
+.account-status.is-active { background: #e9f7ed; color: #176b38; }
+.account-status.is-active > span { background: #2b9953; }
+.account-status.is-inactive { background: #fff2df; color: #8b5a17; }
+.account-status.is-inactive > span { background: #d38a25; }
+
+body.ds-app.vis-admin-farmers .account-actions-panel .actions-cell { width: auto; min-width: 285px; }
+.farmer-action-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; }
+.farmer-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 34px;
+    padding: 6px 7px;
+    border: 1px solid #dce6df;
+    border-radius: 8px;
+    background: #fff;
+    color: #385148;
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color .16s ease, background .16s ease, color .16s ease;
+}
+.farmer-action-btn ion-icon { font-size: 15px; }
+.farmer-action-btn:hover { border-color: #9bc8a8; background: #f1f8f3; color: var(--farmers-green-dark); }
+.farmer-action-btn.is-warning { border-color: #f0d9b4; color: #8c5b18; }
+.farmer-action-btn.is-warning:hover { background: #fff7ea; }
+.farmer-action-btn.is-positive { border-color: #baddc4; color: #176b38; }
+.farmer-action-btn.is-danger { border-color: #efd3cf; color: #a34338; }
+.farmer-action-btn.is-danger:hover { background: #fff3f1; border-color: #e8aaa2; }
+
+.farmer-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; }
+.pagination-pages { display: flex; align-items: center; justify-content: center; gap: 5px; }
+.pagination-control, .pagination-page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 38px;
+    padding: 8px 11px;
+    border: 1px solid var(--farmers-border);
+    border-radius: 9px;
+    background: #fff;
+    color: #3e574b;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.pagination-page { width: 38px; padding-inline: 0; }
+.pagination-page:hover, .pagination-control:hover { border-color: #9dc9aa; background: #f0f8f2; color: var(--farmers-green-dark); }
+.pagination-page.is-current { border-color: var(--farmers-green); background: var(--farmers-green); color: #fff; }
+.pagination-control.is-disabled { color: #a2aea7; cursor: not-allowed; }
+.pagination-ellipsis { padding: 0 4px; color: #7e8d84; }
+
+.farmer-empty-state { display: grid; justify-items: center; padding: clamp(44px, 7vw, 76px) 20px; border: 1px dashed #ccdbd1; border-radius: 14px; background: #fafcfb; text-align: center; }
+.empty-state-illustration { position: relative; display: grid; place-items: center; width: 82px; height: 82px; margin-bottom: 18px; border-radius: 24px; background: var(--farmers-green-soft); color: var(--farmers-green); font-size: 38px; }
+.empty-state-illustration span { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 34px; height: 34px; border: 4px solid #fafcfb; border-radius: 50%; background: #fff; color: #527166; font-size: 16px; }
+.farmer-empty-state h3 { margin: 0 0 8px; color: var(--farmers-ink); font-size: 19px; }
+.farmer-empty-state p { max-width: 440px; margin: 0 0 20px; color: var(--farmers-muted); font-size: 13px; line-height: 1.55; }
+
+.account-confirmation-modal .dashboard-modal-backdrop { background: rgba(13, 28, 20, .52); backdrop-filter: blur(3px); }
+body.ds-app.vis-admin-farmers .account-confirmation-modal .dashboard-modal-card { width: min(100%, 470px); margin: 0; padding: 30px; border-top: 4px solid var(--farmers-green); }
+.confirmation-modal-icon { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 18px; border-radius: 13px; background: var(--farmers-green-soft); color: var(--farmers-green); font-size: 25px; }
+.account-confirmation-modal .dashboard-modal-card.is-warning { border-top-color: #c98424; }
+.account-confirmation-modal .dashboard-modal-card.is-warning .confirmation-modal-icon { background: #fff3df; color: #9b641a; }
+.account-confirmation-modal .dashboard-modal-card.is-danger { border-top-color: #bd4d41; }
+.account-confirmation-modal .dashboard-modal-card.is-danger .confirmation-modal-icon { background: #fceceb; color: #ad4439; }
+.account-confirmation-modal .dashboard-modal-card.is-positive { border-top-color: #168044; }
+.account-confirmation-modal #account-modal-title { padding-right: 38px; }
+.account-confirmation-modal #account-modal-description { margin: 9px 0 24px; color: var(--farmers-muted); font-size: 14px; line-height: 1.6; }
+.account-confirmation-modal .admin-reset-actions { margin: 0; padding-top: 20px; border-top: 1px solid #edf2ee; }
+.account-confirmation-modal .btn.is-warning { background: #b87319; }
+.account-confirmation-modal .btn.is-positive { background: #168044; }
+.account-confirmation-modal .btn.is-danger { background: #ad4439; }
+
+@media (max-width: 1180px) {
+    .farmer-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .farmer-field-wide { grid-column: span 2; }
+    .accounts-toolbar { align-items: stretch; flex-direction: column; }
+    body.ds-app.vis-admin-farmers .admin-search-row { width: 100%; justify-content: flex-start; }
+}
+
+@media (max-width: 900px) {
+    body.ds-app.vis-admin-farmers .farmer-table-wrap { overflow: visible; border: 0; background: transparent; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100%;
+    }
+    body.ds-app.vis-admin-farmers .farmer-accounts-table thead { display: none; }
+    body.ds-app.vis-admin-farmers .farmer-accounts-table tbody { display: grid; gap: 12px; }
+    body.ds-app.vis-admin-farmers .farmer-accounts-table tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px; border: 1px solid var(--farmers-border); border-radius: 14px; background: #fff; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        align-items: start;
+        width: auto !important;
+        min-width: 0;
+        padding: 10px 12px;
+        border: 0;
+        text-align: left !important;
+    }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table .actions-cell { min-width: 0; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td::before { content: attr(data-label); color: #6d7e74; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:first-child,
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:last-child { grid-column: 1 / -1; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:first-child { padding-bottom: 14px; border-bottom: 1px solid #edf2ee; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:first-child::before { display: none; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:last-child { display: block; padding-top: 14px; border-top: 1px solid #edf2ee; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:last-child::before { display: block; margin-bottom: 9px; }
+    .farmer-address { max-width: none; }
+    .farmer-action-row { flex-wrap: wrap; }
+}
+
+@media (max-width: 720px) {
+    body.ds-app.vis-admin-farmers .dashboard-header,
+    body.ds-app.vis-admin-farmers .dashboard-container { width: min(100% - 28px, 1380px); }
+    .farmer-summary-grid { grid-template-columns: 1fr; gap: 10px; }
+    .farmer-summary-card { min-height: 88px; padding: 16px 18px; }
+    .summary-icon { width: 42px; height: 42px; flex-basis: 42px; font-size: 21px; }
+    .farmer-summary-card strong { font-size: 26px; }
+    .create-farmer-footer { align-items: stretch; flex-direction: column; }
+    .create-farmer-footer .btn { width: 100%; }
+    body.ds-app.vis-admin-farmers .admin-search-row { display: grid; grid-template-columns: 1fr auto; }
+    .search-control { grid-column: 1 / -1; min-width: 0; }
+    body.ds-app.vis-admin-farmers .admin-search-row .btn { width: 100%; }
+    .farmer-pagination { flex-wrap: wrap; }
+    .pagination-pages { order: -1; width: 100%; }
+}
+
+@media (max-width: 560px) {
+    .farmer-form-grid { grid-template-columns: 1fr; gap: 16px; }
+    .farmer-field-wide { grid-column: auto; }
+    body.ds-app.vis-admin-farmers .panel { padding: 18px 16px; }
+    body.ds-app.vis-admin-farmers .farmer-accounts-table tr { grid-template-columns: 1fr; padding: 14px 10px; }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td { grid-column: 1 !important; grid-template-columns: 105px minmax(0, 1fr); }
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:first-child,
+    body.ds-app.vis-admin-farmers .account-actions-panel .farmer-accounts-table td:last-child { display: block; }
+    .farmer-action-btn { flex: 1 1 calc(50% - 6px); }
+    .farmer-pagination .pagination-control { flex: 1; }
+    .account-confirmation-modal .admin-reset-actions { display: grid; grid-template-columns: 1fr; }
+    .account-confirmation-modal .admin-reset-actions .btn { width: 100%; }
+}

@@ -1,0 +1,34 @@
+<aside class="vis-admin-sidebar" aria-label="Administrator navigation">
+    <div class="admin-sidebar-brand">{% include 'components/brand.html' %}</div>
+    <div class="admin-sidebar-context">
+        <span class="admin-context-icon"><ion-icon name="shield-checkmark-outline"></ion-icon></span>
+        <div><strong>Admin workspace</strong><span>Operations console</span></div>
+    </div>
+
+    <p class="vis-nav-label">Workspace</p>
+    <nav class="vis-admin-nav" data-current-path>
+        <a href="/admin"><ion-icon name="grid-outline"></ion-icon><span>Overview</span></a>
+        <a href="/admin/farmers"><ion-icon name="people-outline"></ion-icon><span>Farmers</span></a>
+        <a href="/admin/communications"><ion-icon name="chatbubbles-outline"></ion-icon><span>Communications</span></a>
+    </nav>
+
+    <p class="vis-nav-label">Intelligence</p>
+    <nav class="vis-admin-nav" data-current-path>
+        <a href="/admin/monitoring"><ion-icon name="pulse-outline"></ion-icon><span>Monitoring</span></a>
+        <a href="/admin/models"><ion-icon name="hardware-chip-outline"></ion-icon><span>AI Models</span></a>
+        <a href="/admin/reports"><ion-icon name="bar-chart-outline"></ion-icon><span>Reports</span></a>
+    </nav>
+
+    <div class="vis-admin-sidebar-footer">
+        <nav class="vis-admin-nav"><a href="/admin-logout"><ion-icon name="log-out-outline"></ion-icon><span>Sign out</span></a></nav>
+    </div>
+</aside>
+<nav class="vis-admin-bottom-nav" data-current-path aria-label="Administrator mobile navigation">
+    <a href="/admin"><ion-icon name="grid-outline"></ion-icon><span>Home</span></a>
+    <a href="/admin/farmers"><ion-icon name="people-outline"></ion-icon><span>Farmers</span></a>
+    <a href="/admin/monitoring"><ion-icon name="pulse-outline"></ion-icon><span>Monitor</span></a>
+    <a href="/admin/models"><ion-icon name="hardware-chip-outline"></ion-icon><span>Models</span></a>
+    <a href="/admin/reports"><ion-icon name="bar-chart-outline"></ion-icon><span>Reports</span></a>
+    <a href="/admin/communications"><ion-icon name="chatbubbles-outline"></ion-icon><span>Comms</span></a>
+    <a class="vis-mobile-signout" href="/admin-logout"><ion-icon name="log-out-outline"></ion-icon><span>Sign out</span></a>
+</nav>
