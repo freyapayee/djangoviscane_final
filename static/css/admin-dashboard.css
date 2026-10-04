@@ -238,47 +238,52 @@ body.ds-app.vis-superadmin-overview .superadmin-table-actions {
 
 body.ds-app.vis-superadmin-overview .superadmin-table-actions form { margin: 0; }
 
-/* Collapsible superadmin account management controls. */
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-details {
-    margin: 0;
+/* Keep admin accounts visible while collapsing only account registration. */
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-details {
+    margin: 0 0 20px;
+    padding: 0 0 18px;
+    border-bottom: 1px solid #e4ece6;
 }
 
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-summary {
-    margin: 0;
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #dfe9e2;
+    border-radius: 10px;
+    background: #f7faf8;
+    color: #315c40;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
     list-style: none;
     user-select: none;
 }
 
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-summary::-webkit-details-marker {
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-summary::-webkit-details-marker {
     display: none;
 }
 
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-summary:focus-visible {
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-summary:focus-visible {
     outline: 3px solid rgba(36, 137, 75, .18);
-    outline-offset: 5px;
-    border-radius: 10px;
+    outline-offset: 3px;
 }
 
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    flex: 0 0 auto;
-}
-
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-chevron {
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-chevron {
     color: #287d49;
-    font-size: 21px;
+    font-size: 20px;
     transition: transform .2s ease;
 }
 
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-details[open] .superadmin-management-chevron {
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-details[open] .superadmin-profile-chevron {
     transform: rotate(180deg);
 }
 
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-content {
-    padding-top: 20px;
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-details form {
+    padding-top: 16px;
 }
 
 @media (max-width: 700px) {
@@ -901,11 +906,11 @@ body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account
 
 body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-action-row {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
     align-items: center;
     gap: 12px;
-    width: 100%;
+    justify-content: flex-start;
+    width: auto;
     margin-top: 4px;
     padding-top: 14px;
     border-top: 1px solid #e4ece6;
@@ -913,10 +918,10 @@ body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account
 
 body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-form {
     display: grid;
-    grid-template-columns: minmax(120px, 1fr) auto;
+    grid-template-columns: auto auto;
     align-items: center;
     gap: 8px;
-    width: min(100%, 290px);
+    width: auto;
     margin: 0;
 }
 
@@ -936,7 +941,6 @@ body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-fo
 }
 
 body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-archive-form {
-    justify-self: end;
     margin: 0;
 }
 
@@ -949,7 +953,10 @@ body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-archive
 
 @media (max-width: 520px) {
     body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row { padding: 14px; }
-    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-action-row { grid-template-columns: 1fr; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-account-row .superadmin-action-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
     body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-role-form {
         width: 100%;
     }

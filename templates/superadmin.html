@@ -93,27 +93,26 @@
 
         <section class="section-grid two-col">
             <div class="panel superadmin-panel">
-                <details class="superadmin-management-details">
-                    <summary class="panel-header superadmin-management-summary">
-                        <div>
-                            <h3 class="panel-title">Admin Management</h3>
-                            <p class="panel-subtitle">Role assignment and access control</p>
-                        </div>
-                        <span class="superadmin-management-toggle">
-                            <span class="badge superadmin-badge"><ion-icon name="lock-closed-outline"></ion-icon>Restricted</span>
-                            <ion-icon class="superadmin-management-chevron" name="chevron-down-outline" aria-hidden="true"></ion-icon>
-                        </span>
-                    </summary>
-                    <div class="superadmin-management-content">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">Admin Management</h3>
+                        <p class="panel-subtitle">Role assignment and access control</p>
+                    </div>
+                    <span class="badge superadmin-badge"><ion-icon name="lock-closed-outline"></ion-icon>Restricted</span>
+                </div>
                     {% if create_success %}
                         <div class="form-success">{{ create_success }}</div>
                     {% endif %}
                     {% if create_error %}
                         <div class="form-error">{{ create_error }}</div>
                     {% endif %}
+                <details class="superadmin-profile-details">
+                    <summary class="superadmin-profile-summary">
+                        <span>Register Admin or Superadmin</span>
+                        <ion-icon class="superadmin-profile-chevron" name="chevron-down-outline" aria-hidden="true"></ion-icon>
+                    </summary>
                 <form method="POST" action="/superadmin/admins/create" style="margin-bottom: 16px;">
     {{ csrf_input }}
-                    <div class="stat-label">Register Admin or Superadmin</div>
                     <input class="stat-input" type="text" name="username" placeholder="Username" required>
                     <input class="stat-input" type="email" name="email" placeholder="Email" required style="margin-top: 10px;">
                     <select class="stat-input" name="role" required style="margin-top: 10px;">
@@ -127,6 +126,7 @@
                         Register Account
                     </button>
                 </form>
+                </details>
                 {% if admins %}
                     {% for admin in admins %}
                         <div class="list-row superadmin-list-row superadmin-account-row">
@@ -159,8 +159,6 @@
                 {% else %}
                     <div class="list-meta">No admin accounts found.</div>
                 {% endif %}
-                    </div>
-                </details>
             </div>
 
             <div class="panel superadmin-panel">
