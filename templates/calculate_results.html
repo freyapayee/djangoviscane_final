@@ -6,7 +6,7 @@
     <title>VISCANE | Calculation Results</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/calculate-page.css') }}?v=2">
 </head>
 <body class="farmer-layout ds-app vis-calculate-page">
@@ -157,9 +157,9 @@
                 <ion-icon name="refresh-outline"></ion-icon>
                 {{ farmer_text('Recalculate') }}
             </a>
-            <a class="btn primary" href="/homepage">
-                <ion-icon name="arrow-back-outline"></ion-icon>
-                {{ farmer_text('Back to Dashboard') }}
+            <a class="btn primary" href="/farmer/recommendations">
+                <ion-icon name="sparkles-outline"></ion-icon>
+                {{ farmer_text('See Recommendations') }}
             </a>
         </div>
     </main>
@@ -184,6 +184,6 @@
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

@@ -6,9 +6,9 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Superadmin Registration</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=registration-2">
 </head>
-<body class="vis-auth-simple ds-app">
+<body class="vis-auth-simple vis-registration-page ds-app">
     {% include 'components/app_header.html' %}
     <div class="card fade-in">
 
@@ -23,29 +23,54 @@
         {% if error %}
             <div class="form-error">{{ error }}</div>
         {% endif %}
+        {% if success %}
+            <div class="form-success">{{ success }}</div>
+        {% endif %}
 
+        {% if authorization_required %}
+            <p class="admin-login-subtitle">Enter an existing Superadmin account below to authorize this registration.</p>
+        {% endif %}
         <form class="fade-in" method="POST" action="/superadmin-register">
             {{ csrf_input }}
+            <label class="ds-field-label" for="ds-superadmin_register-full_name">Full Name</label>
+            <div class="input-wrapper">
+                <ion-icon name="person-outline"></ion-icon>
+                <input id="ds-superadmin_register-full_name" type="text" name="full_name" value="{{ form_values.get('full_name', '') }}" placeholder="Full Name" autocomplete="name" required>
+            </div>
             <label class="ds-field-label" for="ds-superadmin_register-username">Username</label>
 <div class="input-wrapper">
                 <ion-icon name="person-outline"></ion-icon>
-                <input id="ds-superadmin_register-username" type="text" name="username" placeholder="Username" required>
+                <input id="ds-superadmin_register-username" type="text" name="username" value="{{ form_values.get('username', '') }}" placeholder="Username" autocomplete="username" required>
             </div>
-            <label class="ds-field-label" for="ds-superadmin_register-email">Email</label>
+            <label class="ds-field-label" for="ds-superadmin_register-email">Email Address</label>
 <div class="input-wrapper">
                 <ion-icon name="mail-outline"></ion-icon>
-                <input id="ds-superadmin_register-email" type="email" name="email" placeholder="Email" required>
+                <input id="ds-superadmin_register-email" type="email" name="email" value="{{ form_values.get('email', '') }}" placeholder="Email Address" autocomplete="email" required>
             </div>
             <label class="ds-field-label" for="ds-superadmin_register-password">Password (min 8 chars)</label>
 <div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
-                <input id="ds-superadmin_register-password" type="password" name="password" placeholder="Password (min 8 chars)" required>
+                <input id="ds-superadmin_register-password" type="password" name="password" placeholder="Password (min 8 chars)" autocomplete="new-password" minlength="8" required>
             <button type="button" class="vis-password-toggle" data-password-toggle="ds-superadmin_register-password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
             <label class="ds-field-label" for="ds-superadmin_register-confirm_password">Confirm Password</label>
 <div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
-                <input id="ds-superadmin_register-confirm_password" type="password" name="confirm_password" placeholder="Confirm Password" required>
+                <input id="ds-superadmin_register-confirm_password" type="password" name="confirm_password" placeholder="Confirm Password" autocomplete="new-password" minlength="8" required>
             <button type="button" class="vis-password-toggle" data-password-toggle="ds-superadmin_register-confirm_password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
+
+            {% if authorization_required %}
+            <label class="ds-field-label" for="ds-superadmin_register-authorizer_identifier">Existing Superadmin Username or Email</label>
+            <div class="input-wrapper">
+                <ion-icon name="shield-checkmark-outline"></ion-icon>
+                <input id="ds-superadmin_register-authorizer_identifier" type="text" name="authorizer_identifier" value="{{ form_values.get('authorizer_identifier', '') }}" placeholder="Authorized account" autocomplete="username" required>
+            </div>
+            <label class="ds-field-label" for="ds-superadmin_register-authorizer_password">Existing Superadmin Password</label>
+            <div class="input-wrapper">
+                <ion-icon name="lock-closed-outline"></ion-icon>
+                <input id="ds-superadmin_register-authorizer_password" type="password" name="authorizer_password" placeholder="Authorized account password" autocomplete="current-password" required>
+                <button type="button" class="vis-password-toggle" data-password-toggle="ds-superadmin_register-authorizer_password" aria-label="Show password" aria-pressed="false"><span>Show</span></button>
+            </div>
+            {% endif %}
 
             <button type="submit" class="primary-btn">
                 Create Superadmin
@@ -57,6 +82,6 @@
         </div>
     </div>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=registration-2" defer></script>
 </body>
 </html>

@@ -1566,8 +1566,8 @@
             .scan-feedback-toast { transition: none; }
         }
     </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=9">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard">
@@ -1656,8 +1656,8 @@
             <div class="stat-card accent-orange">
                 <svg class="farmer-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#bar-chart-outline"></use></svg>
                 <div class="stat-label">{{ farmer_text('Latest Result') }}</div>
-                <div class="stat-value">{{ recent_scans[0].grade if recent_scans else '—' }}</div>
-                <div class="stat-meta">{{ farmer_text('Most recent scan grade') }}</div>
+                <div class="stat-value">{{ (recent_scans[0].maturity_pct ~ '%') if recent_scans else '—' }}</div>
+                <div class="stat-meta">{{ farmer_text('Most recent scan maturity') }}</div>
             </div>
         </section>
 
@@ -1673,7 +1673,7 @@
         <form id="calc-form" class="stats-grid stats-grid-inputs assessment-grid" action="{{ url_for('calculate_results') }}" method="post">
     {{ csrf_input }}
             <div class="stat-card stat-card-variety">
-                <div class="stat-label">{{ farmer_text('Variety') }}</div>
+                <div class="stat-label assessment-field-label"><ion-icon name="leaf-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Variety') }}</div>
                 <input type="hidden" name="variety" id="variety-input" required>
                 <input type="hidden" name="cv_maturity_status" id="cv-maturity-status-input">
                 <input type="hidden" name="cv_variety_detected" id="cv-variety-detected-input">
@@ -1715,7 +1715,7 @@
                 <div class="variety-helper" id="variety-helper">{{ farmer_text('Click the variety field to open the 3 options.') }}</div>
             </div>
             <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Number of Plowing') }}">
-                <div class="stat-label">{{ farmer_text('Number of Plowing') }}</div>
+                <div class="stat-label assessment-field-label"><ion-icon name="layers-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Number of Plowing') }}</div>
                 <input class="selector-input" type="hidden" name="plowing_count" id="plowing_count-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="plowing_count-panel">
                     <span class="selector-trigger-content">
@@ -1735,7 +1735,7 @@
                 </div>
             </div>
             <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Number of Weedings') }}">
-                <div class="stat-label">{{ farmer_text('Number of Weedings') }}</div>
+                <div class="stat-label assessment-field-label"><ion-icon name="cut-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Number of Weedings') }}</div>
                 <input class="selector-input" type="hidden" name="weeding_count" id="weeding_count-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="weeding_count-panel">
                     <span class="selector-trigger-content">
@@ -1755,7 +1755,7 @@
                 </div>
             </div>
             <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Number of Fertilizer') }}">
-                <div class="stat-label">{{ farmer_text('Number of Fertilizer') }}</div>
+                <div class="stat-label assessment-field-label"><ion-icon name="flask-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Number of Fertilizer') }}</div>
                 <input class="selector-input" type="hidden" name="fertilizer_count" id="fertilizer_count-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="fertilizer_count-panel">
                     <span class="selector-trigger-content">
@@ -1775,7 +1775,7 @@
                 </div>
             </div>
             <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Ratoon Stage') }}">
-                <div class="stat-label">{{ farmer_text('Ratoon Stage') }}</div>
+                <div class="stat-label assessment-field-label"><ion-icon name="git-branch-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Ratoon Stage') }}</div>
                 <input class="selector-input" type="hidden" name="ratoon_stage" id="ratoon_stage-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="ratoon_stage-panel">
                     <span class="selector-trigger-content">
@@ -1795,7 +1795,7 @@
                 </div>
             </div>
             <div class="stat-card ag-selector-card" data-label="{{ farmer_text('Infected by RSSI?') }}">
-                <div class="stat-label">{{ farmer_text('Infected by RSSI?') }}</div>
+                <div class="stat-label assessment-field-label"><ion-icon name="bug-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Infected by RSSI?') }}</div>
                 <input class="selector-input" type="hidden" name="rssi_infected" id="rssi_infected-input">
                 <button class="selector-trigger" type="button" aria-expanded="false" aria-controls="rssi_infected-panel">
                     <span class="selector-trigger-content">
@@ -1814,9 +1814,9 @@
                 </div>
             </div>
             <div class="stat-card stat-card-tons">
-                <div class="stat-label">{{ farmer_text('Hectares') }}</div>
+                <label class="stat-label assessment-field-label" for="assessment-hectares"><ion-icon name="resize-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Hectares') }}</label>
                 <div class="stat-inline">
-                    <select class="stat-select" name="hectares" required>
+                    <select class="stat-select" id="assessment-hectares" name="hectares" data-themed-select required>
                         <option value="" disabled selected>{{ farmer_text('Select hectares') }}</option>
                         <option value="Less than 1 Hectares">{{ farmer_text('Less than 1 Hectare') }}</option>
                         <option value="1 Hectares">{{ farmer_text('1 Hectare') }}</option>
@@ -1836,114 +1836,9 @@
         </form>
         </section>
 
-        <section id="recent-scans" class="section-grid two-col">
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">{{ farmer_text('Recent Scans') }}</h3>
-                        <p class="panel-subtitle">{{ farmer_text('Latest sugarcane assessments') }}</p>
-                    </div>
-                    <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ farmer_text('Updated 10 min ago') }}</span>
-                </div>
-                {% if recent_scan_cards %}
-                    {% for card in recent_scan_cards %}
-                        {% set scan = card.scan %}
-                        {% set cv_upload = card.cv_upload %}
-                        <div class="recent-item">
-                            <div class="recent-grade">{{ scan.grade if scan else 'CV' }}</div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">{{ scan.plot_name if scan else (cv_upload.original_filename or farmer_text('Uploaded Scan')) }}</h4>
-                                {% if scan %}
-                                    <div class="list-meta">{{ scan.created_at.strftime('%b %d, %I:%M %p') }} | <strong>{{ farmer_text('Maturity') }}</strong> {{ scan.maturity_pct }}%</div>
-                                {% elif cv_upload %}
-                                    <div class="list-meta">{{ cv_upload.created_at.strftime('%b %d, %I:%M %p') if cv_upload.created_at else farmer_text('Date unavailable') }} | <strong>{{ farmer_text('Computer vision upload') }}</strong></div>
-                                {% endif %}
-                                {% if cv_upload %}
-                                    <div class="list-meta"><strong>{{ farmer_text('Uploaded:') }}</strong> {{ cv_upload.original_filename or 'image' }}</div>
-                                    <div class="list-meta"><strong>{{ farmer_text('Variety:') }}</strong> {{ cv_upload.variety or farmer_text('Unknown') }} | <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((cv_upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</div>
-                                    <form method="POST" action="{{ url_for('delete_cv_upload', upload_id=cv_upload.id) }}?recent_page={{ recent_page.number }}&gallery_page={{ gallery_page.number }}" class="recent-picture-remove-form" onsubmit='return confirm({{ farmer_text("Remove this uploaded picture from recent scans?") | tojson }});'>
-                                        {{ csrf_input }}
-                                        <button type="submit" class="tag alert">{{ farmer_text('Remove Picture') }}</button>
-                                    </form>
-                                {% elif scan %}
-                                    <div class="list-meta">{{ farmer_text('No picture attached to this assessment.') }}</div>
-                                {% endif %}
-                            </div>
-                            {% if scan and scan.status == 'ready' %}
-                                <span class="tag success">{{ farmer_text('Ready') }}</span>
-                            {% elif scan and scan.status == 'monitor' %}
-                                <span class="tag warning">{{ farmer_text('Monitor') }}</span>
-                            {% elif scan %}
-                                <span class="tag">{{ farmer_text('Healthy') }}</span>
-                            {% else %}
-                                <span class="tag">{{ farmer_text('Uploaded') }}</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    {% if recent_page.has_other_pages() %}
-                        <nav class="scan-section-pagination" aria-label="{{ farmer_text('Recent Scans') }} pagination">
-                            {% if recent_page.has_previous() %}
-                                <a href="?recent_page={{ recent_page.previous_page_number() }}&gallery_page={{ gallery_page.number }}#recent-scans"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</a>
-                            {% else %}
-                                <span class="is-disabled"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</span>
-                            {% endif %}
-                            <span class="scan-page-count" aria-live="polite">{{ recent_page.number }} / {{ recent_page.paginator.num_pages }}</span>
-                            {% if recent_page.has_next() %}
-                                <a href="?recent_page={{ recent_page.next_page_number() }}&gallery_page={{ gallery_page.number }}#recent-scans">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></a>
-                            {% else %}
-                                <span class="is-disabled">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></span>
-                            {% endif %}
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <div class="list-meta">{{ farmer_text('No recent scans to show. Start a new assessment.') }}</div>
-                {% endif %}
-            </div>
-
-            <div id="scan-gallery" class="panel scan-gallery-block">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">{{ farmer_text('Scan Gallery') }}</h3>
-                        <p class="panel-subtitle">{{ farmer_text('Recent uploaded sugarcane scans') }}</p>
-                    </div>
-                </div>
-                {% if gallery_scans %}
-                    <div class="scan-gallery-grid">
-                        {% for scan in gallery_scans %}
-                            {% set upload = scan.cv_upload %}
-                            <figure class="scan-gallery-item">
-                                <figcaption class="scan-gallery-heading">
-                                    <strong class="scan-gallery-plot">{{ scan.plot_name }}</strong>
-                                    <span class="scan-gallery-date">{{ scan.created_at.strftime('%b %d, %Y') }}</span>
-                                </figcaption>
-                                <img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="{{ farmer_text('Sugarcane scan for') }} {{ scan.plot_name }}" loading="lazy">
-                                <div class="scan-gallery-details">
-                                    <span><strong>{{ farmer_text('Variety:') }}</strong> {{ upload.variety or farmer_text('Unknown') }}</span>
-                                    <span><strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</span>
-                                </div>
-                            </figure>
-                        {% endfor %}
-                    </div>
-                    {% if gallery_page.has_other_pages() %}
-                        <nav class="scan-section-pagination" aria-label="{{ farmer_text('Scan Gallery') }} pagination">
-                            {% if gallery_page.has_previous() %}
-                                <a href="?gallery_page={{ gallery_page.previous_page_number() }}&recent_page={{ recent_page.number }}#scan-gallery"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</a>
-                            {% else %}
-                                <span class="is-disabled"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</span>
-                            {% endif %}
-                            <span class="scan-page-count" aria-live="polite">{{ gallery_page.number }} / {{ gallery_page.paginator.num_pages }}</span>
-                            {% if gallery_page.has_next() %}
-                                <a href="?gallery_page={{ gallery_page.next_page_number() }}&recent_page={{ recent_page.number }}#scan-gallery">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></a>
-                            {% else %}
-                                <span class="is-disabled">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></span>
-                            {% endif %}
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <div class="list-meta">{{ farmer_text('No uploaded scans yet.') }}</div>
-                {% endif %}
-            </div>
-
+        <section class="section-grid two-col scan-sections">
+            {% include 'components/homepage_recent_scans.html' %}
+            {% include 'components/homepage_scan_gallery.html' %}
         </section>
 
         <section class="section-grid two-col">
@@ -2219,10 +2114,13 @@
                 const upper = cleaned.toUpperCase();
                 const map = {
                     '524': 'VMC 84-524',
+                    'VMC 524': 'VMC 84-524',
                     'VMC 84-524': 'VMC 84-524',
                     '847': 'VMC 84-947',
+                    'VMC 847': 'VMC 84-947',
                     'VMC 84-947': 'VMC 84-947',
                     'MAURITIO': 'MAURITIO RC888',
+                    'MAURITIUS RC888': 'MAURITIO RC888',
                     'MAURITIO RC888': 'MAURITIO RC888',
                 };
                 return map[upper] || cleaned;
@@ -2308,6 +2206,15 @@
                 });
                 setVarietyPanelState(false);
             };
+
+            const savedScanVariety = normalizeCvVariety({{ scan_result_variety | default('') | tojson }});
+            if (varietyTiles.some((tile) => tile.dataset.variety === savedScanVariety)) {
+                syncVarietySelection(savedScanVariety);
+                cvVarietyDetectedInput.value = savedScanVariety;
+                cvMaturityStatusInput.value = {{ scan_result_maturity_status | default('') | tojson }};
+                cvPredictionAppliedInput.value = '1';
+                varietyHelper.textContent = `${savedScanVariety} ${uiText('auto-selected from computer vision. Please confirm it is correct.')}`;
+            }
 
             const syncAgSelection = (selector, selectedValue) => {
                 if (!selector.input) {
@@ -2782,6 +2689,7 @@
                 const formData = new FormData();
                 formData.append('file', fileOrBlob, filename);
 
+                if (cvResultsPanel) cvResultsPanel.hidden = true;
                 setCameraStatus(uiText('Uploading photo for prediction...'));
                 const response = await fetch('/api/scan/predict?top_k=3', {
                     method: 'POST',
@@ -2806,25 +2714,7 @@
                 if (!bestPrediction) {
                     throw new Error(uiText('Prediction service returned no recognizable prediction.'));
                 }
-                if (cvMaturityStatusInput) {
-                    cvMaturityStatusInput.value = bestPrediction?.maturityStatus || '';
-                }
-                const detectedVariety = normalizeCvVariety(bestPrediction?.variety || '');
-                if (cvVarietyDetectedInput) {
-                    cvVarietyDetectedInput.value = detectedVariety || '';
-                }
-                if (cvPredictionAppliedInput) {
-                    cvPredictionAppliedInput.value = '1';
-                }
-                if (detectedVariety) {
-                    syncVarietySelection(detectedVariety);
-                    if (varietyHelper) {
-                        varietyHelper.textContent = `${detectedVariety} ${uiText('auto-selected from computer vision. Please confirm it is correct.')}`;
-                        varietyHelper.classList.remove('is-error');
-                    }
-                }
-                renderCvResultPanel(bestPrediction);
-                setCameraStatus(uiText('Photo analyzed successfully.'), 'success');
+                window.location.assign('/scan/new?review=1');
             };
 
             if (openCameraBtn) {
@@ -2881,19 +2771,13 @@
             }
 
             if (uploadPhotoBtn && uploadPhotoInput) {
-                document.getElementById('native-camera-input')?.addEventListener('change', (event) => {
-                    uploadPhotoInput.files = event.target.files;
-                    uploadPhotoInput.dispatchEvent(new Event('change'));
-                    event.target.value = '';
-                });
                 uploadPhotoBtn.addEventListener('click', () => {
                     if (!isUploading) {
                         openUploadPicker();
                     }
                 });
 
-                uploadPhotoInput.addEventListener('change', async (event) => {
-                    const selectedFile = event.target.files?.[0];
+                const processSelectedImage = async (selectedFile) => {
                     if (!selectedFile || isUploading) {
                         return;
                     }
@@ -2914,9 +2798,15 @@
                     } finally {
                         isUploading = false;
                         setCaptureButtonState(false);
-                        uploadPhotoInput.value = '';
                     }
-                });
+                };
+                for (const imageInput of [uploadPhotoInput, nativeCameraInput]) {
+                    imageInput.addEventListener('change', (event) => {
+                        const selectedFile = event.target.files?.[0];
+                        event.target.value = '';
+                        processSelectedImage(selectedFile);
+                    });
+                }
             }
 
             window.addEventListener('pagehide', stopCamera);
@@ -2938,8 +2828,10 @@
 
         })();
     </script>
+    <script src="{{ url_for('static', filename='themed_select.js') }}?v=2"></script>
+    <script src="{{ url_for('static', filename='scan_section_pagination.js') }}?v=1"></script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

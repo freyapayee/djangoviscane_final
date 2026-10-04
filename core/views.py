@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import os
+import secrets
 from datetime import datetime, timedelta
 from functools import wraps
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count, Sum, Q
+from django.db.models import Avg, Count, Max, Sum, Q
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect as django_redirect, render
 from django.urls import reverse
@@ -58,6 +60,20 @@ def render_template(request, template_name, context=None, status=200):
     if context:
         payload.update(context)
     return render(request, template_name, payload, status=status)
+
+
+INVALID_CV_IMAGE_MESSAGE = "Invalid Image. This Image is not supported"
+CV_CONFIDENCE_THRESHOLD = 0.50
+
+
+def supported_cv_confidence(cv_context):
+    try:
+        confidence = float((cv_context or {}).get("confidence"))
+    except (TypeError, ValueError):
+        return False
+    if confidence > 1:
+        confidence /= 100
+    return math.isfinite(confidence) and confidence >= CV_CONFIDENCE_THRESHOLD
 
 
 _REDIRECT_PATH_PARAMS = {
@@ -148,16 +164,12 @@ def admin_access(request):
 @farmer_login_required
 def homepage(request):
     user = current_user(request)
-    today = timezone.now().date()
-    seven_days_ago = timezone.now() - timedelta(days=7)
+    scan_section = request.GET.get("scan_section")
     sample_plot_names = ("Plot #1 Sample", "Plot #2 Sample", "Plot #4 Sample")
     scans_base_query = Scan.objects.filter(user_id=user.id).exclude(plot_name__in=sample_plot_names)
-    scans_today = scans_base_query.filter(created_at__date=today).count()
-    pending_scans = scans_base_query.filter(status="pending").count()
-    scans_last7 = list(scans_base_query.filter(created_at__gte=seven_days_ago))
     recent_query = scans_base_query.filter(hidden_from_recent=False).select_related("cv_upload").order_by("-created_at", "-id")
     recent_page = Paginator(recent_query, 4).get_page(request.GET.get("recent_page"))
-    recent_scans = list(recent_page.object_list)
+    recent_scans = list(recent_page.object_list) if scan_section != "scan-gallery" else []
     gallery_query = (
         scans_base_query.filter(hidden_from_recent=False, cv_upload__isnull=False)
         .select_related("cv_upload").order_by("-created_at", "-id")
@@ -165,6 +177,25 @@ def homepage(request):
     gallery_page = Paginator(gallery_query, 4).get_page(request.GET.get("gallery_page"))
     gallery_scans = gallery_page.object_list
     recent_scan_cards = [{"scan": scan, "cv_upload": scan.cv_upload} for scan in recent_scans]
+    if scan_section == "recent-scans":
+        return render_template(request, "components/homepage_recent_scans.html", {
+            "recent_scan_cards": recent_scan_cards,
+            "recent_page": recent_page,
+            "gallery_page": gallery_page,
+        })
+    if scan_section == "scan-gallery":
+        return render_template(request, "components/homepage_scan_gallery.html", {
+            "gallery_scans": gallery_scans,
+            "gallery_page": gallery_page,
+            "recent_page": recent_page,
+        })
+    scan_variety = request.session.pop("scan_result_variety", "")
+    scan_maturity_status = (request.session.get("latest_cv_context") or {}).get("maturity_status", "") if scan_variety else ""
+    today = timezone.now().date()
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    scans_today = scans_base_query.filter(created_at__date=today).count()
+    pending_scans = scans_base_query.filter(status="pending").count()
+    scans_last7 = list(scans_base_query.filter(created_at__gte=seven_days_ago))
     agronomic_logs = list(AgronomicLog.objects.filter(user_id=user.id).order_by("-created_at")[:10])
     announcements = list(Notification.objects.order_by("-created_at")[:5])
     recommendations = request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS
@@ -213,6 +244,8 @@ def homepage(request):
             "message": None if picture_removed else page_message,
             "error": request.GET.get("error"),
             "picture_removed": picture_removed,
+            "scan_result_variety": scan_variety,
+            "scan_result_maturity_status": scan_maturity_status,
         },
     )
 
@@ -222,14 +255,52 @@ def farmer_recommendations(request):
     user = current_user(request)
     recommendations = translate_recommendations(request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS)
     grouped_recommendations = group_recommendations_by_category(recommendations)
+    area_styles = {
+        "Missing Inputs": ("missing", "alert-circle-outline"),
+        "Harvest Directives": ("harvest", "sunny-outline"),
+        "Pest and Disease": ("pest", "shield-checkmark-outline"),
+        "Fertilizer Guidance": ("fertilizer", "flask-outline"),
+        "Weeding Guidance": ("weeding", "leaf-outline"),
+        "Plowing Guidance": ("plowing", "construct-outline"),
+        "Yield Improvement": ("yield", "trending-up-outline"),
+        "General": ("general", "sparkles-outline"),
+    }
+    for group in grouped_recommendations:
+        group["tone"], group["icon"] = area_styles.get(group["category"], area_styles["General"])
     return render_template(request, "farmer_recommendations.html", {"user": user, "recommendations": recommendations, "grouped_recommendations": grouped_recommendations})
 
 
 @farmer_login_required
 def farmer_agronomic_logs(request):
     user = current_user(request)
-    agronomic_logs = list(AgronomicLog.objects.filter(user_id=user.id).order_by("-created_at"))
-    return render_template(request, "farmer_agronomic_logs.html", {"user": user, "agronomic_logs": agronomic_logs})
+    agronomic_logs = list(AgronomicLog.objects.filter(user_id=user.id).select_related("scan__cv_upload").order_by("-created_at"))
+    history_rows = []
+    for log in agronomic_logs:
+        scan = log.scan if log.scan and log.scan.user_id == user.id else None
+        scan_upload = scan.cv_upload if scan else None
+        recommendation_items = log.recommendations_snapshot or []
+        if not recommendation_items:
+            recommendation_items = []
+            for item in (log.recommendations_summary or "").split(" | "):
+                if item.strip():
+                    category, separator, title = item.partition(": ")
+                    recommendation_items.append({
+                        "category": category if separator else "General",
+                        "title": title if separator else category,
+                        "meta": "",
+                        "icon": "sparkles-outline",
+                        "tag": "",
+                    })
+        history_rows.append({
+            "log": log,
+            "scan": scan,
+            "scan_upload": scan_upload,
+            "scan_image_url": reverse("cv_upload_image", args=[scan_upload.pk]) if scan_upload else "",
+            "calculated_at": timezone.localtime(log.created_at) if log.created_at else None,
+            "scanned_at": timezone.localtime(scan.created_at) if scan and scan.created_at else None,
+            "recommendation_items": recommendation_items,
+        })
+    return render_template(request, "farmer_agronomic_logs.html", {"user": user, "history_rows": history_rows})
 
 
 @farmer_login_required
@@ -334,11 +405,23 @@ def api_scan_predict(request):
                 "error": "Prediction service returned no recognizable prediction.",
                 "details": f"Response fields: {', '.join(response_keys) or 'none'}. Expected variety, maturity, and a prediction score.",
             }, status=502)
+        if not supported_cv_confidence(cv_context):
+            request.session.pop("latest_cv_context", None)
+            return JsonResponse({"error": INVALID_CV_IMAGE_MESSAGE}, status=422)
         try:
             cv_context = save_prediction_context(request.session.get("user_id"), uploaded_file, file_bytes, decoded_payload)
         except Exception:
-            pass
+            return JsonResponse({"error": "The analyzed photo could not be saved. Please try again."}, status=500)
+        if not cv_context.get("upload_id"):
+            return JsonResponse({"error": "The analyzed photo could not be saved. Please try again."}, status=500)
         request.session["latest_cv_context"] = cv_context
+        decoded_payload["prediction"] = {
+            "variety": cv_context.get("normalized_variety") or cv_context.get("variety"),
+            "maturity_status": cv_context.get("maturity_status"),
+            "confidence": cv_context.get("confidence"),
+            "class_name": cv_context.get("class_name"),
+        }
+        return JsonResponse(decoded_payload, status=status_code)
     return HttpResponse(response_body, status=status_code, content_type="application/json")
 
 
@@ -358,10 +441,13 @@ def calculate_results(request):
     cv_variety_detected = request.POST.get("cv_variety_detected", "").strip()
     cv_prediction_applied = request.POST.get("cv_prediction_applied", "").strip() in {"1", "true", "True"}
     cv_context = (request.session.get("latest_cv_context") or {}) if cv_prediction_applied else {}
+    if cv_prediction_applied and not supported_cv_confidence(cv_context):
+        request.session.pop("latest_cv_context", None)
+        return redirect("homepage", error=INVALID_CV_IMAGE_MESSAGE)
     cv_detected_variety = normalize_cv_variety_name(cv_variety_detected or cv_context.get("normalized_variety") or cv_context.get("variety"))
     if not cv_maturity_status:
         cv_maturity_status = (cv_context.get("maturity_status") or "").strip()
-    latest_scan = Scan.objects.filter(user_id=user.id).order_by("-created_at").first()
+    latest_scan = Scan.objects.filter(user_id=user.id).order_by("-created_at", "-id").first()
     maturity_pct = latest_scan.maturity_pct if latest_scan else None
     visual_features = [0.21, 0.48, 0.63, 0.74, 0.59]
     cv_visual_features = cv_context.get("visual_features")
@@ -439,6 +525,7 @@ def calculate_results(request):
         try:
             AgronomicLog.objects.create(
                 user_id=user.id,
+                scan=latest_scan,
                 variety=normalized_variety or variety or None,
                 hectares=hectares or None,
                 plowing_count=plowing_count or None,
@@ -450,6 +537,7 @@ def calculate_results(request):
                 predicted_tc_ha=prediction_response.get("predicted_tc_ha"),
                 predicted_lkg=prediction_response.get("predicted_lkg"),
                 recommendations_summary=recommendations_summary or "No recommendation generated.",
+                recommendations_snapshot=generated_recommendations,
             )
         except Exception:
             pass
@@ -525,6 +613,7 @@ def farmer_settings(request):
     user = current_user(request)
     error = None
     success = None
+    profile_updated = False
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "update_profile":
@@ -540,14 +629,39 @@ def farmer_settings(request):
             elif User.objects.filter(email=email).exclude(pk=user.id).exists():
                 error = "Email already exists."
             else:
-                user.email = email
-                user.phone = phone
-                user.province = province
-                user.municipality = municipality
-                user.barangay = barangay
-                user.save(update_fields=["email", "phone", "province", "municipality", "barangay"])
-                log_audit(f"Farmer updated profile details: {user.fullname}", user_id=user.id)
-                success = "Profile updated successfully."
+                profile_photo = request.FILES.get("profile_photo")
+                photo_bytes = None
+                if profile_photo:
+                    photo_bytes, error = prepare_profile_photo(profile_photo)
+                old_photo = user.profile_photo_path
+                new_photo = None
+                if not error and photo_bytes:
+                    new_photo = f"farmer-{user.id}-{secrets.token_hex(8)}.jpg"
+                    try:
+                        photo_dir = Path(settings.PRIVATE_UPLOAD_ROOT) / "profile_photos"
+                        photo_dir.mkdir(parents=True, exist_ok=True)
+                        (photo_dir / new_photo).write_bytes(photo_bytes)
+                    except OSError:
+                        error = "Could not save the profile photo. Please try again."
+                if not error:
+                    user.email = email
+                    user.phone = phone
+                    user.province = province
+                    user.municipality = municipality
+                    user.barangay = barangay
+                    update_fields = ["email", "phone", "province", "municipality", "barangay"]
+                    if new_photo or request.POST.get("remove_profile_photo") == "1":
+                        user.profile_photo_path = new_photo or ""
+                        update_fields.append("profile_photo_path")
+                    user.save(update_fields=update_fields)
+                    if old_photo and old_photo != user.profile_photo_path:
+                        try:
+                            (Path(settings.PRIVATE_UPLOAD_ROOT) / "profile_photos" / Path(old_photo).name).unlink(missing_ok=True)
+                        except OSError:
+                            pass
+                    log_audit(f"Farmer updated profile details: {user.fullname}", user_id=user.id)
+                    success = "Profile updated successfully."
+                    profile_updated = True
         else:
             current_password = request.POST.get("current_password", "")
             new_password = request.POST.get("new_password", "")
@@ -567,7 +681,45 @@ def farmer_settings(request):
                 user.save(update_fields=["password"])
                 log_audit(f"Farmer updated password: {user.fullname}", user_id=user.id)
                 success = "Password updated successfully."
-    return render_template(request, "farmer_settings.html", {"user": user, "error": error, "success": success})
+    photo_available = bool(user.profile_photo_path and (
+        Path(settings.PRIVATE_UPLOAD_ROOT) / "profile_photos" / Path(user.profile_photo_path).name
+    ).is_file())
+    return render_template(request, "farmer_settings.html", {"user": user, "error": error, "success": success, "profile_updated": profile_updated, "photo_available": photo_available})
+
+
+def prepare_profile_photo(upload):
+    if upload.size > 5 * 1024 * 1024:
+        return None, "Profile photo must be 5 MB or smaller."
+    from PIL import Image, ImageOps, UnidentifiedImageError
+
+    try:
+        with Image.open(upload) as photo:
+            if photo.format not in {"JPEG", "PNG", "WEBP"} or photo.width * photo.height > 20_000_000:
+                return None, "Choose a JPEG, PNG or WebP photo under 20 megapixels."
+            photo = ImageOps.exif_transpose(photo)
+            photo = ImageOps.fit(photo.convert("RGB"), (512, 512))
+            output = BytesIO()
+            photo.save(output, format="JPEG", quality=86, optimize=True)
+            return output.getvalue(), None
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        return None, "Choose a valid JPEG, PNG or WebP profile photo."
+
+
+@require_GET
+def farmer_profile_photo(request, user_id):
+    user = User.objects.filter(pk=user_id).first()
+    farmer = current_user(request)
+    admin = current_admin(request) if not request.farmer_only else None
+    if not user or not user.profile_photo_path or not ((farmer and farmer.id == user.id) or admin):
+        raise Http404("Profile photo not found")
+    photo_dir = (Path(settings.PRIVATE_UPLOAD_ROOT) / "profile_photos").resolve()
+    photo_path = (photo_dir / Path(user.profile_photo_path).name).resolve()
+    if not photo_path.is_relative_to(photo_dir) or not photo_path.is_file():
+        raise Http404("Profile photo not found")
+    response = FileResponse(photo_path.open("rb"), content_type="image/jpeg")
+    response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 @farmer_login_required
@@ -585,19 +737,28 @@ def farmer_feedback(request):
 @login_required
 def admin_portal(request):
     current = current_admin(request)
+    user_search = request.GET.get("user_search", "").strip()[:100]
+    user_status = request.GET.get("user_status", "all")
+    if user_status not in {"all", "active", "inactive"}:
+        user_status = "all"
     total_users = User.objects.filter(is_archived=False, is_active=True).count()
     total_scans = Scan.objects.count()
     seven_days_ago = timezone.now() - timedelta(days=7)
     active_user_ids = User.objects.filter(is_archived=False, is_active=True).values_list("id", flat=True)
     active_farmers = Scan.objects.filter(created_at__gte=seven_days_ago, user_id__in=active_user_ids).values("user_id").distinct().count()
     pending_scans = Scan.objects.filter(status="pending", user_id__in=active_user_ids).count()
-    users = list(User.objects.filter(is_archived=False, is_active=True).order_by("-id")[:6])
+    users_query = User.objects.filter(is_archived=False)
+    if user_search:
+        users_query = users_query.filter(Q(fullname__icontains=user_search) | Q(email__icontains=user_search))
+    if user_status != "all":
+        users_query = users_query.filter(is_active=user_status == "active")
+    user_filter_active = bool(user_search or user_status != "all")
+    users_query = users_query.annotate(last_scan_at=Max("scans__created_at")).order_by("-id")
+    users = list(users_query if user_filter_active else users_query[:6])
+    for user in users:
+        user.last_scan_display = timezone.localtime(user.last_scan_at).strftime("%b %d, %Y") if user.last_scan_at else None
     now = timezone.now()
-    logs = [
-        {"icon": "server-outline", "title": "Database Backup", "meta": "Nightly recovery snapshot completed successfully.", "status": "Success", "color": "#2E7D32", "timestamp": now - timedelta(hours=1, minutes=12)},
-        {"icon": "warning-outline", "title": "Failed Login Attempt", "meta": "IP: 192.168.1.45 exceeded retry threshold.", "status": "Alert", "color": "#C62828", "timestamp": now - timedelta(hours=2, minutes=4)},
-        {"icon": "person-add-outline", "title": "New User Registration", "meta": "Maria Santos is awaiting farmer account review.", "status": "Review", "color": "#1565C0", "timestamp": now - timedelta(hours=4, minutes=18)},
-    ]
+    logs = list(AuditLog.objects.order_by("-timestamp", "-id")[:5])
     storage_utilization = 68
     stats = {"active_users": total_users, "total_scans": total_scans, "active_farmers": active_farmers, "pending_scans": pending_scans, "storage_utilization": storage_utilization}
     metric_trends = {
@@ -608,16 +769,18 @@ def admin_portal(request):
         "storage_utilization": "Steady vs last week" if storage_utilization < 70 else "+6% from last week",
     }
     for log in logs:
-        elapsed = now - log["timestamp"]
-        total_minutes = max(1, int(elapsed.total_seconds() // 60))
-        if total_minutes < 60:
+        elapsed = now - log.timestamp
+        total_minutes = max(0, int(elapsed.total_seconds() // 60))
+        if total_minutes < 1:
+            relative = "Just now"
+        elif total_minutes < 60:
             relative = f"{total_minutes}m ago"
         else:
             total_hours = total_minutes // 60
             relative = f"{total_hours}h ago" if total_hours < 24 else f"{total_hours // 24}d ago"
-        log["relative_time"] = relative
-        log["exact_time"] = log["timestamp"].strftime("%b %d, %Y %I:%M %p UTC")
-    return render_template(request, "admin.html", {"total_users": total_users, "users": users, "logs": logs, "current_admin": current, "stats": stats, "metric_trends": metric_trends})
+        log.relative_time = relative
+        log.exact_time = timezone.localtime(log.timestamp).strftime("%b %d, %Y %I:%M %p %Z")
+    return render_template(request, "admin.html", {"total_users": total_users, "users": users, "logs": logs, "current_admin": current, "stats": stats, "metric_trends": metric_trends, "user_search": user_search, "user_status": user_status, "user_filter_active": user_filter_active})
 
 
 @login_required
@@ -637,9 +800,9 @@ def admin_farmers(request):
             barangay = request.POST.get("barangay", "").strip()
             password = request.POST.get("password", "").strip()
             if not fullname or not email or not phone or not password:
-                return redirect("admin_farmers", error="Please complete all required fields.")
+                return redirect("admin_farmers", error="Please complete all required fields.", open_create="1")
             if User.objects.filter(email=email).exists():
-                return redirect("admin_farmers", error="Email already exists.")
+                return redirect("admin_farmers", error="Email already exists.", open_create="1")
             from django.contrib.auth.hashers import make_password
 
             User.objects.create(fullname=fullname, email=email, phone=phone, password=make_password(password), province=province, municipality=municipality, barangay=barangay, is_active=True, is_archived=False)
@@ -703,6 +866,7 @@ def admin_farmers(request):
         "inactive_count": inactive_count,
         "message": message,
         "error": error,
+        "open_create": request.GET.get("open_create") == "1",
         "search": search,
         "search_query": urlencode({"search": search}) if search else "",
         "current_admin": current_admin(request),
@@ -965,6 +1129,7 @@ def admin_login(request):
         return redirect("admin_setup")
     error = None
     success = request.GET.get("success")
+    next_page = "admin_register" if (request.POST.get("next") or request.GET.get("next")) == "admin_register" else None
     if request.method == "POST":
         identifier = request.POST.get("identifier", "").strip().lower()
         password = request.POST.get("password", "")
@@ -974,9 +1139,9 @@ def admin_login(request):
             request.session.cycle_key()
             request.session.pop("user_id", None)
             request.session["admin_id"] = admin.id
-            return redirect("admin_portal")
+            return redirect(next_page or "admin_portal")
         error = "Invalid admin credentials. Please try again."
-    return render_template(request, "admin_login.html", {"error": error, "success": success})
+    return render_template(request, "admin_login.html", {"error": error, "success": success, "next_page": next_page})
 
 
 def superadmin_login(request):
@@ -984,6 +1149,7 @@ def superadmin_login(request):
         return redirect("admin_setup")
     error = None
     success = request.GET.get("success")
+    next_page = "superadmin_register" if (request.POST.get("next") or request.GET.get("next")) == "superadmin_register" else None
     if request.method == "POST":
         identifier = request.POST.get("identifier", "").strip().lower()
         password = request.POST.get("password", "")
@@ -996,10 +1162,10 @@ def superadmin_login(request):
                 request.session.cycle_key()
                 request.session.pop("user_id", None)
                 request.session["admin_id"] = admin.id
-                return redirect("superadmin_portal")
+                return redirect(next_page or "superadmin_portal")
         else:
             error = "Invalid superadmin credentials. Please try again."
-    return render_template(request, "superadmin_login.html", {"error": error, "success": success})
+    return render_template(request, "superadmin_login.html", {"error": error, "success": success, "next_page": next_page})
 
 
 def admin_setup(request):
@@ -1029,19 +1195,44 @@ def admin_setup(request):
     return render_template(request, "admin_setup.html", {"error": error})
 
 
-@role_required("superadmin")
+def _registration_authorizer(request, required_role=None):
+    admin = current_admin(request)
+    if admin and (required_role is None or admin.role == required_role):
+        return admin
+    if request.method != "POST":
+        return None
+    identifier = request.POST.get("authorizer_identifier", "").strip()
+    password = request.POST.get("authorizer_password", "")
+    authorizer = Admin.objects.filter(
+        Q(username__iexact=identifier) | Q(email__iexact=identifier), is_archived=False
+    ).first() if identifier and password else None
+    if not authorizer or (required_role and authorizer.role != required_role):
+        return None
+    original_hash = authorizer.password_hash
+    if not verify_and_upgrade_password(authorizer, password, "password_hash"):
+        return None
+    if authorizer.password_hash != original_hash:
+        authorizer.save(update_fields=["password_hash"])
+    request.session.cycle_key()
+    request.session.pop("user_id", None)
+    request.session["admin_id"] = authorizer.id
+    return authorizer
+
+
 def admin_register(request):
+    authorizer = _registration_authorizer(request)
     error = None
+    success = request.GET.get("success")
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
+        full_name = request.POST.get("full_name", "").strip() or username
         email = request.POST.get("email", "").strip().lower()
-        role = request.POST.get("role", "admin").strip().lower()
         password = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
-        if not username or not email or not password or not confirm_password:
+        if not authorizer:
+            error = "Enter an existing Admin or Superadmin account to authorize registration."
+        elif not username or not email or not password or not confirm_password:
             error = "Please complete all registration fields."
-        elif not is_valid_admin_role(role):
-            error = "Invalid role selected."
         elif password != confirm_password:
             error = "Passwords do not match."
         elif len(password) < 8:
@@ -1053,21 +1244,28 @@ def admin_register(request):
         else:
             from django.contrib.auth.hashers import make_password
 
-            Admin.objects.create(username=username, email=email, password_hash=make_password(password), role=role, is_archived=False)
-            log_audit(f"{role.title()} account registered: {username}")
-            return redirect("admin_login", success=f"{role.title()} account created successfully.")
-    return render_template(request, "admin_register.html", {"error": error})
+            Admin.objects.create(username=username, full_name=full_name, email=email, password_hash=make_password(password), role="admin", is_archived=False)
+            log_audit(f"Admin account registered: {username}", user_id=authorizer.id)
+            return redirect("admin_register", success="Admin account created successfully.")
+    return render_template(request, "admin_register.html", {
+        "error": error, "success": success, "authorization_required": authorizer is None,
+        "form_values": request.POST if request.method == "POST" else {},
+    })
 
 
-@role_required("superadmin")
 def superadmin_register(request):
+    authorizer = _registration_authorizer(request, required_role="superadmin")
     error = None
+    success = request.GET.get("success")
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
+        full_name = request.POST.get("full_name", "").strip() or username
         email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
-        if not username or not email or not password or not confirm_password:
+        if not authorizer:
+            error = "Enter an existing Superadmin account to authorize registration."
+        elif not username or not email or not password or not confirm_password:
             error = "Please complete all registration fields."
         elif password != confirm_password:
             error = "Passwords do not match."
@@ -1080,10 +1278,13 @@ def superadmin_register(request):
         else:
             from django.contrib.auth.hashers import make_password
 
-            Admin.objects.create(username=username, email=email, password_hash=make_password(password), role="superadmin", is_archived=False)
-            log_audit(f"Superadmin account registered: {username}")
-            return redirect("superadmin_login", success="Superadmin account created successfully.")
-    return render_template(request, "superadmin_register.html", {"error": error})
+            Admin.objects.create(username=username, full_name=full_name, email=email, password_hash=make_password(password), role="superadmin", is_archived=False)
+            log_audit(f"Superadmin account registered: {username}", user_id=authorizer.id)
+            return redirect("superadmin_register", success="Superadmin account created successfully.")
+    return render_template(request, "superadmin_register.html", {
+        "error": error, "success": success, "authorization_required": authorizer is None,
+        "form_values": request.POST if request.method == "POST" else {},
+    })
 
 
 @role_required("superadmin")
@@ -1135,8 +1336,22 @@ def superadmin_portal(request):
     deactivated_users = list(User.objects.filter(is_archived=False, is_active=False).order_by("-id"))
     recent_scans = list(Scan.objects.filter(user_id__in=active_user_ids).order_by("-created_at")[:6])
     recent_predictions = list(AgronomicLog.objects.order_by("-created_at")[:6])
-    superadmin_cv_uploads = list(CvScanUpload.objects.order_by("-created_at"))
-    return render_template(request, "superadmin.html", {"total_users": total_users, "active_user_count": active_user_count, "deactivated_user_count": deactivated_user_count, "archived_user_count": archived_user_count, "total_admins": total_admins, "active_farmers": active_farmers, "total_scans": total_scans, "total_prediction_logs": total_prediction_logs, "total_estimated_lkg": total_estimated_lkg, "pending_scans": pending_scans, "admins": admins, "users": users, "archived_users": archived_users, "deactivated_users": deactivated_users, "recent_scans": recent_scans, "recent_predictions": recent_predictions, "superadmin_cv_uploads": superadmin_cv_uploads, "create_error": create_error, "create_success": create_success, "current_admin": current_admin(request)})
+    combined_cv_accuracy = None
+    report_path = Path(settings.BASE_DIR) / "reports" / "cv_training_results_latest.json"
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        accuracy = report.get("combined_accuracy_pct")
+        if isinstance(accuracy, (int, float)) and not isinstance(accuracy, bool) and math.isfinite(accuracy) and 0 <= accuracy <= 100:
+            combined_cv_accuracy = f"{accuracy:.2f}%"
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    return render_template(request, "superadmin.html", {"total_users": total_users, "active_user_count": active_user_count, "deactivated_user_count": deactivated_user_count, "archived_user_count": archived_user_count, "total_admins": total_admins, "active_farmers": active_farmers, "total_scans": total_scans, "total_prediction_logs": total_prediction_logs, "total_estimated_lkg": total_estimated_lkg, "pending_scans": pending_scans, "admins": admins, "users": users, "archived_users": archived_users, "deactivated_users": deactivated_users, "recent_scans": recent_scans, "recent_predictions": recent_predictions, "create_error": create_error, "create_success": create_success, "current_admin": current_admin(request), "combined_cv_accuracy": combined_cv_accuracy})
+
+
+@role_required("superadmin")
+def superadmin_scan_gallery(request):
+    uploads = list(CvScanUpload.objects.select_related("user").order_by("-created_at", "-id"))
+    return render_template(request, "superadmin_scan_gallery.html", {"superadmin_cv_uploads": uploads, "current_admin": current_admin(request)})
 
 
 @role_required("superadmin")
@@ -1303,53 +1518,51 @@ def logout(request):
 def scan_new(request):
     error = None
     plot_name = ""
-    grade = ""
-    maturity_pct = ""
-    status = ""
     ai_prediction_applied = False
     cv_context = {}
+    if request.method == "GET" and request.GET.get("review") == "1":
+        cv_context = request.session.get("latest_cv_context") or {}
+        if cv_context and not supported_cv_confidence(cv_context):
+            request.session.pop("latest_cv_context", None)
+            cv_context = {}
     if request.method == "POST":
         plot_name = request.POST.get("plot_name", "").strip()
-        grade = request.POST.get("grade", "").strip().upper()
-        maturity_pct = request.POST.get("maturity_pct", "").strip()
-        status = request.POST.get("status", "").strip().lower()
         ai_prediction_applied = request.POST.get("ai_prediction_applied", "") in {"1", "true", "True"}
-        if ai_prediction_applied:
-            cv_context = request.session.get("latest_cv_context") or {}
-            derived_assessment = derive_scan_assessment(
-                cv_context.get("maturity_status"),
-                cv_context.get("confidence"),
-            )
-            if derived_assessment:
-                grade = derived_assessment["grade"]
-                maturity_pct = str(derived_assessment["maturity_pct"])
-                status = derived_assessment["status"]
-            else:
+        cv_context = request.session.get("latest_cv_context") or {}
+        if not plot_name:
+            error = "Please enter a plot name."
+        elif not ai_prediction_applied:
+            error = "Please scan an image before continuing."
+        elif not supported_cv_confidence(cv_context):
+            request.session.pop("latest_cv_context", None)
+            error = INVALID_CV_IMAGE_MESSAGE
+        else:
+            derived_assessment = derive_scan_assessment(cv_context.get("maturity_status"), cv_context.get("confidence"))
+            cv_upload = CvScanUpload.objects.filter(pk=cv_context.get("upload_id"), user_id=request.session.get("user_id")).first()
+            if not derived_assessment or not cv_upload:
                 error = "AI assessment is unavailable. Please scan the image again."
-        if not error and (not plot_name or not grade or not maturity_pct):
-            error = "Please complete all fields."
-        elif not error:
-            try:
-                maturity_value = int(maturity_pct)
-            except ValueError:
-                maturity_value = None
-            if maturity_value is None or maturity_value < 0 or maturity_value > 100:
-                error = "Maturity must be between 0 and 100."
             else:
-                upload_id = cv_context.get("upload_id") if ai_prediction_applied else None
-                cv_upload = CvScanUpload.objects.filter(pk=upload_id, user_id=request.session.get("user_id")).first() if upload_id else None
-                Scan.objects.create(user_id=request.session.get("user_id"), cv_upload=cv_upload, plot_name=plot_name, grade=grade, maturity_pct=maturity_value, status=status)
+                Scan.objects.create(user_id=request.session.get("user_id"), cv_upload=cv_upload, plot_name=plot_name,
+                    grade=derived_assessment["grade"], maturity_pct=derived_assessment["maturity_pct"], status=derived_assessment["status"])
+                request.session["scan_result_variety"] = normalize_cv_variety_name(cv_context.get("normalized_variety") or cv_context.get("variety")) or ""
                 log_audit(f"User {request.session.get('user_id')} uploaded a scan for {plot_name}", user_id=request.session.get("user_id"))
-                return redirect("homepage")
+                return django_redirect("/homepage#calc-form")
+    upload_id = cv_context.get("upload_id")
+    cv_upload = CvScanUpload.objects.filter(pk=upload_id, user_id=request.session.get("user_id")).first() if upload_id else None
+    review_prediction = {
+        "variety": normalize_cv_variety_name(cv_context.get("normalized_variety") or cv_context.get("variety")),
+        "maturity_status": cv_context.get("maturity_status"),
+        "confidence": cv_context.get("confidence"),
+    } if cv_upload else None
+    confidence = cv_context.get("confidence") if review_prediction else None
+    confidence_display = f"{float(confidence) * 100:.1f}%" if confidence is not None else ""
     return render_template(request, "scan_new.html", {
         "error": error,
         "plot_name": plot_name,
-        "grade": grade,
-        "maturity_pct": maturity_pct,
-        "status": status,
-        "ai_prediction_applied": ai_prediction_applied and bool(cv_context),
-        "cv_variety": cv_context.get("variety", ""),
-        "cv_maturity_status": cv_context.get("maturity_status", ""),
+        "ai_prediction_applied": ai_prediction_applied and bool(review_prediction),
+        "review_prediction": review_prediction,
+        "review_preview_url": reverse("cv_upload_image", args=[cv_upload.pk]) if cv_upload else "",
+        "confidence_display": confidence_display,
     })
 
 

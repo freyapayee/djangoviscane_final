@@ -6,7 +6,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | New Scan</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/scan-page.css') }}?v=6">
 </head>
 <body class="scanner-layout ds-app vis-scan-page">
@@ -18,7 +18,7 @@
         </div>
         <a class="vis-button is-tonal" href="/homepage"><ion-icon name="arrow-back-outline"></ion-icon>{{ farmer_text('Dashboard') }}</a>
     </header>
-    <main class="scan-flow" data-scan-flow data-current="{% if error %}details{% else %}capture{% endif %}">
+    <main class="scan-flow" data-scan-flow data-current="{% if error %}details{% elif review_prediction %}review{% else %}capture{% endif %}">
     <ol class="scan-stepper" aria-label="Scan progress">
         <li data-step-indicator="capture"><span>1</span><strong>{{ farmer_text('Photo') }}</strong></li>
         <li data-step-indicator="review"><span>2</span><strong>{{ farmer_text('Review') }}</strong></li>
@@ -58,7 +58,6 @@
                 <input id="scan-upload" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload sugarcane image" hidden>
             </div>
             <button type="button" class="scan-back-button" id="close-camera-btn" hidden>{{ farmer_text('Close camera') }}</button>
-            <button class="scan-skip-button" id="skip-to-details" type="button">{{ farmer_text('Continue without an image') }}</button>
         </div>
     </div>
         <section id="scan-result" class="vis-scan-result" data-stage="review" aria-live="polite">
@@ -72,7 +71,7 @@
                 <div class="vis-result-cell"><small>{{ farmer_text('Maturity') }}</small><strong id="result-maturity">—</strong></div>
                 <div class="vis-result-cell"><small>{{ farmer_text('Confidence') }}</small><strong id="result-confidence">—</strong></div>
             </div>
-            <p class="scan-result-note"><ion-icon name="information-circle-outline"></ion-icon>{{ farmer_text('Confirm that the photo is clear before continuing. You can still adjust the assessment details.') }}</p>
+            <p class="scan-result-note"><ion-icon name="information-circle-outline"></ion-icon>{{ farmer_text('Confirm that the photo is clear before continuing.') }}</p>
             <div class="scan-review-actions">
                 <button class="vis-button is-tonal" id="retake-scan" type="button"><ion-icon name="refresh-outline"></ion-icon>{{ farmer_text('Change photo') }}</button>
                 <button class="vis-button is-primary" id="use-scan-result" type="button">{{ farmer_text('Use this result') }}<ion-icon name="arrow-forward-outline"></ion-icon></button>
@@ -85,7 +84,7 @@
                 <ion-icon name="clipboard-outline"></ion-icon>
             </div>
             <h2 class="scan-title">{{ farmer_text('Assessment Details') }}</h2>
-            <p class="scan-subtitle">{{ farmer_text('Add the plot name, then save the assessment') }}</p>
+            <p class="scan-subtitle">{{ farmer_text('Add the plot name to continue to agronomic inputs.') }}</p>
         </div>
 
         <div class="scan-ai-reference" id="scan-ai-reference" hidden>
@@ -105,35 +104,14 @@
                 <ion-icon name="leaf-outline"></ion-icon>
                 <input id="scan-plot" type="text" name="plot_name" value="{{ plot_name or '' }}" placeholder="{{ farmer_text('e.g., North Field 3') }}" required>
             </div>
-            <label class="scan-field-label" for="scan-maturity">{{ farmer_text('Maturity percentage') }}</label>
+            <label class="scan-field-label" for="scan-confidence">{{ farmer_text('Confidence') }}</label>
             <div class="input-wrapper">
                 <ion-icon name="stats-chart-outline"></ion-icon>
-                <input id="scan-maturity" type="number" name="maturity_pct" value="{{ maturity_pct or '' }}" placeholder="{{ farmer_text('Enter 0 to 100') }}" min="0" max="100" inputmode="numeric" required>
+                <input id="scan-confidence" type="text" value="{{ confidence_display }}" placeholder="{{ farmer_text('Analyze a photo to see confidence') }}" readonly>
             </div>
-            <label class="scan-field-label" for="scan-grade">{{ farmer_text('Quality grade') }}</label>
-            <div class="input-wrapper">
-                <ion-icon name="ribbon-outline"></ion-icon>
-                <select id="scan-grade" name="grade" required>
-                    <option value="" disabled{% if not grade %} selected{% endif %}>{{ farmer_text('Select grade') }}</option>
-                    <option value="A"{% if grade == 'A' %} selected{% endif %}>{{ farmer_text('Grade A') }}</option>
-                    <option value="B"{% if grade == 'B' %} selected{% endif %}>{{ farmer_text('Grade B') }}</option>
-                    <option value="C"{% if grade == 'C' %} selected{% endif %}>{{ farmer_text('Grade C') }}</option>
-                </select>
-            </div>
-            <label class="scan-field-label" for="scan-status">{{ farmer_text('Field status') }}</label>
-            <div class="input-wrapper">
-                <ion-icon name="alert-circle-outline"></ion-icon>
-                <select id="scan-status" name="status" required>
-                    <option value="" disabled{% if not status %} selected{% endif %}>{{ farmer_text('Select status') }}</option>
-                    <option value="ready"{% if status == 'ready' %} selected{% endif %}>{{ farmer_text('Ready') }}</option>
-                    <option value="monitor"{% if status == 'monitor' %} selected{% endif %}>{{ farmer_text('Monitor') }}</option>
-                    <option value="healthy"{% if status == 'healthy' %} selected{% endif %}>{{ farmer_text('Healthy') }}</option>
-                </select>
-            </div>
-
             <button type="submit" class="primary-btn">
-                <ion-icon name="save-outline"></ion-icon>
-                {{ farmer_text('Save Scan') }}
+                <ion-icon name="arrow-forward-outline"></ion-icon>
+                {{ farmer_text('Proceed to Agronomic Input') }}
             </button>
             <button class="scan-back-button" id="back-from-details" type="button"><ion-icon name="arrow-back-outline"></ion-icon>{{ farmer_text('Back to previous step') }}</button>
         </form>
@@ -214,13 +192,10 @@
             const flow = document.querySelector('[data-scan-flow]');
             const retakeBtn = document.getElementById('retake-scan');
             const useResultBtn = document.getElementById('use-scan-result');
-            const skipBtn = document.getElementById('skip-to-details');
             const backFromDetailsBtn = document.getElementById('back-from-details');
             const aiReference = document.getElementById('scan-ai-reference');
             const aiReferenceText = document.getElementById('scan-ai-reference-text');
-            const maturityInput = document.getElementById('scan-maturity');
-            const gradeInput = document.getElementById('scan-grade');
-            const statusInput = document.getElementById('scan-status');
+            const confidenceInput = document.getElementById('scan-confidence');
             const aiPredictionAppliedInput = document.getElementById('ai-prediction-applied');
             const analysisModal = document.getElementById('scan-analysis-modal');
             const analysisDialog = analysisModal?.querySelector('.scan-analysis-dialog');
@@ -246,6 +221,14 @@
                 }
             };
 
+            const normalizeVariety = (value) => {
+                const label = String(value || '').trim().toUpperCase().replaceAll('-', ' ').replaceAll('_', ' ').replace(/\s+/g, ' ');
+                if (['524', 'VMC524', 'VMC 524', 'VMC 84 524'].includes(label)) return 'VMC 84-524';
+                if (['847', '947', 'VMC847', 'VMC 847', 'VMC 947', 'VMC 84 947'].includes(label)) return 'VMC 84-947';
+                if (['MAURITIO', 'MAURITIO RC888', 'MAURITIUS RC888'].includes(label)) return 'MAURITIO RC888';
+                return String(value || '').trim();
+            };
+
             const goToStep = (step) => {
                 if (!flow) return;
                 flow.dataset.current = step;
@@ -263,66 +246,30 @@
                 flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
             };
 
-            const deriveAssessment = (prediction) => {
-                const rawStatus = String(prediction?.maturity_status || '').trim().toUpperCase().replaceAll('-', '_').replaceAll(' ', '_');
-                const confidenceRaw = Number(prediction?.confidence);
-                const confidence = Number.isFinite(confidenceRaw)
-                    ? (confidenceRaw <= 1 ? confidenceRaw : confidenceRaw / 100)
-                    : 0;
-
-                if (rawStatus.includes('OVER') && rawStatus.includes('MATURE')) {
-                    return { maturityPct: 95, grade: 'C', status: 'monitor' };
-                }
-                if ((rawStatus.includes('NOT') && rawStatus.includes('MATURE')) || rawStatus.includes('IMMATURE')) {
-                    return { maturityPct: 65, grade: confidence >= .85 ? 'B' : 'C', status: 'monitor' };
-                }
-                if (rawStatus.includes('MATURE')) {
-                    return { maturityPct: 85, grade: confidence >= .85 ? 'A' : 'B', status: 'ready' };
-                }
-                return null;
-            };
-
             const applyAssessment = (prediction) => {
-                const assessment = deriveAssessment(prediction);
-                if (!assessment) return null;
-                maturityInput.value = String(assessment.maturityPct);
-                gradeInput.value = assessment.grade;
-                statusInput.value = assessment.status;
-                [maturityInput, gradeInput, statusInput].forEach((field) => {
-                    field.closest('.input-wrapper')?.classList.add('is-ai-filled');
-                    field.dispatchEvent(new Event('change', { bubbles: true }));
-                });
+                const confidence = Number(prediction?.confidence);
+                if (!Number.isFinite(confidence)) return false;
+                confidenceInput.value = `${(confidence <= 1 ? confidence * 100 : confidence).toFixed(1)}%`;
+                confidenceInput.closest('.input-wrapper')?.classList.add('is-ai-filled');
                 setAssessmentLocked(true);
-                return assessment;
+                return true;
             };
 
             const setAssessmentLocked = (locked) => {
-                maturityInput.readOnly = locked;
-                gradeInput.tabIndex = locked ? -1 : 0;
-                statusInput.tabIndex = locked ? -1 : 0;
                 aiPredictionAppliedInput.value = locked ? '1' : '0';
-                [maturityInput, gradeInput, statusInput].forEach((field) => {
-                    const wrapper = field.closest('.input-wrapper');
-                    wrapper?.classList.toggle('is-ai-locked', locked);
-                    if (locked) field.setAttribute('aria-readonly', 'true');
-                    else field.removeAttribute('aria-readonly');
-                });
+                confidenceInput.closest('.input-wrapper')?.classList.toggle('is-ai-locked', locked);
             };
 
             const clearDerivedAssessment = () => {
                 setAssessmentLocked(false);
-                maturityInput.value = '';
-                gradeInput.value = '';
-                statusInput.value = '';
-                [maturityInput, gradeInput, statusInput].forEach((field) => {
-                    field.closest('.input-wrapper')?.classList.remove('is-ai-filled');
-                });
+                confidenceInput.value = '';
+                confidenceInput.closest('.input-wrapper')?.classList.remove('is-ai-filled');
                 if (aiReference) aiReference.hidden = true;
             };
 
             const showResult = (prediction, imageUrl = '') => {
                 currentPrediction = prediction;
-                const variety = prediction.variety || 'Unknown variety';
+                const variety = normalizeVariety(prediction.variety) || 'Unknown variety';
                 const maturity = String(prediction.maturity_status || 'Unknown maturity').replaceAll('_', ' ');
                 const confidenceValue = Number(prediction.confidence);
                 const confidence = Number.isFinite(confidenceValue)
@@ -409,6 +356,9 @@
                 if (analysisController) return;
                 const sequence = ++analysisSequence;
                 lastAnalysis = { blob, filename, imageUrl };
+                currentPrediction = null;
+                clearDerivedAssessment();
+                resultCard.classList.remove('is-visible');
                 const formData = new FormData();
                 formData.append('image', blob, filename);
                 setMessage('Analyzing image...');
@@ -630,21 +580,14 @@
             useResultBtn?.addEventListener('click', () => {
                 flow?.classList.remove('is-manual');
                 if (currentPrediction && aiReference && aiReferenceText) {
-                    const variety = currentPrediction.variety || 'Unknown variety';
+                    const variety = normalizeVariety(currentPrediction.variety) || 'Unknown variety';
                     const maturity = String(currentPrediction.maturity_status || 'Unknown maturity').replaceAll('_', ' ');
-                    const assessment = applyAssessment(currentPrediction);
-                    aiReferenceText.textContent = assessment
-                        ? `AI result locked from ${variety} · ${maturity}: ${assessment.maturityPct}% maturity, Grade ${assessment.grade}, ${assessment.status}.`
-                        : `AI reference: ${variety} · ${maturity}. Complete the remaining fields before saving.`;
+                    const applied = applyAssessment(currentPrediction);
+                    aiReferenceText.textContent = applied
+                        ? `AI result from ${variety} · ${maturity}: ${confidenceInput.value} confidence.`
+                        : `AI reference: ${variety} · ${maturity}.`;
                     aiReference.hidden = false;
                 }
-                goToStep('details');
-            });
-
-            skipBtn?.addEventListener('click', () => {
-                stopScanner();
-                clearDerivedAssessment();
-                flow?.classList.add('is-manual');
                 goToStep('details');
             });
 
@@ -657,17 +600,14 @@
                 }
             });
 
-            if (aiPredictionAppliedInput.value === '1') {
-                setAssessmentLocked(true);
-                const savedVariety = {{ (cv_variety or '') | tojson }};
-                const savedMaturity = {{ (cv_maturity_status or '') | tojson }};
-                if (savedMaturity) {
-                    aiReferenceText.textContent = `AI result from ${savedVariety || 'the image'}: ${savedMaturity.replaceAll('_', ' ')}, ${maturityInput.value}% maturity, Grade ${gradeInput.value}, ${statusInput.value}.`;
-                    aiReference.hidden = false;
-                }
-            }
             const initialStep = flow?.dataset.current || 'capture';
             goToStep(initialStep);
+            const savedPrediction = {{ review_prediction | default(none) | tojson }};
+            const savedPreviewUrl = {{ review_preview_url | default('') | tojson }};
+            if (savedPrediction && savedPreviewUrl) {
+                showResult(savedPrediction, savedPreviewUrl);
+                if (initialStep === 'details') useResultBtn?.click();
+            }
             window.addEventListener('pagehide', stopScanner);
             window.addEventListener('beforeunload', stopScanner);
             document.addEventListener('visibilitychange', () => {
@@ -679,6 +619,6 @@
         })();
     </script>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

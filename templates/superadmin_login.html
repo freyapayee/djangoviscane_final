@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Superadmin Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-login-premium.css') }}?v=2">
 </head>
 <body class="vis-auth-simple ds-app vis-admin-login-page vis-superadmin-login-page">
@@ -25,9 +25,13 @@
         {% if success %}
             <div class="form-success">{{ success }}</div>
         {% endif %}
+        {% if next_page %}
+            <div class="form-success">Sign in to continue to Superadmin Registration.</div>
+        {% endif %}
 
         <form class="fade-in" method="POST" action="/superadmin-login">
             {{ csrf_input }}
+            {% if next_page %}<input type="hidden" name="next" value="{{ next_page }}">{% endif %}
             <label class="ds-field-label" for="ds-superadmin_login-identifier">Username or Email</label>
 <div class="input-wrapper">
                 <svg viewBox="0 0 24 24" class="console-icon console-field-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#person-outline"></use></svg>
@@ -53,6 +57,6 @@
         </div>
     </main>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

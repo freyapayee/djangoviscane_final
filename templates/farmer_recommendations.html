@@ -6,9 +6,9 @@
     <title>VISCANE | Recommendations</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=4">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_recommendations">
 
@@ -49,31 +49,43 @@
                 <span class="badge"><ion-icon name="checkmark-circle-outline"></ion-icon>{{ recommendations|length }} {{ farmer_text('task' if recommendations|length == 1 else 'tasks') }}</span>
             </div>
             {% if grouped_recommendations %}
+            <div class="recommendation-areas">
                 {% for group in grouped_recommendations %}
-                    <div class="list-meta" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 0 6px;">
-                        {{ farmer_text(group.category) }}
-                    </div>
-                    {% for rec in group["items"] %}
-                        <div class="list-row">
-                            <div class="list-badge"><ion-icon name="{{ rec.icon }}"></ion-icon></div>
-                            <div style="flex: 1;">
-                                <h4 style="margin: 0;">{{ rec.title }}</h4>
-                                <div class="list-meta">{{ rec.meta }}</div>
-                                {% if rec.original_title or rec.original_meta %}
-                                    <details class="list-meta">
-                                        <summary>{{ farmer_text('English original') }}</summary>
-                                        <div>{{ rec.original_title or rec.title }}</div>
-                                        <div>{{ rec.original_meta or rec.meta }}</div>
-                                    </details>
-                                {% endif %}
-                            </div>
-                            <span class="tag{% if rec.tag_class %} {{ rec.tag_class }}{% endif %}">{{ rec.tag }}</span>
+                    <section class="recommendation-area" data-tone="{{ group.tone }}" aria-labelledby="recommendation-area-{{ loop.index }}">
+                        <div class="recommendation-area-header">
+                            <span class="recommendation-area-logo" aria-hidden="true"><ion-icon name="{{ group.icon }}"></ion-icon></span>
+                            <h4 class="recommendation-area-title" id="recommendation-area-{{ loop.index }}">{{ farmer_text(group.category) }}</h4>
                         </div>
-                    {% endfor %}
+                        <div class="recommendation-items">
+                            {% for rec in group["items"] %}
+                                <article class="list-row recommendation-item">
+                                    <div class="list-badge"><ion-icon name="{{ rec.icon }}" aria-hidden="true"></ion-icon></div>
+                                    <div class="recommendation-item-copy">
+                                        <h5>{{ rec.title }}</h5>
+                                        <div class="list-meta">{{ rec.meta }}</div>
+                                        {% if rec.original_title or rec.original_meta %}
+                                            <details class="list-meta">
+                                                <summary>{{ farmer_text('English original') }}</summary>
+                                                <div>{{ rec.original_title or rec.title }}</div>
+                                                <div>{{ rec.original_meta or rec.meta }}</div>
+                                            </details>
+                                        {% endif %}
+                                    </div>
+                                    <span class="tag{% if rec.tag_class %} {{ rec.tag_class }}{% endif %}">{{ rec.tag }}</span>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    </section>
                 {% endfor %}
+            </div>
             {% else %}
                 <div class="list-meta">{{ farmer_text('No recommendations yet. Run a calculation from Home.') }}</div>
             {% endif %}
+            <a class="recommendation-history-link" href="/farmer/agronomic-logs#recommendation-history">
+                <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                <span>{{ farmer_text('Want to view your recommendation history? Click here') }}</span>
+                <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </a>
         </section>
 
         <div class="footer-link">VISCANE {{ farmer_text('Farmer Portal') }} | {{ farmer_text('Recommendations') }}</div>
@@ -99,6 +111,6 @@
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

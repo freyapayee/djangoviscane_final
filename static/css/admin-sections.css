@@ -62,7 +62,7 @@ body.ds-app.vis-admin-section .panel-subtitle { color: var(--admin-muted) !impor
 .admin-filter-bar select { min-width: 150px; padding: 0 34px 0 12px; }
 .admin-search-field { position: relative; display: block; }
 .admin-search-field > ion-icon { position: absolute; top: 50%; left: 13px; z-index: 1; color: #75867c; font-size: 18px; transform: translateY(-50%); pointer-events: none; }
-.admin-search-field input { padding: 0 13px 0 40px; }
+.admin-search-field input { --ds-input-padding: 0 13px 0 44px; padding: var(--ds-input-padding); }
 .admin-filter-bar :is(select, input):focus, .admin-inline-search input:focus, .admin-form-field :is(input, textarea):focus { border-color: #58a675; outline: 3px solid rgba(36, 137, 75, .12); }
 .admin-filter-bar .btn { flex: 0 0 auto; min-height: 44px; height: 44px; padding: 0 14px; }
 

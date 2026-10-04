@@ -1,0 +1,43 @@
+<div id="scan-gallery" class="panel scan-gallery-block">
+    <div class="panel-header">
+        <div>
+            <h3 class="panel-title">{{ farmer_text('Scan Gallery') }}</h3>
+            <p class="panel-subtitle">{{ farmer_text('Recent uploaded sugarcane scans') }}</p>
+        </div>
+    </div>
+    {% if gallery_scans %}
+        <div class="scan-gallery-grid">
+            {% for scan in gallery_scans %}
+                {% set upload = scan.cv_upload %}
+                <figure class="scan-gallery-item">
+                    <figcaption class="scan-gallery-heading">
+                        <strong class="scan-gallery-plot">{{ scan.plot_name }}</strong>
+                        <span class="scan-gallery-date">{{ scan.created_at.strftime('%b %d, %Y') }}</span>
+                    </figcaption>
+                    <img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="{{ farmer_text('Sugarcane scan for') }} {{ scan.plot_name }}" loading="lazy">
+                    <div class="scan-gallery-details">
+                        <span><strong>{{ farmer_text('Variety:') }}</strong> {{ upload.variety or farmer_text('Unknown') }}</span>
+                        <span><strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</span>
+                    </div>
+                </figure>
+            {% endfor %}
+        </div>
+        {% if gallery_page.has_other_pages() %}
+            <nav class="scan-section-pagination" aria-label="{{ farmer_text('Scan Gallery') }} pagination">
+                {% if gallery_page.has_previous() %}
+                    <a href="?gallery_page={{ gallery_page.previous_page_number() }}&recent_page={{ recent_page.number }}#scan-gallery"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</a>
+                {% else %}
+                    <span class="is-disabled"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</span>
+                {% endif %}
+                <span class="scan-page-count" aria-live="polite">{{ gallery_page.number }} / {{ gallery_page.paginator.num_pages }}</span>
+                {% if gallery_page.has_next() %}
+                    <a href="?gallery_page={{ gallery_page.next_page_number() }}&recent_page={{ recent_page.number }}#scan-gallery">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></a>
+                {% else %}
+                    <span class="is-disabled">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></span>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="list-meta">{{ farmer_text('No uploaded scans yet.') }}</div>
+    {% endif %}
+</div>

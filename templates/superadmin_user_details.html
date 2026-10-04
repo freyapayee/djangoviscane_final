@@ -6,8 +6,8 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Farmer Details</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=7">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=8">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-user-details">
     {% include 'components/superadmin_navigation.html' %}
@@ -25,10 +25,9 @@
                 </div>
             </div>
             <div class="header-actions">
-
                 <a class="btn light" href="/superadmin#farmer-accounts">
                     <ion-icon name="arrow-back-outline"></ion-icon>
-                    Back
+                    Back to Overview
                 </a>
             </div>
         </div>
@@ -58,37 +57,112 @@
             </div>
         </section>
 
-        <section class="section-grid two-col">
-            <div class="panel superadmin-panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Farmer Profile</h3>
-                        <p class="panel-subtitle">Registered account information</p>
+        <section class="section-grid two-col superadmin-details-layout">
+            <div class="superadmin-profile-column">
+                <div class="panel superadmin-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Farmer Profile</h3>
+                            <p class="panel-subtitle">Registered account information</p>
+                        </div>
+                        {% if user.is_archived %}
+                            <form method="POST" action="/superadmin/users/restore" data-confirm-action="restore-farmer" data-confirm-subject="{{ user.fullname }}">
+                                {{ csrf_input }}
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <button class="btn primary" type="submit">
+                                    <ion-icon name="refresh-outline"></ion-icon>
+                                    Restore Account
+                                </button>
+                            </form>
+                        {% endif %}
                     </div>
-                    {% if user.is_archived %}
-                        <form method="POST" action="/superadmin/users/restore">
-    {{ csrf_input }}
-                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                            <button class="btn primary" type="submit" onclick="return confirm('Restore this user to the active registry?')">
-                                <ion-icon name="refresh-outline"></ion-icon>
-                                Restore Account
-                            </button>
-                        </form>
-                    {% endif %}
+                    <dl class="superadmin-profile-details">
+                        <div><dt>Account ID</dt><dd>#{{ user.id }}</dd></div>
+                        <div><dt>Full name</dt><dd>{{ user.fullname }}</dd></div>
+                        <div><dt>Email address</dt><dd>{{ user.email }}</dd></div>
+                        <div><dt>Phone number</dt><dd>{{ user.phone or 'Not provided' }}</dd></div>
+                        <div><dt>Province</dt><dd>{{ user.province or 'Not provided' }}</dd></div>
+                        <div><dt>Municipality</dt><dd>{{ user.municipality or 'Not provided' }}</dd></div>
+                        <div><dt>Barangay</dt><dd>{{ user.barangay or 'Not provided' }}</dd></div>
+                        <div><dt>Created</dt><dd>{{ user.created_at.strftime('%b %d, %Y %I:%M %p') if user.created_at else 'Not available' }}</dd></div>
+                        <div class="superadmin-profile-state"><dt>Account state</dt><dd><span class="badge">{{ 'Archived' if user.is_archived else ('Active' if user.is_active else 'Deactivated') }}</span></dd></div>
+                    </dl>
                 </div>
-                <dl class="superadmin-profile-details">
-                    <div><dt>Account ID</dt><dd>#{{ user.id }}</dd></div>
-                    <div><dt>Full name</dt><dd>{{ user.fullname }}</dd></div>
-                    <div><dt>Email address</dt><dd>{{ user.email }}</dd></div>
-                    <div><dt>Phone number</dt><dd>{{ user.phone or 'Not provided' }}</dd></div>
-                    <div><dt>Province</dt><dd>{{ user.province or 'Not provided' }}</dd></div>
-                    <div><dt>Municipality</dt><dd>{{ user.municipality or 'Not provided' }}</dd></div>
-                    <div><dt>Barangay</dt><dd>{{ user.barangay or 'Not provided' }}</dd></div>
-                    <div><dt>Created</dt><dd>{{ user.created_at.strftime('%b %d, %Y %I:%M %p') if user.created_at else 'Not available' }}</dd></div>
-                    <div class="superadmin-profile-state"><dt>Account state</dt><dd><span class="badge">{{ 'Archived' if user.is_archived else ('Active' if user.is_active else 'Deactivated') }}</span></dd></div>
-                </dl>
+                <div class="panel superadmin-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Scan History</h3>
+                            <p class="panel-subtitle">Field scans linked to this farmer</p>
+                        </div>
+                        <span class="badge">{{ scans|length }} scans</span>
+                    </div>
+                    <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Plot</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if scans %}
+                                {% for scan in scans %}
+                                    <tr>
+                                        <td>{{ scan.plot_name }}</td>
+                                        <td>{{ scan.grade }} | {{ scan.maturity_pct }}%</td>
+                                        <td>{{ scan.status }}</td>
+                                        <td>{{ scan.created_at.strftime('%b %d, %Y %I:%M %p') if scan.created_at else 'N/A' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4">No scans found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table></div>
+                </div>
+                <div class="panel superadmin-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Feedback & Audit Notes</h3>
+                            <p class="panel-subtitle">Messages and account-related admin actions</p>
+                        </div>
+                        <span class="badge">{{ feedback_entries|length + audit_logs|length }} records</span>
+                    </div>
+                    <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Source</th>
+                                <th>Message</th>
+                                <th>When</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in feedback_entries %}
+                                <tr>
+                                    <td><span class="tag">Feedback</span></td>
+                                    <td>{{ entry.message }}</td>
+                                    <td>{{ entry.created_at.strftime('%b %d, %Y %I:%M %p') if entry.created_at else 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                            {% for log in audit_logs %}
+                                <tr>
+                                    <td><span class="tag warning">Audit</span></td>
+                                    <td>{{ log.action }}</td>
+                                    <td>{{ log.timestamp.strftime('%b %d, %Y %I:%M %p') if log.timestamp else 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                            {% if not feedback_entries and not audit_logs %}
+                                <tr>
+                                    <td colspan="3">No feedback or audit records found.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table></div>
+                </div>
             </div>
-
             <div class="panel superadmin-panel">
                 <div class="panel-header">
                     <div>
@@ -126,86 +200,8 @@
                 </table></div>
             </div>
         </section>
-
-        <section class="section-grid two-col">
-            <div class="panel superadmin-panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Scan History</h3>
-                        <p class="panel-subtitle">Field scans linked to this farmer</p>
-                    </div>
-                    <span class="badge">{{ scans|length }} scans</span>
-                </div>
-                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Plot</th>
-                            <th>Grade</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if scans %}
-                            {% for scan in scans %}
-                                <tr>
-                                    <td>{{ scan.plot_name }}</td>
-                                    <td>{{ scan.grade }} | {{ scan.maturity_pct }}%</td>
-                                    <td>{{ scan.status }}</td>
-                                    <td>{{ scan.created_at.strftime('%b %d, %Y %I:%M %p') if scan.created_at else 'N/A' }}</td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="4">No scans found.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table></div>
-            </div>
-
-            <div class="panel superadmin-panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Feedback & Audit Notes</h3>
-                        <p class="panel-subtitle">Messages and account-related admin actions</p>
-                    </div>
-                    <span class="badge">{{ feedback_entries|length + audit_logs|length }} records</span>
-                </div>
-                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Source</th>
-                            <th>Message</th>
-                            <th>When</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in feedback_entries %}
-                            <tr>
-                                <td><span class="tag">Feedback</span></td>
-                                <td>{{ entry.message }}</td>
-                                <td>{{ entry.created_at.strftime('%b %d, %Y %I:%M %p') if entry.created_at else 'N/A' }}</td>
-                            </tr>
-                        {% endfor %}
-                        {% for log in audit_logs %}
-                            <tr>
-                                <td><span class="tag warning">Audit</span></td>
-                                <td>{{ log.action }}</td>
-                                <td>{{ log.timestamp.strftime('%b %d, %Y %I:%M %p') if log.timestamp else 'N/A' }}</td>
-                            </tr>
-                        {% endfor %}
-                        {% if not feedback_entries and not audit_logs %}
-                            <tr>
-                                <td colspan="3">No feedback or audit records found.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table></div>
-            </div>
-        </section>
     </main>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

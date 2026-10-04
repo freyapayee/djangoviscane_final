@@ -1,0 +1,53 @@
+<div id="recent-scans" class="panel">
+    <div class="panel-header">
+        <div>
+            <h3 class="panel-title">{{ farmer_text('Recent Scans') }}</h3>
+            <p class="panel-subtitle">{{ farmer_text('Latest sugarcane assessments') }}</p>
+        </div>
+        <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ farmer_text('Updated 10 min ago') }}</span>
+    </div>
+    {% if recent_scan_cards %}
+        {% for card in recent_scan_cards %}
+            {% set scan = card.scan %}
+            {% set cv_upload = card.cv_upload %}
+            <div class="recent-item">
+                <div class="recent-grade"><ion-icon name="leaf-outline" aria-hidden="true"></ion-icon></div>
+                <div style="flex: 1;">
+                    <h4 style="margin: 0;">{{ scan.plot_name if scan else (cv_upload.original_filename or farmer_text('Uploaded Scan')) }}</h4>
+                    {% if scan %}
+                        <div class="list-meta">{{ scan.created_at.strftime('%b %d, %I:%M %p') }} | <strong>{{ farmer_text('Maturity') }}</strong> {{ scan.maturity_pct }}%</div>
+                    {% elif cv_upload %}
+                        <div class="list-meta">{{ cv_upload.created_at.strftime('%b %d, %I:%M %p') if cv_upload.created_at else farmer_text('Date unavailable') }} | <strong>{{ farmer_text('Computer vision upload') }}</strong></div>
+                    {% endif %}
+                    {% if cv_upload %}
+                        <div class="list-meta"><strong>{{ farmer_text('Uploaded:') }}</strong> {{ cv_upload.original_filename or 'image' }}</div>
+                        <div class="list-meta"><strong>{{ farmer_text('Variety:') }}</strong> {{ cv_upload.variety or farmer_text('Unknown') }} | <strong>{{ farmer_text('Maturity:') }}</strong> {{ farmer_text((cv_upload.maturity_status or 'Unknown').replace('_', ' ').title()) }}</div>
+                        <form method="POST" action="{{ url_for('delete_cv_upload', upload_id=cv_upload.id) }}?recent_page={{ recent_page.number }}&gallery_page={{ gallery_page.number }}" class="recent-picture-remove-form" data-confirm-action="remove" data-confirm-message="{{ farmer_text('Remove this uploaded picture from recent scans?') }}">
+                            {{ csrf_input }}
+                            <button type="submit" class="tag alert">{{ farmer_text('Remove Picture') }}</button>
+                        </form>
+                    {% elif scan %}
+                        <div class="list-meta">{{ farmer_text('No picture attached to this assessment.') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        {% if recent_page.has_other_pages() %}
+            <nav class="scan-section-pagination" aria-label="{{ farmer_text('Recent Scans') }} pagination">
+                {% if recent_page.has_previous() %}
+                    <a href="?recent_page={{ recent_page.previous_page_number() }}&gallery_page={{ gallery_page.number }}#recent-scans"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</a>
+                {% else %}
+                    <span class="is-disabled"><ion-icon name="chevron-back-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Previous') }}</span>
+                {% endif %}
+                <span class="scan-page-count" aria-live="polite">{{ recent_page.number }} / {{ recent_page.paginator.num_pages }}</span>
+                {% if recent_page.has_next() %}
+                    <a href="?recent_page={{ recent_page.next_page_number() }}&gallery_page={{ gallery_page.number }}#recent-scans">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></a>
+                {% else %}
+                    <span class="is-disabled">{{ farmer_text('Next') }}<ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon></span>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="list-meta">{{ farmer_text('No recent scans to show. Start a new assessment.') }}</div>
+    {% endif %}
+</div>

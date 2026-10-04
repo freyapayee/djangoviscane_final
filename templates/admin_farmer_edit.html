@@ -6,7 +6,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Edit Farmer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
 </head>
 <body class="admin-layout has-vis-sidebar ds-app">
     {% include 'components/app_header.html' %}
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="header-actions">
-
+                <a class="btn light" href="/admin"><ion-icon name="arrow-back-outline"></ion-icon>Back to Overview</a>
                 <a class="btn light" href="/admin/farmers">
                     <ion-icon name="arrow-back-outline"></ion-icon>
                     Farmers
@@ -35,7 +35,7 @@
     </header>
 
     <main class="dashboard-container fade-in">
-        <form class="panel" method="POST">
+        <form class="panel" method="POST" data-confirm-action="update-profile">
             {{ csrf_input }}
             <div class="panel-header">
                 <div>
@@ -69,6 +69,6 @@
         <div class="footer-link">VISCANE Admin | Farmer Account Management</div>
     </main>
     {% include 'hiligaynon_runtime.html' %}
-    <script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
 </html>

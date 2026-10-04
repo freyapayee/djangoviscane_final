@@ -289,6 +289,24 @@ body.ds-app:is(.vis-landing,.vis-auth-page,.vis-auth-simple,.vis-access-page) .d
 body.ds-app:is(.vis-landing,.vis-auth-page,.vis-auth-simple,.vis-access-page) .ds-app-header select {
     background-color: rgba(255,255,255,.94); box-shadow: 0 4px 16px rgba(26,58,32,.08);
 }
+/* Keep the registration brand and language control aligned with the form. */
+body.ds-app.vis-registration-page .ds-app-header {
+    width: min(520px,100%);
+}
+body.ds-app.vis-registration-page > .card {
+    margin-top: 24px;
+}
+@media (max-width: 600px) {
+    body.ds-app.vis-registration-page .ds-app-header {
+        gap: 8px;
+    }
+    body.ds-app.vis-registration-page .ds-app-header > .vis-brand {
+        padding: 6px 8px;
+    }
+    body.ds-app.vis-registration-page .ds-app-header select {
+        width: 116px;
+    }
+}
 body.ds-app .vis-landing-shell {
     min-height: calc(100svh - 32px); display: grid; align-items: center; padding: 24px 0;
 }
@@ -380,3 +398,18 @@ body.ds-app .ds-entry-toolbar select { box-shadow: none !important; }
     html { scroll-behavior: auto; }
     body.ds-app *, body.ds-app *::before, body.ds-app *::after { animation: none !important; transition: none !important; }
 }
+
+body.ds-app.vis-confirm-open { overflow: hidden; }
+body.ds-app .vis-confirm-overlay { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 20px; background: rgba(12, 31, 21, .58); }
+body.ds-app .vis-confirm-overlay[hidden] { display: none; }
+body.ds-app .vis-confirm-dialog { width: min(440px, 100%); padding: 28px; border: 1px solid #c9e0d0; border-radius: 20px; background: #fff; box-shadow: 0 24px 70px rgba(10, 36, 20, .28); }
+body.ds-app .vis-confirm-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 13px; background: #e8f5eb; color: #16803c; font-size: 27px; }
+body.ds-app .vis-confirm-dialog.is-danger .vis-confirm-icon { background: #fff0ed; color: #a53e33; }
+body.ds-app .vis-confirm-dialog h2 { margin: 18px 0 8px; color: #193b29; font-size: 23px; line-height: 1.25; }
+body.ds-app .vis-confirm-dialog p { margin: 0; color: #56705e; font-size: 15px; line-height: 1.5; }
+body.ds-app .vis-confirm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+body.ds-app .vis-confirm-actions button { flex: 1 1 150px; min-height: 46px; padding: 10px 14px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+body.ds-app .vis-confirm-cancel { border: 1px solid #b9d2c0; background: #f4f9f5; color: #325b3c; }
+body.ds-app .vis-confirm-accept { border: 1px solid #087b33; background: #087b33; color: #fff; }
+body.ds-app .vis-confirm-dialog.is-danger .vis-confirm-accept { border-color: #a53e33; background: #a53e33; }
+body.ds-app .vis-confirm-actions button:focus-visible { outline: 2px solid #16803c; outline-offset: 2px; }

@@ -2131,8 +2131,7 @@ body.admin-layout .btn.primary {
     box-shadow: var(--shadow-md);
 }
 
-.admin-module-panel,
-.admin-tools-panel {
+.admin-module-panel {
     margin-bottom: 24px;
 }
 
@@ -2144,16 +2143,6 @@ body.admin-layout .btn.primary {
 
 .admin-module-tile ion-icon {
     color: #2E7D32;
-}
-
-.admin-tool-tile {
-    background: linear-gradient(180deg, rgba(227, 242, 253, 0.92) 0%, rgba(255, 255, 255, 1) 100%);
-    border-style: solid;
-    border-color: rgba(30, 136, 229, 0.16);
-}
-
-.admin-tool-tile ion-icon {
-    color: #1565C0 !important;
 }
 
 .signout-tile {

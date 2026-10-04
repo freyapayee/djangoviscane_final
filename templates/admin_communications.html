@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}?v=search-icon-1">
     <title>VISCANE | Communications</title>
 </head>
 <body class="admin-layout has-vis-sidebar ds-app vis-management-dashboard vis-admin-section vis-admin-comms">
     {% include 'components/admin_navigation.html' %}
     <header class="dashboard-header admin-section-header"><div class="header-content">
         <div class="brand admin-section-heading"><div class="brand-icon"><ion-icon name="chatbubbles-outline"></ion-icon></div><div><p class="brand-title">Communications</p><p class="brand-subtitle">Publish farmer updates and review support feedback.</p></div></div>
+        <div class="header-actions"><a class="btn light" href="/admin"><ion-icon name="arrow-back-outline"></ion-icon>Back to Overview</a></div>
     </div></header>
 
     <main class="dashboard-container fade-in admin-section-workspace">
@@ -55,5 +56,5 @@
         document.querySelectorAll('[data-close-publish-modal]').forEach((button) => button.addEventListener('click', close)); document.getElementById('confirm-publish')?.addEventListener('click', () => form.submit()); document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.classList.contains('is-open')) close(); });
     })();
     </script>
-    {% include 'hiligaynon_runtime.html' %}<script src="{{ url_for('static', filename='viscane-ui.js') }}" defer></script>
+    {% include 'hiligaynon_runtime.html' %}<script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body></html>

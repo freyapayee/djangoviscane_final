@@ -58,10 +58,19 @@ VARIETY_ALIASES = {
 
 CV_VARIETY_ALIASES = {
     "524": "VMC 84-524",
+    "VMC524": "VMC 84-524",
+    "VMC 524": "VMC 84-524",
+    "VMC 84 524": "VMC 84-524",
     "VMC 84-524": "VMC 84-524",
     "847": "VMC 84-947",
+    "VMC847": "VMC 84-947",
+    "VMC 847": "VMC 84-947",
+    "947": "VMC 84-947",
+    "VMC 947": "VMC 84-947",
+    "VMC 84 947": "VMC 84-947",
     "VMC 84-947": "VMC 84-947",
     "MAURITIO": "MAURITIO RC888",
+    "MAURITIUS RC888": "MAURITIO RC888",
     "MAURITIO RC888": "MAURITIO RC888",
 }
 
@@ -198,7 +207,7 @@ def normalize_cv_variety_name(variety):
     cleaned = (variety or "").strip()
     if not cleaned:
         return None
-    cleaned_upper = cleaned.upper()
+    cleaned_upper = " ".join(cleaned.upper().replace("-", " ").replace("_", " ").split())
     mapped = CV_VARIETY_ALIASES.get(cleaned) or CV_VARIETY_ALIASES.get(cleaned_upper)
     if mapped:
         return mapped

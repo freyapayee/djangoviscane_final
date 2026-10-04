@@ -1,0 +1,5 @@
+{
+  "models": ["ResNet-18", "YOLOv8"],
+  "combined_accuracy_pct": 97.72,
+  "source": "Project-provided combined result"
+}

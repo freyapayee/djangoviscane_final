@@ -6,6 +6,7 @@ class User(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20)
     password = models.CharField(max_length=200)
+    profile_photo_path = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     province = models.CharField(max_length=120, blank=True, null=True)
     municipality = models.CharField(max_length=120, blank=True, null=True)
@@ -22,6 +23,7 @@ class User(models.Model):
 
 class Admin(models.Model):
     username = models.CharField(max_length=80, unique=True)
+    full_name = models.CharField(max_length=100, blank=True, default="")
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=200)
     role = models.CharField(max_length=40, default="admin")
@@ -88,6 +90,7 @@ class Feedback(models.Model):
 
 class AgronomicLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="agronomic_logs")
+    scan = models.ForeignKey(Scan, on_delete=models.SET_NULL, related_name="agronomic_logs", null=True, blank=True)
     variety = models.CharField(max_length=120, blank=True, null=True)
     hectares = models.CharField(max_length=50, blank=True, null=True)
     plowing_count = models.CharField(max_length=20, blank=True, null=True)
@@ -99,6 +102,7 @@ class AgronomicLog(models.Model):
     predicted_tc_ha = models.FloatField(blank=True, null=True)
     predicted_lkg = models.FloatField(blank=True, null=True)
     recommendations_summary = models.TextField(blank=True, null=True)
+    recommendations_snapshot = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
