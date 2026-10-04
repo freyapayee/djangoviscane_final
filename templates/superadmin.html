@@ -93,19 +93,24 @@
 
         <section class="section-grid two-col">
             <div class="panel superadmin-panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">Admin Management</h3>
-                        <p class="panel-subtitle">Role assignment and access control</p>
-                    </div>
-                    <span class="badge superadmin-badge"><ion-icon name="lock-closed-outline"></ion-icon>Restricted</span>
-                </div>
-                {% if create_success %}
-                    <div class="form-success">{{ create_success }}</div>
-                {% endif %}
-                {% if create_error %}
-                    <div class="form-error">{{ create_error }}</div>
-                {% endif %}
+                <details class="superadmin-management-details">
+                    <summary class="panel-header superadmin-management-summary">
+                        <div>
+                            <h3 class="panel-title">Admin Management</h3>
+                            <p class="panel-subtitle">Role assignment and access control</p>
+                        </div>
+                        <span class="superadmin-management-toggle">
+                            <span class="badge superadmin-badge"><ion-icon name="lock-closed-outline"></ion-icon>Restricted</span>
+                            <ion-icon class="superadmin-management-chevron" name="chevron-down-outline" aria-hidden="true"></ion-icon>
+                        </span>
+                    </summary>
+                    <div class="superadmin-management-content">
+                    {% if create_success %}
+                        <div class="form-success">{{ create_success }}</div>
+                    {% endif %}
+                    {% if create_error %}
+                        <div class="form-error">{{ create_error }}</div>
+                    {% endif %}
                 <form method="POST" action="/superadmin/admins/create" style="margin-bottom: 16px;">
     {{ csrf_input }}
                     <div class="stat-label">Register Admin or Superadmin</div>
@@ -154,6 +159,8 @@
                 {% else %}
                     <div class="list-meta">No admin accounts found.</div>
                 {% endif %}
+                    </div>
+                </details>
             </div>
 
             <div class="panel superadmin-panel">
@@ -223,7 +230,7 @@
                                         <form method="POST" action="/superadmin/users/archive" data-confirm-action="archive-farmer" data-confirm-subject="{{ user.fullname }}">
     {{ csrf_input }}
                                             <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <button class="tag warning" type="submit">Archive</button>
+                                            <button class="tag warning superadmin-tag" type="submit">Archive</button>
                                         </form>
                                     </div></td>
                                 </tr>

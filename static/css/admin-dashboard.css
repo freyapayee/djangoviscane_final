@@ -238,6 +238,49 @@ body.ds-app.vis-superadmin-overview .superadmin-table-actions {
 
 body.ds-app.vis-superadmin-overview .superadmin-table-actions form { margin: 0; }
 
+/* Collapsible superadmin account management controls. */
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-details {
+    margin: 0;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-summary {
+    margin: 0;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-summary::-webkit-details-marker {
+    display: none;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-summary:focus-visible {
+    outline: 3px solid rgba(36, 137, 75, .18);
+    outline-offset: 5px;
+    border-radius: 10px;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-chevron {
+    color: #287d49;
+    font-size: 21px;
+    transition: transform .2s ease;
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-details[open] .superadmin-management-chevron {
+    transform: rotate(180deg);
+}
+
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-management-content {
+    padding-top: 20px;
+}
+
 @media (max-width: 700px) {
     body.ds-app.vis-superadmin-user-details .superadmin-profile-details { grid-template-columns: minmax(0, 1fr); }
     body.ds-app.vis-superadmin-user-details .superadmin-profile-details .superadmin-profile-state { grid-column: auto; }
