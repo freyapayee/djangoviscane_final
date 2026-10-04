@@ -238,6 +238,15 @@ body.ds-app.vis-superadmin-overview .superadmin-table-actions {
 
 body.ds-app.vis-superadmin-overview .superadmin-table-actions form { margin: 0; }
 
+/* Match User Governance Archive to the compact See Details link. */
+body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-table-actions button.superadmin-tag {
+    min-height: 0;
+    height: auto;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font: 600 11px/normal "Segoe UI", Roboto, Arial, sans-serif;
+}
+
 /* Keep admin accounts visible while collapsing only account registration. */
 body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-details {
     margin: 0 0 20px;
