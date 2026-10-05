@@ -64,6 +64,14 @@ def render_template(request, template_name, context=None, status=200):
 
 INVALID_CV_IMAGE_MESSAGE = "Invalid Image. This Image is not supported"
 CV_CONFIDENCE_THRESHOLD = 0.50
+REGISTRATION_BARANGAYS = [
+    "Amin", "Banogbanog", "Bulad", "Bungahin", "Cabcab", "Camangcamang", "Camp Clark",
+    "Cansalongon", "Guintubhan", "Libas", "Limalima", "Makilignit", "Mansablay", "Maytubig",
+    "Panaquiao", "Barangay 1 (Poblacion)", "Barangay 2 (Poblacion)", "Barangay 3 (Poblacion)",
+    "Barangay 4 (Poblacion)", "Barangay 5 (Poblacion)", "Barangay 6 (Poblacion)",
+    "Barangay 7 (Poblacion)", "Barangay 8 (Poblacion)", "Barangay 9 (Poblacion)", "Riverside",
+    "Rumirang", "San Agustin", "Sebucawan", "Sikatuna", "Tinongan",
+]
 
 
 def supported_cv_confidence(cv_context):
@@ -1352,15 +1360,15 @@ def superadmin_portal(request):
 def superadmin_governance(request):
     active_queryset = User.objects.filter(is_archived=False, is_active=True)
     active_search = request.GET.get("search", "").strip()
-    active_municipality = request.GET.get("municipality", "").strip()
+    active_barangay = request.GET.get("barangay", "").strip()
     if active_search:
         active_queryset = active_queryset.filter(
             Q(fullname__icontains=active_search)
             | Q(email__icontains=active_search)
             | Q(phone__icontains=active_search)
         )
-    if active_municipality:
-        active_queryset = active_queryset.filter(municipality=active_municipality)
+    if active_barangay:
+        active_queryset = active_queryset.filter(barangay=active_barangay)
     users = list(active_queryset.order_by("-id"))
     all_active_users = User.objects.filter(is_archived=False, is_active=True)
     archived_users = list(User.objects.filter(is_archived=True).order_by("-id"))
@@ -1370,8 +1378,8 @@ def superadmin_governance(request):
         "active_user_count": all_active_users.count(),
         "active_result_count": len(users),
         "active_search": active_search,
-        "active_municipality": active_municipality,
-        "municipalities": list(all_active_users.exclude(municipality="").values_list("municipality", flat=True).distinct().order_by("municipality")),
+        "active_barangay": active_barangay,
+        "barangays": REGISTRATION_BARANGAYS,
         "archived_user_count": len(archived_users),
         "deactivated_user_count": len(deactivated_users),
         "users": users,
