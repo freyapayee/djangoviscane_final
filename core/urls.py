@@ -30,6 +30,7 @@ urlpatterns = [
     path("superadmin-register", views.superadmin_register, name="superadmin_register"),
     path("admin-reset", views.admin_reset, name="admin_reset"),
     path("superadmin", views.superadmin_portal, name="superadmin_portal"),
+    path("superadmin/governance", views.superadmin_governance, name="superadmin_governance"),
     path("superadmin/scan-gallery", views.superadmin_scan_gallery, name="superadmin_scan_gallery"),
     path("superadmin/admins/create", views.superadmin_create_admin, name="superadmin_create_admin"),
     path("superadmin/admins/role", views.superadmin_update_role, name="superadmin_update_role"),

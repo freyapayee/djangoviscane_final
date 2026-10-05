@@ -88,6 +88,10 @@
                     <ion-icon name="shield-checkmark-outline"></ion-icon>
                     <div>Audit & Compliance</div>
                 </a>
+                <a class="action-tile" href="/superadmin/governance">
+                    <ion-icon name="people-outline"></ion-icon>
+                    <div>User Governance</div>
+                </a>
             </div>
         </section>
 
@@ -188,130 +192,6 @@
                 {% else %}
                     <div class="list-meta">No prediction logs yet.</div>
                 {% endif %}
-            </div>
-        </section>
-
-        <section class="panel superadmin-panel">
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title">User Governance</h3>
-                    <p class="panel-subtitle">Farmer registry management</p>
-                </div>
-                <span class="badge superadmin-badge"><ion-icon name="people-outline"></ion-icon>{{ total_users }} users</span>
-            </div>
-            <div class="panel-subsection">
-                <div class="panel-header superadmin-subheader">
-                    <div>
-                        <h4 class="panel-title">Active Farmers</h4>
-                        <p class="panel-subtitle">Currently visible in the main registry</p>
-                    </div>
-                    <span class="badge">{{ active_user_count }} active</span>
-                </div>
-                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if users %}
-                            {% for user in users %}
-                                <tr>
-                                    <td>{{ user.fullname }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.phone }}</td>
-                                    <td><div class="superadmin-table-actions">
-                                        <a class="tag superadmin-tag" href="/superadmin/users/{{ user.id }}">See Details</a>
-                                        <form method="POST" action="/superadmin/users/archive" data-confirm-action="archive-farmer" data-confirm-subject="{{ user.fullname }}">
-    {{ csrf_input }}
-                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <button class="tag warning superadmin-tag" type="submit">Archive</button>
-                                        </form>
-                                    </div></td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="4">No active users found.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table></div>
-            </div>
-            <div class="panel-subsection panel-subsection-muted">
-                <div class="panel-header superadmin-subheader">
-                    <div>
-                        <h4 class="panel-title">Archived Farmers</h4>
-                        <p class="panel-subtitle">Stored farmer accounts removed from the active registry</p>
-                    </div>
-                    <span class="badge">{{ archived_user_count }} archived</span>
-                </div>
-                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if archived_users %}
-                            {% for user in archived_users %}
-                                <tr>
-                                    <td>{{ user.fullname }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.phone }}</td>
-                                    <td>
-                                        <a class="tag superadmin-tag" href="/superadmin/users/{{ user.id }}">See Details</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="4">No archived users found.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table></div>
-            </div>
-            <div class="panel-subsection panel-subsection-muted">
-                <div class="panel-header superadmin-subheader">
-                    <div>
-                        <h4 class="panel-title">Deactivated Accounts</h4>
-                        <p class="panel-subtitle">Farmer accounts with suspended access but still retained in the registry</p>
-                    </div>
-                    <span class="badge">{{ deactivated_user_count }} deactivated</span>
-                </div>
-                <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if deactivated_users %}
-                            {% for user in deactivated_users %}
-                                <tr>
-                                    <td>{{ user.fullname }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.phone }}</td>
-                                    <td><a class="tag superadmin-tag" href="/superadmin/users/{{ user.id }}">See Details</a></td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="4">No deactivated accounts found.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table></div>
             </div>
         </section>
 

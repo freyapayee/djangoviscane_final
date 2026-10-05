@@ -1324,9 +1324,6 @@ def superadmin_portal(request):
     create_error = request.GET.get("create_error")
     create_success = request.GET.get("create_success")
     total_users = User.objects.filter(is_archived=False, is_active=True).count()
-    active_user_count = total_users
-    deactivated_user_count = User.objects.filter(is_archived=False, is_active=False).count()
-    archived_user_count = User.objects.filter(is_archived=True).count()
     total_admins = Admin.objects.filter(is_archived=False).count()
     seven_days_ago = timezone.now() - timedelta(days=7)
     active_user_ids = User.objects.filter(is_archived=False, is_active=True).values_list("id", flat=True)
@@ -1337,9 +1334,6 @@ def superadmin_portal(request):
     total_estimated_lkg = f"{float(total_estimated_lkg_value):,.2f}"
     pending_scans = Scan.objects.filter(status="pending", user_id__in=active_user_ids).count()
     admins = list(Admin.objects.filter(is_archived=False).order_by("-id"))
-    users = list(User.objects.filter(is_archived=False, is_active=True).order_by("-id")[:8])
-    archived_users = list(User.objects.filter(is_archived=True).order_by("-id"))
-    deactivated_users = list(User.objects.filter(is_archived=False, is_active=False).order_by("-id"))
     recent_scans = list(Scan.objects.filter(user_id__in=active_user_ids).order_by("-created_at")[:6])
     recent_predictions = list(AgronomicLog.objects.order_by("-created_at")[:6])
     combined_cv_accuracy = None
@@ -1351,7 +1345,24 @@ def superadmin_portal(request):
             combined_cv_accuracy = f"{accuracy:.2f}%"
     except (OSError, ValueError, TypeError, AttributeError):
         pass
-    return render_template(request, "superadmin.html", {"total_users": total_users, "active_user_count": active_user_count, "deactivated_user_count": deactivated_user_count, "archived_user_count": archived_user_count, "total_admins": total_admins, "active_farmers": active_farmers, "total_scans": total_scans, "total_prediction_logs": total_prediction_logs, "total_estimated_lkg": total_estimated_lkg, "pending_scans": pending_scans, "admins": admins, "users": users, "archived_users": archived_users, "deactivated_users": deactivated_users, "recent_scans": recent_scans, "recent_predictions": recent_predictions, "create_error": create_error, "create_success": create_success, "current_admin": current_admin(request), "combined_cv_accuracy": combined_cv_accuracy})
+    return render_template(request, "superadmin.html", {"total_users": total_users, "total_admins": total_admins, "active_farmers": active_farmers, "total_scans": total_scans, "total_prediction_logs": total_prediction_logs, "total_estimated_lkg": total_estimated_lkg, "pending_scans": pending_scans, "admins": admins, "recent_scans": recent_scans, "recent_predictions": recent_predictions, "create_error": create_error, "create_success": create_success, "current_admin": current_admin(request), "combined_cv_accuracy": combined_cv_accuracy})
+
+
+@role_required("superadmin")
+def superadmin_governance(request):
+    users = list(User.objects.filter(is_archived=False, is_active=True).order_by("-id"))
+    archived_users = list(User.objects.filter(is_archived=True).order_by("-id"))
+    deactivated_users = list(User.objects.filter(is_archived=False, is_active=False).order_by("-id"))
+    return render_template(request, "superadmin_governance.html", {
+        "total_users": len(users),
+        "active_user_count": len(users),
+        "archived_user_count": len(archived_users),
+        "deactivated_user_count": len(deactivated_users),
+        "users": users,
+        "archived_users": archived_users,
+        "deactivated_users": deactivated_users,
+        "current_admin": current_admin(request),
+    })
 
 
 @role_required("superadmin")
