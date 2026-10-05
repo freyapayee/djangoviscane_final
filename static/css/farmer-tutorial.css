@@ -66,9 +66,9 @@
 .farmer-tutorial-step strong, .farmer-tutorial-step span { display: block; }
 .farmer-tutorial-step strong { color: #234d32; font-size: 16px; line-height: 1.35; }
 .farmer-tutorial-step span { margin-top: 6px; color: #607466; font-size: 14px; line-height: 1.5; }
-.farmer-tutorial-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.farmer-tutorial-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
 .farmer-tutorial-actions .btn { min-height: 44px; padding: 9px 16px; border-radius: 11px; }
-.farmer-tutorial-back { margin-right: auto; }
+.farmer-tutorial-actions .btn { width: 100%; }
 
 @media (max-width: 720px) {
     .farmer-tutorial-backdrop {
@@ -94,9 +94,8 @@
     .farmer-tutorial-dialog h2 { max-width: 18ch; font-size: clamp(25px, 7vw, 32px); }
     .farmer-tutorial-dialog > p:not(.farmer-tutorial-kicker) { font-size: 16px; }
     .farmer-tutorial-hint { margin-top: 20px; font-size: 14px; }
-    .farmer-tutorial-actions { display: grid; grid-template-columns: minmax(104px, .7fr) minmax(0, 1.4fr); align-items: stretch; margin-top: 28px; }
+    .farmer-tutorial-actions { margin-top: 28px; }
     .farmer-tutorial-actions .btn { width: 100%; min-height: 52px; padding-inline: 12px; }
-    .farmer-tutorial-back[hidden] + .farmer-tutorial-next { grid-column: 2; }
     .farmer-tutorial-steps { min-height: 110px; }
 }
 
