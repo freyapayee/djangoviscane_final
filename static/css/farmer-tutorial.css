@@ -70,7 +70,7 @@
 .farmer-tutorial-actions .btn { min-height: 44px; padding: 9px 16px; border-radius: 11px; }
 .farmer-tutorial-back { margin-right: auto; }
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
     .farmer-tutorial-backdrop {
         align-items: end;
         padding: 0;

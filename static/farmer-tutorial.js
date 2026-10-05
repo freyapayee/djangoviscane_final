@@ -10,6 +10,13 @@
 
     const stateKeyValue = window.location.pathname.replace(/\/$/, '') || '/';
     const launch = document.getElementById('farmer-tutorial');
+    const startButton = document.querySelector('[data-start-farmer-tour]');
+    if (startButton) {
+        startButton.addEventListener('click', () => {
+            sessionStorage.setItem(stateKey, JSON.stringify({ step: 0 }));
+            window.location.assign('/homepage');
+        });
+    }
     let saved = null;
     try { saved = JSON.parse(sessionStorage.getItem(stateKey) || 'null'); } catch (_) { saved = null; }
     if (launch && !saved) saved = { step: 0 };

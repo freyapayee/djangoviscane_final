@@ -1570,7 +1570,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=9">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=4">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard">
     <div class="dashboard-bg"></div>
@@ -1600,6 +1600,10 @@
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
                 </div>
+                <button class="btn light tutorial-launch" type="button" data-start-farmer-tour>
+                    <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
+                    <span>{{ farmer_text('Tutorial') }}</span>
+                </button>
                 <a class="btn light" href="/farmer/settings">
                     <ion-icon name="person-circle-outline"></ion-icon>
                     {{ farmer_text('Settings') }}
@@ -2834,7 +2838,7 @@
     <script src="{{ url_for('static', filename='themed_select.js') }}?v=2"></script>
     <script src="{{ url_for('static', filename='scan_section_pagination.js') }}?v=1"></script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
-    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=3"></script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=4"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
