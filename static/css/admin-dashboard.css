@@ -258,7 +258,7 @@ body.ds-app.vis-management-dashboard:is(.vis-superadmin-overview, .vis-superadmi
 .superadmin-governance-filters > label:first-child { flex: 1 1 auto; }
 .superadmin-governance-filters label { display: block; position: relative; min-width: 0; }
 .superadmin-governance-filters input, .superadmin-governance-filters select { height: 42px; min-height: 42px; border: 1px solid #d7e5da; border-radius: 9px; background: #fff; color: #30483b; font: inherit; font-size: 12px; }
-.superadmin-governance-filters input { width: 100%; padding: 0 12px 0 36px; }
+.superadmin-governance-filters .superadmin-governance-search input { width: 100%; padding: 0 12px 0 48px !important; }
 .superadmin-governance-filters select { width: 230px; min-width: 230px; padding: 0 30px 0 12px; }
 .superadmin-governance-search > ion-icon { position: absolute; top: 50%; left: 12px; z-index: 1; color: #788b80; font-size: 17px; transform: translateY(-50%); pointer-events: none; }
 .superadmin-governance-filters .btn { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; height: 42px; white-space: nowrap; }
