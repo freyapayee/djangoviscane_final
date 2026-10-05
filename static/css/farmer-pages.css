@@ -292,6 +292,29 @@ body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-
     body.ds-app.farmer_agronomic_logs .history-results { grid-template-columns: minmax(0, 1fr); }
     body.ds-app.farmer_agronomic_logs .history-recommendations li { flex-wrap: wrap; }
     body.ds-app.farmer_agronomic_logs .history-recommendations .tag { margin-left: 44px; }
+    /* Keep the badge from stealing width from recommendation text. */
+    body.ds-app.farmer_agronomic_logs .history-recommendations li {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 10px;
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+    body.ds-app.farmer_agronomic_logs .history-recommendation-copy {
+        grid-column: 2;
+        min-width: 0;
+        width: 100%;
+    }
+    body.ds-app.farmer_agronomic_logs .history-recommendation-copy strong,
+    body.ds-app.farmer_agronomic_logs .history-recommendation-copy p {
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+    body.ds-app.farmer_agronomic_logs .history-recommendations .tag {
+        grid-column: 2;
+        justify-self: start;
+        margin-left: 0;
+    }
     body.ds-app.vis-farmer-page .list-row { display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 10px; padding: 16px 12px; }
     body.ds-app.vis-farmer-page .list-badge { width: 36px; height: 36px; }
     body.ds-app.vis-farmer-page .list-row > .tag { grid-column: 2; justify-self: start; }
