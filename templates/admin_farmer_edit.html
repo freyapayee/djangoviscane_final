@@ -57,7 +57,7 @@
             <div class="stat-label">Email</div>
             <input class="stat-input" type="email" name="email" value="{{ user.email }}" required>
             <div class="stat-label">Phone</div>
-            <input class="stat-input" type="text" name="phone" value="{{ user.phone }}" required>
+            <input class="stat-input" type="tel" name="phone" value="{{ user.phone }}" autocomplete="tel" inputmode="numeric" minlength="11" maxlength="11" pattern="[0-9]{11}" title="Phone number must be exactly 11 digits." required>
             <div class="stat-label">Province</div>
             <input class="stat-input" type="text" name="province" value="{{ user.province }}">
             <div class="stat-label">Municipality</div>

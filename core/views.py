@@ -801,6 +801,10 @@ def admin_farmers(request):
             password = request.POST.get("password", "").strip()
             if not fullname or not email or not phone or not password:
                 return redirect("admin_farmers", error="Please complete all required fields.", open_create="1")
+            if len(phone) != 11 or not phone.isdigit():
+                return redirect("admin_farmers", error="Phone number must be exactly 11 digits.", open_create="1")
+            if len(password) < 8:
+                return redirect("admin_farmers", error="Password must be at least 8 characters.", open_create="1")
             if User.objects.filter(email=email).exists():
                 return redirect("admin_farmers", error="Email already exists.", open_create="1")
             from django.contrib.auth.hashers import make_password
@@ -813,7 +817,7 @@ def admin_farmers(request):
             if user:
                 from django.contrib.auth.hashers import make_password
 
-                temp_password = "12345"
+                temp_password = f"VISCANE-{secrets.token_urlsafe(6)}"
                 user.password = make_password(temp_password)
                 user.save(update_fields=["password"])
                 log_audit(f"Farmer credentials reset: {user.fullname}", user_id=current.id if current else None)
@@ -887,6 +891,8 @@ def admin_farmer_edit(request, user_id):
         barangay = request.POST.get("barangay", "").strip()
         if not fullname or not email or not phone:
             return redirect("admin_farmer_edit", user_id=user.id, error="Please complete all required fields.")
+        if len(phone) != 11 or not phone.isdigit():
+            return redirect("admin_farmer_edit", user_id=user.id, error="Phone number must be exactly 11 digits.")
         if User.objects.filter(email=email).exclude(pk=user.id).exists():
             return redirect("admin_farmer_edit", user_id=user.id, error="Email already exists.")
         user.fullname = fullname
@@ -1471,6 +1477,10 @@ def auth(request):
             barangay = request.POST.get("barangay", "").strip()
             if not fullname or not email or not phone or not password:
                 return render_template(request, "auth.html", {"mode": mode, "error": "Please complete all required fields."})
+            if len(phone) != 11 or not phone.isdigit():
+                return render_template(request, "auth.html", {"mode": mode, "error": "Phone number must be exactly 11 digits."})
+            if len(password) < 8:
+                return render_template(request, "auth.html", {"mode": mode, "error": "Password must be at least 8 characters."})
             if password != confirm:
                 return render_template(request, "auth.html", {"mode": mode, "error": "Passwords do not match."})
             if User.objects.filter(email=email).exists():
