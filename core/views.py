@@ -1094,6 +1094,28 @@ def superadmin_variety_analytics(request):
     return render_template(request, "variety_analytics.html", context)
 
 
+def _variety_analytics_json(request):
+    context = _variety_analytics_context()
+    return JsonResponse({
+        "variety": context["variety_chart"],
+        "maturity": context["maturity_chart"],
+        "variety_rows": context["variety_rows"],
+        "maturity_rows": context["maturity_rows"],
+        "total_predictions": context["total_predictions"],
+        "updated_at": timezone.localtime(timezone.now()).strftime("%b %d, %Y %I:%M:%S %p"),
+    })
+
+
+@login_required
+def admin_variety_analytics_data(request):
+    return _variety_analytics_json(request)
+
+
+@role_required("superadmin")
+def superadmin_variety_analytics_data(request):
+    return _variety_analytics_json(request)
+
+
 @login_required
 def admin_reports(request):
     logs = AgronomicLog.objects.select_related("user").order_by("-created_at")

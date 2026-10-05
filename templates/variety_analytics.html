@@ -37,9 +37,9 @@
     </header>
     <main class="dashboard-container fade-in">
         <section class="stats-grid">
-            <div class="stat-card accent-green"><div class="stat-label">Prediction Results</div><div class="stat-value">{{ total_predictions }}</div><div class="stat-meta">Completed agronomic calculations</div></div>
-            <div class="stat-card accent-blue"><div class="stat-label">Varieties Compared</div><div class="stat-value">{{ variety_rows|length }}</div><div class="stat-meta">Unique varieties with results</div></div>
-            <div class="stat-card accent-purple"><div class="stat-label">Maturity Groups</div><div class="stat-value">{{ maturity_rows|length }}</div><div class="stat-meta">Scan maturity classifications</div></div>
+            <div class="stat-card accent-green"><div class="stat-label">Prediction Results</div><div class="stat-value" data-analytics-total>{{ total_predictions }}</div><div class="stat-meta">Completed agronomic calculations</div></div>
+            <div class="stat-card accent-blue"><div class="stat-label">Varieties Compared</div><div class="stat-value" data-analytics-varieties>{{ variety_rows|length }}</div><div class="stat-meta">Unique varieties with results</div></div>
+            <div class="stat-card accent-purple"><div class="stat-label">Maturity Groups</div><div class="stat-value" data-analytics-maturity>{{ maturity_rows|length }}</div><div class="stat-meta">Scan maturity classifications</div></div>
         </section>
 
         <section class="yield-chart-grid">
@@ -57,7 +57,7 @@
 
         <section class="panel">
             <div class="panel-header"><div><h2 class="panel-title">Comparison Details</h2><p class="panel-subtitle">Exact averages and totals used in the charts.</p></div><ion-icon name="table-outline"></ion-icon></div>
-            <div class="yield-table-wrap"><table class="yield-table"><thead><tr><th>Group</th><th>Results</th><th>Avg LKG/TC</th><th>Avg LKG/HA</th><th>Total LKG</th></tr></thead><tbody>
+            <div class="yield-table-wrap"><table class="yield-table"><thead><tr><th>Group</th><th>Results</th><th>Avg LKG/TC</th><th>Avg LKG/HA</th><th>Total LKG</th></tr></thead><tbody data-analytics-table>
                 {% for row in variety_rows %}<tr><td>{{ row.label }}</td><td>{{ row.predictions }}</td><td>{{ '%.2f'|format(row.avg_lkg_tc) }}</td><td>{{ '%.2f'|format(row.avg_lkg_ha) }}</td><td>{{ '%.2f'|format(row.total_lkg) }}</td></tr>{% else %}<tr><td colspan="5">No results available.</td></tr>{% endfor %}
             </tbody></table></div>
         </section>
@@ -83,8 +83,33 @@
             { label: 'Avg LKG/HA', data: data.lkg_ha, backgroundColor: '#3985c5', borderColor: '#3985c5', borderWidth: 2, tension: .35 },
             { label: 'Total LKG', data: data.total_lkg, backgroundColor: 'rgba(134, 88, 184, .72)', borderColor: '#8658b8', borderWidth: 2, tension: .35, yAxisID: 'y1' }
         ].map(dataset => type === 'line' ? { ...dataset, fill: false, pointRadius: 4, pointHoverRadius: 6 } : dataset);
-        if (document.getElementById('variety-chart')) new Chart(document.getElementById('variety-chart'), { type: 'bar', data: { labels: varietyData.labels, datasets: datasets(varietyData, 'bar') }, options: chartOptions() });
-        if (document.getElementById('maturity-chart')) new Chart(document.getElementById('maturity-chart'), { type: 'line', data: { labels: maturityData.labels, datasets: datasets(maturityData, 'line') }, options: chartOptions() });
+        let varietyChart = document.getElementById('variety-chart') ? new Chart(document.getElementById('variety-chart'), { type: 'bar', data: { labels: varietyData.labels, datasets: datasets(varietyData, 'bar') }, options: chartOptions() }) : null;
+        let maturityChart = document.getElementById('maturity-chart') ? new Chart(document.getElementById('maturity-chart'), { type: 'line', data: { labels: maturityData.labels, datasets: datasets(maturityData, 'line') }, options: chartOptions() }) : null;
+
+        const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+        function updateTable(rows) {
+            const table = document.querySelector('[data-analytics-table]');
+            if (!table) return;
+            table.innerHTML = rows.length ? rows.map(row => `<tr><td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.predictions)}</td><td>${Number(row.avg_lkg_tc).toFixed(2)}</td><td>${Number(row.avg_lkg_ha).toFixed(2)}</td><td>${Number(row.total_lkg).toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="5">No results available.</td></tr>';
+        }
+
+        async function refreshAnalytics() {
+            try {
+                const response = await fetch('{{ nav_base }}/api/variety-analytics?_=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (varietyChart) { varietyChart.data.labels = data.variety.labels; varietyChart.data.datasets = datasets(data.variety, 'bar'); varietyChart.update(); }
+                if (maturityChart) { maturityChart.data.labels = data.maturity.labels; maturityChart.data.datasets = datasets(data.maturity, 'line'); maturityChart.update(); }
+                document.querySelector('[data-analytics-total]').textContent = data.total_predictions;
+                document.querySelector('[data-analytics-varieties]').textContent = data.variety_rows.length;
+                document.querySelector('[data-analytics-maturity]').textContent = data.maturity_rows.length;
+                updateTable(data.variety_rows);
+            } catch (error) {
+                console.warn('Yield analytics refresh failed.', error);
+            }
+        }
+
+        setInterval(refreshAnalytics, 15000);
     </script>
 </body>
 </html>
