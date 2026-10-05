@@ -230,7 +230,7 @@ body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(4) { min-width
 body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(5) { min-width: 105px; }
 body.ds-app.vis-admin-farmers .farmer-accounts-table th:nth-child(6) { min-width: 285px; }
 .farmer-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.farmer-avatar { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; background: var(--farmers-green-soft); color: var(--farmers-green-dark); font-size: 14px; font-weight: 800; }
+.farmer-avatar { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex: 0 0 38px; box-sizing: border-box; padding: 0; border-radius: 11px; background: var(--farmers-green-soft); color: var(--farmers-green-dark); font-size: 14px; font-weight: 800; line-height: 1; text-align: center; }
 .farmer-identity div { min-width: 0; }
 .farmer-identity strong, .farmer-identity span { display: block; }
 .farmer-identity strong { margin-bottom: 2px; color: var(--farmers-ink); font-size: 13px; }
