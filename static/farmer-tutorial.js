@@ -30,9 +30,9 @@
 
     const modal = launch || document.body.appendChild(document.createElement('div'));
     modal.id = 'farmer-tutorial';
-    modal.className = 'farmer-tutorial-backdrop is-guided-tour';
+    modal.className = 'farmer-tutorial-inline';
     modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
+    modal.removeAttribute('aria-modal');
     modal.setAttribute('aria-labelledby', 'farmer-tour-title');
     modal.innerHTML = `
         <div class="farmer-tutorial-dialog farmer-tour-card">
@@ -50,7 +50,11 @@
         </div>`;
 
     target.classList.add('farmer-tour-target');
-    target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    // Keep the guide in the document flow, immediately below the feature it explains.
+    // Using the containing section avoids placing a large card inside a button row.
+    const anchor = target.closest('.hero-panel, .scanner-screen, main > section, .settings-layout') || target;
+    anchor.insertAdjacentElement('afterend', modal);
+    modal.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     const finish = () => { sessionStorage.removeItem(stateKey); target.classList.remove('farmer-tour-target'); document.body.classList.remove('has-farmer-tour'); modal.remove(); };
     const navigate = (index) => { sessionStorage.setItem(stateKey, JSON.stringify({ step: index })); window.location.href = steps[index].path; };
     modal.querySelector('#farmer-tutorial-close').addEventListener('click', finish);
