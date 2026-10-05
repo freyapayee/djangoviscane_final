@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=2">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_recommendations">
 
@@ -40,7 +41,7 @@
     </header>
 
     <main class="dashboard-container fade-in farmer-mobile-shell">
-        <section class="panel">
+        <section class="panel" data-tour-target="recommendations">
             <div class="panel-header">
                 <div>
                     <h3 class="panel-title">{{ farmer_text('Action Recommendations') }}</h3>
@@ -110,6 +111,7 @@
         </a>
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=2"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>

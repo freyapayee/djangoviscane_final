@@ -8,6 +8,7 @@
     <title>VISCANE | New Scan</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/scan-page.css') }}?v=6">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=2">
 </head>
 <body class="scanner-layout ds-app vis-scan-page">
     <header class="vis-scan-header">
@@ -51,7 +52,7 @@
         <div class="scanner-actions">
             <div id="scanner-message" class="scanner-message" role="status"></div>
             <div class="vis-upload-panel">
-                <button type="button" class="vis-upload-button" id="upload-image-btn"><ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Choose photo') }}</button>
+                <button type="button" class="vis-upload-button" id="upload-image-btn" data-tour-target="scan-upload"><ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Choose photo') }}</button>
                 <button type="button" class="vis-upload-button is-secondary" id="take-photo-btn"><ion-icon name="camera-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Use camera') }}</button>
                 <button type="button" class="capture-btn" id="capture-btn" disabled hidden><ion-icon name="camera-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Take photo') }}</span></button>
                 <input id="scan-native-camera" type="file" accept="image/*" capture="environment" aria-label="Take a sugarcane photo" hidden>
@@ -618,6 +619,7 @@
             });
         })();
     </script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=2"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>

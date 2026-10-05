@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=8">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=2">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_settings">
 
@@ -40,7 +41,7 @@
     </header>
 
     <main class="dashboard-container farmer-mobile-shell">
-        <div class="settings-layout">
+        <div class="settings-layout" data-tour-target="profile-settings">
             <section class="profile-hero-card" aria-labelledby="profile-farmer-name">
                 <div class="profile-portrait">
                     <img data-profile-photo-avatar src="{{ url_for('farmer_profile_photo', user_id=user.id) ~ '?v=' ~ user.profile_photo_path if photo_available else url_for('static', filename='images/default-farmer-avatar.svg') }}" alt="{{ 'Profile photo of ' ~ user.fullname if photo_available else 'Default farmer profile picture' }}">
@@ -229,6 +230,7 @@
     </nav>
     <script src="{{ url_for('static', filename='themed_select.js') }}?v=2"></script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=2"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-3" defer></script>
 </body>
