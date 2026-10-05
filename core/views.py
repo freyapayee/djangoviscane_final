@@ -191,6 +191,7 @@ def admin_access(request):
 @farmer_login_required
 def homepage(request):
     user = current_user(request)
+    show_farmer_tutorial = request.session.pop("show_farmer_tutorial", False)
     scan_section = request.GET.get("scan_section")
     sample_plot_names = ("Plot #1 Sample", "Plot #2 Sample", "Plot #4 Sample")
     scans_base_query = Scan.objects.filter(user_id=user.id).exclude(plot_name__in=sample_plot_names)
@@ -273,6 +274,7 @@ def homepage(request):
             "picture_removed": picture_removed,
             "scan_result_variety": scan_variety,
             "scan_result_maturity_status": scan_maturity_status,
+            "show_farmer_tutorial": show_farmer_tutorial,
         },
     )
 
@@ -1696,6 +1698,7 @@ def auth(request):
             request.session.cycle_key()
             request.session.pop("admin_id", None)
             request.session["user_id"] = new_user.id
+            request.session["show_farmer_tutorial"] = True
             return redirect("auth_register_success")
         email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")

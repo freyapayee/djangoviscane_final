@@ -1,0 +1,67 @@
+.farmer-tutorial-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(16, 38, 25, .52);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.farmer-tutorial-dialog {
+    position: relative;
+    width: min(480px, 100%);
+    padding: 32px;
+    border: 1px solid #dcebe0;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(15, 47, 27, .25);
+    color: #173b29;
+}
+
+.farmer-tutorial-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f7f2;
+    color: #527061;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.farmer-tutorial-close:hover,
+.farmer-tutorial-close:focus-visible { background: #e3f2e6; color: #167b38; }
+.farmer-tutorial-close:focus-visible { outline: 2px solid #078735; outline-offset: 2px; }
+
+.farmer-tutorial-progress { display: flex; gap: 6px; margin-bottom: 24px; }
+.farmer-tutorial-progress span { width: 28px; height: 5px; border-radius: 99px; background: #dce9df; }
+.farmer-tutorial-progress span.is-active { background: #078735; }
+.farmer-tutorial-icon { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: 16px; border-radius: 17px; background: #e6f5e9; color: #078735; font-size: 30px; }
+.farmer-tutorial-kicker { margin: 0 0 6px; color: #29804a; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.farmer-tutorial-dialog h2 { margin: 0; color: #173b29; font-size: clamp(24px, 5vw, 32px); line-height: 1.15; letter-spacing: -.03em; }
+.farmer-tutorial-dialog > p:not(.farmer-tutorial-kicker) { margin: 10px 0 0; color: #62766a; font-size: 15px; line-height: 1.55; }
+.farmer-tutorial-steps { min-height: 94px; margin-top: 20px; padding: 16px; border-radius: 14px; background: #f5faf6; }
+.farmer-tutorial-step strong, .farmer-tutorial-step span { display: block; }
+.farmer-tutorial-step strong { color: #234d32; font-size: 16px; line-height: 1.35; }
+.farmer-tutorial-step span { margin-top: 6px; color: #607466; font-size: 14px; line-height: 1.5; }
+.farmer-tutorial-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.farmer-tutorial-actions .btn { min-height: 44px; padding: 9px 16px; border-radius: 11px; }
+.farmer-tutorial-back { margin-right: auto; }
+
+@media (max-width: 600px) {
+    .farmer-tutorial-backdrop { align-items: end; padding: 12px; }
+    .farmer-tutorial-dialog { padding: 26px 20px 20px; border-radius: 22px; }
+    .farmer-tutorial-steps { min-height: 110px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .farmer-tutorial-backdrop, .farmer-tutorial-dialog { scroll-behavior: auto; }
+}

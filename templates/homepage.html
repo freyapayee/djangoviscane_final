@@ -1570,9 +1570,48 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=9">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=1">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard">
     <div class="dashboard-bg"></div>
+    {% if show_farmer_tutorial %}
+        <div class="farmer-tutorial-backdrop" id="farmer-tutorial" role="dialog" aria-modal="true" aria-labelledby="farmer-tutorial-title" aria-describedby="farmer-tutorial-description">
+            <div class="farmer-tutorial-dialog">
+                <button class="farmer-tutorial-close" type="button" id="farmer-tutorial-close" aria-label="{{ farmer_text('Skip tutorial') }}">
+                    <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+                </button>
+                <div class="farmer-tutorial-progress" aria-hidden="true">
+                    <span class="is-active"></span><span></span><span></span><span></span>
+                </div>
+                <div class="farmer-tutorial-icon"><ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon></div>
+                <p class="farmer-tutorial-kicker">{{ farmer_text('Farmer quick start') }}</p>
+                <h2 id="farmer-tutorial-title">{{ farmer_text('Welcome to VISCANE') }}</h2>
+                <p id="farmer-tutorial-description">{{ farmer_text('This quick guide will show you how to get the most from your farmer dashboard.') }}</p>
+                <div class="farmer-tutorial-steps">
+                    <section class="farmer-tutorial-step is-active" data-step="0">
+                        <strong>{{ farmer_text('Your farm assistant is ready.') }}</strong>
+                        <span>{{ farmer_text('Use the dashboard to scan sugarcane, review results, and plan your next field action.') }}</span>
+                    </section>
+                    <section class="farmer-tutorial-step" data-step="1" hidden>
+                        <strong>{{ farmer_text('Scan or upload a photo.') }}</strong>
+                        <span>{{ farmer_text('Choose Open Camera for a live scan or Upload Photo to use an image from your phone.') }}</span>
+                    </section>
+                    <section class="farmer-tutorial-step" data-step="2" hidden>
+                        <strong>{{ farmer_text('Review the AI assessment.') }}</strong>
+                        <span>{{ farmer_text('Check the maturity, quality, and yield estimates before saving your assessment.') }}</span>
+                    </section>
+                    <section class="farmer-tutorial-step" data-step="3" hidden>
+                        <strong>{{ farmer_text('Follow your recommendations.') }}</strong>
+                        <span>{{ farmer_text('Use Recommendations for next best actions and Input Logs to review your saved calculations.') }}</span>
+                    </section>
+                </div>
+                <div class="farmer-tutorial-actions">
+                    <button class="btn ghost farmer-tutorial-back" type="button" id="farmer-tutorial-back" hidden>{{ farmer_text('Back') }}</button>
+                    <button class="btn primary farmer-tutorial-next" type="button" id="farmer-tutorial-next">{{ farmer_text('Next') }}</button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
     {% if picture_removed %}
         <div class="scan-feedback-toast" id="scan-feedback-toast" role="status" aria-live="polite">
             <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
@@ -2832,6 +2871,7 @@
     <script src="{{ url_for('static', filename='themed_select.js') }}?v=2"></script>
     <script src="{{ url_for('static', filename='scan_section_pagination.js') }}?v=1"></script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=1"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
 </body>
