@@ -262,7 +262,7 @@ body.ds-app.vis-management-dashboard:is(.vis-superadmin-overview, .vis-superadmi
 .superadmin-governance-search input { flex: 1 1 auto; width: auto !important; min-width: 0; height: 40px !important; min-height: 40px !important; padding: 0 0 0 8px !important; border: 0 !important; background: transparent !important; outline: 0; }
 .superadmin-governance-filters select { width: 230px; min-width: 230px; padding: 0 30px 0 12px; }
 .superadmin-governance-search-icon { display: grid; place-items: center; width: 22px; height: 22px; flex: 0 0 22px; color: #788b80; font-size: 17px; }
-.superadmin-governance-filters .btn { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; height: 42px; white-space: nowrap; }
+.superadmin-governance-filters > .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 230px; min-width: 230px; flex: 0 0 230px; min-height: 42px; height: 42px; padding: 0 12px; white-space: nowrap; }
 
 /* Keep admin accounts visible while collapsing only account registration. */
 body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-details {
