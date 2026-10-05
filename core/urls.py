@@ -22,6 +22,7 @@ urlpatterns = [
     path("admin/monitoring", views.admin_monitoring, name="admin_monitoring"),
     path("admin/models", views.admin_models, name="admin_models"),
     path("admin/reports", views.admin_reports, name="admin_reports"),
+    path("admin/variety-analytics", views.admin_variety_analytics, name="admin_variety_analytics"),
     path("admin/communications", views.admin_communications, name="admin_communications"),
     path("admin-login", views.admin_login, name="admin_login"),
     path("superadmin-login", views.superadmin_login, name="superadmin_login"),
@@ -45,6 +46,7 @@ urlpatterns = [
     path("scan/new", views.scan_new, name="scan_new"),
     path("superadmin/settings", views.superadmin_settings, name="superadmin_settings"),
     path("superadmin/reports", views.superadmin_reports, name="superadmin_reports"),
+    path("superadmin/variety-analytics", views.superadmin_variety_analytics, name="superadmin_variety_analytics"),
     path("superadmin/reports/download", views.superadmin_reports_download, name="superadmin_reports_download"),
     path("superadmin/audit", views.superadmin_audit, name="superadmin_audit"),
 ]

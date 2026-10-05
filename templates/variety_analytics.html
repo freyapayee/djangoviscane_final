@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <title>VISCANE | Yield Analytics</title>
+    <style>
+        .yield-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+        .yield-chart-card { min-width: 0; }
+        .yield-chart-wrap { position: relative; height: 340px; }
+        .yield-chart-empty { display: grid; place-items: center; height: 100%; color: #718278; font-size: 13px; }
+        .yield-legend-note { margin: 8px 0 0; color: #7b8b82; font-size: 11px; line-height: 1.45; }
+        .yield-table-wrap { overflow-x: auto; }
+        .yield-table { width: 100%; min-width: 720px; border-collapse: collapse; }
+        .yield-table th, .yield-table td { padding: 13px 14px; border-bottom: 1px solid #e7eee9; text-align: left; white-space: nowrap; }
+        .yield-table th { background: #f3f8f4; color: #547062; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; }
+        .yield-table td { color: #30483b; font-size: 12px; }
+        @media (max-width: 900px) { .yield-chart-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .yield-chart-wrap { height: 280px; } }
+    </style>
+</head>
+<body class="admin-layout {% if nav_base == '/superadmin' %}superadmin-layout{% endif %} has-vis-sidebar ds-app vis-management-dashboard vis-yield-analytics">
+    {% if nav_base == '/superadmin' %}{% include 'components/superadmin_navigation.html' %}{% else %}{% include 'components/admin_navigation.html' %}{% endif %}
+    <div class="dashboard-bg"></div>
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon"><img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;"></div>
+                <div><p class="brand-title">Yield Analytics</p><p class="brand-subtitle">Compare LKG/TC, LKG/HA, and total LKG by variety and maturity.</p></div>
+            </div>
+            <div class="header-actions"><a class="btn light" href="{{ nav_base }}"><ion-icon name="arrow-back-outline"></ion-icon>Back to Overview</a></div>
+        </div>
+    </header>
+    <main class="dashboard-container fade-in">
+        <section class="stats-grid">
+            <div class="stat-card accent-green"><div class="stat-label">Prediction Results</div><div class="stat-value">{{ total_predictions }}</div><div class="stat-meta">Completed agronomic calculations</div></div>
+            <div class="stat-card accent-blue"><div class="stat-label">Varieties Compared</div><div class="stat-value">{{ variety_rows|length }}</div><div class="stat-meta">Unique varieties with results</div></div>
+            <div class="stat-card accent-purple"><div class="stat-label">Maturity Groups</div><div class="stat-value">{{ maturity_rows|length }}</div><div class="stat-meta">Scan maturity classifications</div></div>
+        </section>
+
+        <section class="yield-chart-grid">
+            <article class="panel yield-chart-card">
+                <div class="panel-header"><div><h2 class="panel-title">Results by Variety</h2><p class="panel-subtitle">Average LKG/TC and LKG/HA with total LKG.</p></div><ion-icon name="bar-chart-outline"></ion-icon></div>
+                <div class="yield-chart-wrap">{% if variety_rows %}<canvas id="variety-chart" aria-label="Yield results by variety"></canvas>{% else %}<div class="yield-chart-empty">No agronomic results available yet.</div>{% endif %}</div>
+                <p class="yield-legend-note">The total LKG series uses the right-hand axis so the average metrics remain readable.</p>
+            </article>
+            <article class="panel yield-chart-card">
+                <div class="panel-header"><div><h2 class="panel-title">Results by Maturity</h2><p class="panel-subtitle">Comparison across scan maturity classifications.</p></div><ion-icon name="analytics-outline"></ion-icon></div>
+                <div class="yield-chart-wrap">{% if maturity_rows %}<canvas id="maturity-chart" aria-label="Yield results by maturity"></canvas>{% else %}<div class="yield-chart-empty">No maturity-linked results available yet.</div>{% endif %}</div>
+                <p class="yield-legend-note">Values are grouped from scan maturity results linked to each agronomic calculation.</p>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header"><div><h2 class="panel-title">Comparison Details</h2><p class="panel-subtitle">Exact averages and totals used in the charts.</p></div><ion-icon name="table-outline"></ion-icon></div>
+            <div class="yield-table-wrap"><table class="yield-table"><thead><tr><th>Group</th><th>Results</th><th>Avg LKG/TC</th><th>Avg LKG/HA</th><th>Total LKG</th></tr></thead><tbody>
+                {% for row in variety_rows %}<tr><td>{{ row.label }}</td><td>{{ row.predictions }}</td><td>{{ '%.2f'|format(row.avg_lkg_tc) }}</td><td>{{ '%.2f'|format(row.avg_lkg_ha) }}</td><td>{{ '%.2f'|format(row.total_lkg) }}</td></tr>{% else %}<tr><td colspan="5">No results available.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+        <div class="footer-link">VISCANE | Yield Analytics</div>
+    </main>
+    {% include 'hiligaynon_runtime.html' %}
+    <script>
+        const varietyData = {{ variety_chart_json|safe }};
+        const maturityData = {{ maturity_chart_json|safe }};
+        const chartOptions = (stacked = false) => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { labels: { color: '#536b5d', usePointStyle: true, boxWidth: 8 } } },
+            scales: {
+                x: { stacked, ticks: { color: '#718278' }, grid: { display: false } },
+                y: { beginAtZero: true, ticks: { color: '#718278' }, grid: { color: 'rgba(72, 112, 84, .12)' } },
+                y1: { beginAtZero: true, position: 'right', display: true, grid: { drawOnChartArea: false }, ticks: { color: '#718278' } }
+            }
+        });
+        const datasets = (data, type) => [
+            { label: 'Avg LKG/TC', data: data.lkg_tc, backgroundColor: '#2d9958', borderColor: '#2d9958', borderWidth: 2, tension: .35 },
+            { label: 'Avg LKG/HA', data: data.lkg_ha, backgroundColor: '#3985c5', borderColor: '#3985c5', borderWidth: 2, tension: .35 },
+            { label: 'Total LKG', data: data.total_lkg, backgroundColor: 'rgba(134, 88, 184, .72)', borderColor: '#8658b8', borderWidth: 2, tension: .35, yAxisID: 'y1' }
+        ].map(dataset => type === 'line' ? { ...dataset, fill: false, pointRadius: 4, pointHoverRadius: 6 } : dataset);
+        if (document.getElementById('variety-chart')) new Chart(document.getElementById('variety-chart'), { type: 'bar', data: { labels: varietyData.labels, datasets: datasets(varietyData, 'bar') }, options: chartOptions() });
+        if (document.getElementById('maturity-chart')) new Chart(document.getElementById('maturity-chart'), { type: 'line', data: { labels: maturityData.labels, datasets: datasets(maturityData, 'line') }, options: chartOptions() });
+    </script>
+</body>
+</html>

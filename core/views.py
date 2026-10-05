@@ -74,6 +74,15 @@ REGISTRATION_BARANGAYS = [
 ]
 
 
+def week_over_week_label(current_count, previous_count):
+    if previous_count == 0:
+        percentage = 0 if current_count == 0 else 100
+    else:
+        percentage = round(((current_count - previous_count) / previous_count) * 100)
+    sign = "+" if percentage > 0 else ""
+    return f"{sign}{percentage}% from last week"
+
+
 def supported_cv_confidence(cv_context):
     try:
         confidence = float((cv_context or {}).get("confidence"))
@@ -751,7 +760,13 @@ def admin_portal(request):
         user_status = "all"
     total_users = User.objects.filter(is_archived=False, is_active=True).count()
     total_scans = Scan.objects.count()
-    seven_days_ago = timezone.now() - timedelta(days=7)
+    now = timezone.now()
+    seven_days_ago = now - timedelta(days=7)
+    fourteen_days_ago = now - timedelta(days=14)
+    users_this_week = User.objects.filter(created_at__gte=seven_days_ago, created_at__lt=now).count()
+    users_last_week = User.objects.filter(created_at__gte=fourteen_days_ago, created_at__lt=seven_days_ago).count()
+    scans_this_week = Scan.objects.filter(created_at__gte=seven_days_ago, created_at__lt=now).count()
+    scans_last_week = Scan.objects.filter(created_at__gte=fourteen_days_ago, created_at__lt=seven_days_ago).count()
     active_user_ids = User.objects.filter(is_archived=False, is_active=True).values_list("id", flat=True)
     active_farmers = Scan.objects.filter(created_at__gte=seven_days_ago, user_id__in=active_user_ids).values("user_id").distinct().count()
     pending_scans = Scan.objects.filter(status="pending", user_id__in=active_user_ids).count()
@@ -770,8 +785,8 @@ def admin_portal(request):
     storage_utilization = 68
     stats = {"active_users": total_users, "total_scans": total_scans, "active_farmers": active_farmers, "pending_scans": pending_scans, "storage_utilization": storage_utilization}
     metric_trends = {
-        "active_users": "+12% from last week" if total_users else "Waiting for first users",
-        "total_scans": "+18% from last week" if total_scans else "Waiting for first scan",
+        "active_users": week_over_week_label(users_this_week, users_last_week) if total_users else "Waiting for first users",
+        "total_scans": week_over_week_label(scans_this_week, scans_last_week) if total_scans else "Waiting for first scan",
         "active_farmers": "Last 7 days",
         "pending_scans": "Needs review" if pending_scans else "All clear",
         "storage_utilization": "Steady vs last week" if storage_utilization < 70 else "+6% from last week",
@@ -983,6 +998,100 @@ def admin_models(request):
             "current_admin": admin,
         },
     )
+
+
+def _variety_analytics_context():
+    logs = AgronomicLog.objects.select_related("user", "scan__cv_upload").filter(user__is_archived=False).order_by("created_at")
+    maturity_order = ["Not Mature", "Mature", "Over Mature", "Not provided"]
+    groups = {"variety": {}, "maturity": {label: {} for label in maturity_order}}
+
+    def maturity_label(log):
+        status = normalize_cv_maturity_status((log.scan.cv_upload.maturity_status if log.scan and log.scan.cv_upload else "") or "")
+        if status == "NOT_MATURE":
+            return "Not Mature"
+        if status == "MATURE":
+            return "Mature"
+        if status == "OVER_MATURE":
+            return "Over Mature"
+        percentage = log.scan.maturity_pct if log.scan else None
+        if percentage is None:
+            return "Not provided"
+        if percentage < 75:
+            return "Not Mature"
+        if percentage <= 90:
+            return "Mature"
+        return "Over Mature"
+
+    def add_metric(group, log):
+        group.setdefault("count", 0)
+        group["count"] += 1
+        for field, key in (("predicted_lkg_tc", "lkg_tc"), ("predicted_tc_ha", "lkg_ha"), ("predicted_lkg", "total_lkg")):
+            value = getattr(log, field)
+            if value is not None:
+                group[f"{key}_sum"] = group.get(f"{key}_sum", 0.0) + float(value)
+                group[f"{key}_count"] = group.get(f"{key}_count", 0) + 1
+
+    for log in logs:
+        variety = (log.variety or "Unknown variety").strip() or "Unknown variety"
+        maturity = maturity_label(log)
+        add_metric(groups["variety"].setdefault(variety, {}), log)
+        add_metric(groups["maturity"].setdefault(maturity, {}), log)
+
+    def finalize(group):
+        return {
+            "predictions": group.get("count", 0),
+            "avg_lkg_tc": round(group.get("lkg_tc_sum", 0.0) / group["lkg_tc_count"], 2) if group.get("lkg_tc_count") else 0,
+            "avg_lkg_ha": round(group.get("lkg_ha_sum", 0.0) / group["lkg_ha_count"], 2) if group.get("lkg_ha_count") else 0,
+            "total_lkg": round(group.get("total_lkg_sum", 0.0), 2),
+        }
+
+    variety_rows = [{"label": label, **finalize(group)} for label, group in sorted(groups["variety"].items())]
+    maturity_rows = [{"label": label, **finalize(groups["maturity"].get(label, {}))} for label in maturity_order if groups["maturity"].get(label, {}).get("count")]
+    return {
+        "variety_rows": variety_rows,
+        "maturity_rows": maturity_rows,
+        "variety_chart": {
+            "labels": [row["label"] for row in variety_rows],
+            "lkg_tc": [row["avg_lkg_tc"] for row in variety_rows],
+            "lkg_ha": [row["avg_lkg_ha"] for row in variety_rows],
+            "total_lkg": [row["total_lkg"] for row in variety_rows],
+        },
+        "maturity_chart": {
+            "labels": [row["label"] for row in maturity_rows],
+            "lkg_tc": [row["avg_lkg_tc"] for row in maturity_rows],
+            "lkg_ha": [row["avg_lkg_ha"] for row in maturity_rows],
+            "total_lkg": [row["total_lkg"] for row in maturity_rows],
+        },
+        "variety_chart_json": json.dumps({
+            "labels": [row["label"] for row in variety_rows],
+            "lkg_tc": [row["avg_lkg_tc"] for row in variety_rows],
+            "lkg_ha": [row["avg_lkg_ha"] for row in variety_rows],
+            "total_lkg": [row["total_lkg"] for row in variety_rows],
+        }),
+        "maturity_chart_json": json.dumps({
+            "labels": [row["label"] for row in maturity_rows],
+            "lkg_tc": [row["avg_lkg_tc"] for row in maturity_rows],
+            "lkg_ha": [row["avg_lkg_ha"] for row in maturity_rows],
+            "total_lkg": [row["total_lkg"] for row in maturity_rows],
+        }),
+        "total_predictions": sum(row["predictions"] for row in variety_rows),
+    }
+
+
+@login_required
+def admin_variety_analytics(request):
+    context = _variety_analytics_context()
+    context["current_admin"] = current_admin(request)
+    context["nav_base"] = "/admin"
+    return render_template(request, "variety_analytics.html", context)
+
+
+@role_required("superadmin")
+def superadmin_variety_analytics(request):
+    context = _variety_analytics_context()
+    context["current_admin"] = current_admin(request)
+    context["nav_base"] = "/superadmin"
+    return render_template(request, "variety_analytics.html", context)
 
 
 @login_required
