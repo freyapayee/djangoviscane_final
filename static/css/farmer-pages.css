@@ -264,6 +264,21 @@ body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-
     body.ds-app.farmer_recommendations .recommendation-area-logo { flex-basis: 44px; width: 44px; height: 44px; font-size: 23px; }
     body.ds-app.farmer_recommendations .recommendation-area-title { font-size: 21px; }
     body.ds-app.farmer_recommendations .recommendation-item h5 { font-size: 16px; }
+    /* Give recommendation copy the full available line width on phones.
+       The status tag sits below the copy instead of narrowing every line. */
+    body.ds-app.farmer_recommendations .recommendation-item.list-row {
+        grid-template-columns: 36px minmax(0, 1fr);
+        align-items: start;
+    }
+    body.ds-app.farmer_recommendations .recommendation-item-copy {
+        grid-column: 2;
+        width: 100%;
+    }
+    body.ds-app.farmer_recommendations .recommendation-item > .tag {
+        grid-column: 2;
+        justify-self: start;
+        margin-top: 0;
+    }
     body.ds-app.farmer_recommendations .recommendation-history-link { padding: 12px; font-size: 13px; }
     body.ds-app.farmer_agronomic_logs .history-card { padding: 14px; border-radius: 15px; }
     body.ds-app.farmer_agronomic_logs .history-card-header { flex-wrap: wrap; gap: 10px; }
