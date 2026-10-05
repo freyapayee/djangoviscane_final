@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     path("", views.portal, name="portal"),
+    path("favicon.ico", views.favicon, name="favicon"),
     path("admin-access", views.admin_access, name="admin_access"),
     path("homepage", views.homepage, name="homepage"),
     path("farmer/recommendations", views.farmer_recommendations, name="farmer_recommendations"),

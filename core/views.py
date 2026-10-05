@@ -174,6 +174,16 @@ def portal(request):
     return render_template(request, "portal.html")
 
 
+@require_GET
+def favicon(request):
+    favicon_path = Path(settings.BASE_DIR) / "static" / "favicon.png"
+    if not favicon_path.is_file():
+        raise Http404("Favicon not found")
+    response = FileResponse(favicon_path.open("rb"), content_type="image/png")
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
 def admin_access(request):
     return render_template(request, "admin_access.html")
 
