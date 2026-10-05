@@ -1000,8 +1000,31 @@ def admin_models(request):
     )
 
 
-def _variety_analytics_context():
-    logs = AgronomicLog.objects.select_related("user", "scan__cv_upload").filter(user__is_archived=False).order_by("created_at")
+def _variety_analytics_context(request=None):
+    base_logs = AgronomicLog.objects.select_related("user", "scan__cv_upload").filter(user__is_archived=False).order_by("created_at")
+    first_log = base_logs.first()
+    analytics_years = list(range(2026, 2031))
+    try:
+        selected_year = int((request.GET.get("year") if request else "") or 2026)
+    except (TypeError, ValueError):
+        selected_year = 2026
+    if selected_year not in analytics_years:
+        selected_year = 2026
+    try:
+        selected_month = int((request.GET.get("month") if request else "") or 0)
+    except (TypeError, ValueError):
+        selected_month = 0
+    if selected_month not in range(0, 13):
+        selected_month = 0
+    first_scan_month_number = first_log.created_at.month if first_log else 1
+    month_start = first_scan_month_number if first_log and first_log.created_at.year == selected_year else 1
+    month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    month_options = [{"value": month, "label": month_names[month - 1]} for month in range(month_start, 13)]
+    if selected_month and selected_month < month_start:
+        selected_month = 0
+    logs = base_logs.filter(created_at__year=selected_year)
+    if selected_month:
+        logs = logs.filter(created_at__month=selected_month)
     maturity_order = ["Not Mature", "Mature", "Over Mature", "Not provided"]
     groups = {"variety": {}, "maturity": {label: {} for label in maturity_order}}
 
@@ -1075,12 +1098,18 @@ def _variety_analytics_context():
             "total_lkg": [row["total_lkg"] for row in maturity_rows],
         }),
         "total_predictions": sum(row["predictions"] for row in variety_rows),
+        "analytics_years": analytics_years,
+        "selected_year": selected_year,
+        "month_options": month_options,
+        "selected_month": selected_month,
+        "selected_month_label": month_names[selected_month - 1] if selected_month else "",
+        "first_scan_month": month_names[first_scan_month_number - 1] if first_log else "",
     }
 
 
 @login_required
 def admin_variety_analytics(request):
-    context = _variety_analytics_context()
+    context = _variety_analytics_context(request)
     context["current_admin"] = current_admin(request)
     context["nav_base"] = "/admin"
     return render_template(request, "variety_analytics.html", context)
@@ -1088,14 +1117,14 @@ def admin_variety_analytics(request):
 
 @role_required("superadmin")
 def superadmin_variety_analytics(request):
-    context = _variety_analytics_context()
+    context = _variety_analytics_context(request)
     context["current_admin"] = current_admin(request)
     context["nav_base"] = "/superadmin"
     return render_template(request, "variety_analytics.html", context)
 
 
 def _variety_analytics_json(request):
-    context = _variety_analytics_context()
+    context = _variety_analytics_context(request)
     return JsonResponse({
         "variety": context["variety_chart"],
         "maturity": context["maturity_chart"],

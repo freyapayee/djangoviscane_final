@@ -19,8 +19,13 @@
         .yield-table th, .yield-table td { padding: 13px 14px; border-bottom: 1px solid #e7eee9; text-align: left; white-space: nowrap; }
         .yield-table th { background: #f3f8f4; color: #547062; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; }
         .yield-table td { color: #30483b; font-size: 12px; }
+        .yield-period-filters { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 20px; padding: 14px; border: 1px solid #e3eee5; border-radius: 12px; background: #f8fbf9; }
+        .yield-period-filters label { display: grid; gap: 6px; color: #5b7465; font-size: 11px; font-weight: 750; }
+        .yield-period-filters select { width: 190px; height: 40px; padding: 0 12px; border: 1px solid #d7e5da; border-radius: 9px; background: #fff; color: #30483b; font: inherit; font-size: 12px; }
+        .yield-period-filters .btn { height: 40px; min-height: 40px; }
+        .yield-period-note { margin: -8px 0 20px; color: #718278; font-size: 11px; }
         @media (max-width: 900px) { .yield-chart-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 600px) { .yield-chart-wrap { height: 280px; } }
+        @media (max-width: 600px) { .yield-chart-wrap { height: 280px; } .yield-period-filters { align-items: stretch; flex-direction: column; } .yield-period-filters select, .yield-period-filters .btn { width: 100%; } }
     </style>
 </head>
 <body class="admin-layout {% if nav_base == '/superadmin' %}superadmin-layout{% endif %} has-vis-sidebar ds-app vis-management-dashboard vis-yield-analytics">
@@ -41,6 +46,13 @@
             <div class="stat-card accent-blue"><div class="stat-label">Varieties Compared</div><div class="stat-value" data-analytics-varieties>{{ variety_rows|length }}</div><div class="stat-meta">Unique varieties with results</div></div>
             <div class="stat-card accent-purple"><div class="stat-label">Maturity Groups</div><div class="stat-value" data-analytics-maturity>{{ maturity_rows|length }}</div><div class="stat-meta">Scan maturity classifications</div></div>
         </section>
+
+        <form class="yield-period-filters" method="GET" action="{{ nav_base }}/variety-analytics">
+            <label>Year<select name="year">{% for year in analytics_years %}<option value="{{ year }}"{% if year == selected_year %} selected{% endif %}>{{ year }}</option>{% endfor %}</select></label>
+            <label>Month<select name="month"><option value="">All months</option>{% for month in month_options %}<option value="{{ month.value }}"{% if month.value == selected_month %} selected{% endif %}>{{ month.label }}</option>{% endfor %}</select></label>
+            <button class="btn primary" type="submit"><ion-icon name="filter-outline"></ion-icon>View data</button>
+        </form>
+        <p class="yield-period-note">Showing results for {{ selected_year }}{% if selected_month_label %} · {{ selected_month_label }}{% endif %}. Month options begin at the first scan month{% if first_scan_month %} ({{ first_scan_month }}){% endif %}.</p>
 
         <section class="yield-chart-grid">
             <article class="panel yield-chart-card">
@@ -95,7 +107,9 @@
 
         async function refreshAnalytics() {
             try {
-                const response = await fetch('{{ nav_base }}/api/variety-analytics?_=' + Date.now(), { credentials: 'same-origin', cache: 'no-store' });
+                const filters = new URLSearchParams(window.location.search);
+                filters.set('_', Date.now());
+                const response = await fetch('{{ nav_base }}/api/variety-analytics?' + filters.toString(), { credentials: 'same-origin', cache: 'no-store' });
                 if (!response.ok) return;
                 const data = await response.json();
                 if (varietyChart) { varietyChart.data.labels = data.variety.labels; varietyChart.data.datasets = datasets(data.variety, 'bar'); varietyChart.update(); }
