@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | User Governance</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=governance-filters-2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=governance-filters-3">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-governance">
     {% include 'components/superadmin_navigation.html' %}
@@ -33,7 +33,7 @@
         <section class="panel superadmin-panel">
             <div class="panel-header"><div><h3 class="panel-title">Active Farmers</h3><p class="panel-subtitle">Currently visible in the main registry</p></div><span class="badge">{{ active_result_count }} of {{ active_user_count }} active</span></div>
             <form class="superadmin-governance-filters" method="GET" action="/superadmin/governance" role="search">
-                <label class="superadmin-governance-search"><ion-icon name="search-outline" aria-hidden="true"></ion-icon><input type="search" name="search" value="{{ active_search }}" aria-label="Search active farmers" placeholder="Search name, email, or phone"></label>
+                <label class="superadmin-governance-search"><span class="superadmin-governance-search-icon" aria-hidden="true"><ion-icon name="search-outline"></ion-icon></span><input type="search" name="search" value="{{ active_search }}" aria-label="Search active farmers" placeholder="Search name, email, or phone"></label>
                 <label><select name="barangay" aria-label="Filter by barangay"><option value="">All barangays</option>{% for barangay in barangays %}<option value="{{ barangay }}"{% if barangay == active_barangay %} selected{% endif %}>{{ barangay }}</option>{% endfor %}</select></label>
                 <button class="btn primary" type="submit"><ion-icon name="filter-outline"></ion-icon>Apply filters</button>
                 {% if active_search or active_barangay %}<a class="btn light" href="/superadmin/governance">Clear</a>{% endif %}
