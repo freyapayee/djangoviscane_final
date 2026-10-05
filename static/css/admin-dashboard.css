@@ -229,23 +229,39 @@ body.ds-app.vis-superadmin-user-details .superadmin-profile-details .superadmin-
     border-bottom: 0;
 }
 
-body.ds-app.vis-superadmin-overview .superadmin-table-actions {
+body.ds-app.vis-superadmin-overview .superadmin-table-actions,
+body.ds-app.vis-superadmin-governance .superadmin-table-actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
 }
 
-body.ds-app.vis-superadmin-overview .superadmin-table-actions form { margin: 0; }
+body.ds-app.vis-superadmin-overview .superadmin-table-actions form,
+body.ds-app.vis-superadmin-governance .superadmin-table-actions form { margin: 0; }
 
 /* Match User Governance Archive to the compact See Details link. */
-body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-table-actions button.superadmin-tag {
-    min-height: 0;
-    height: auto;
-    padding: 4px 10px;
+body.ds-app.vis-management-dashboard:is(.vis-superadmin-overview, .vis-superadmin-governance) .superadmin-table-actions :is(a.superadmin-tag, button.superadmin-tag) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    min-height: 32px;
+    height: 32px;
+    box-sizing: border-box;
+    padding: 0 10px;
     border-radius: 12px;
-    font: 600 11px/normal "Segoe UI", Roboto, Arial, sans-serif;
+    font: 600 11px/1 "Segoe UI", Roboto, Arial, sans-serif;
 }
+
+.superadmin-governance-filters { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; padding: 12px; border: 1px solid #e3eee5; border-radius: 12px; background: #f8fbf9; }
+.superadmin-governance-filters > label:first-child { flex: 1 1 auto; }
+.superadmin-governance-filters label { position: relative; }
+.superadmin-governance-filters input, .superadmin-governance-filters select { height: 42px; min-height: 42px; border: 1px solid #d7e5da; border-radius: 9px; background: #fff; color: #30483b; font: inherit; font-size: 12px; }
+.superadmin-governance-filters input { width: 100%; padding: 0 12px 0 36px; }
+.superadmin-governance-filters select { min-width: 180px; padding: 0 30px 0 12px; }
+.superadmin-governance-search > ion-icon { position: absolute; top: 50%; left: 12px; color: #788b80; font-size: 17px; transform: translateY(-50%); pointer-events: none; }
+.superadmin-governance-filters .btn { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; height: 42px; white-space: nowrap; }
 
 /* Keep admin accounts visible while collapsing only account registration. */
 body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-profile-details {
@@ -1244,7 +1260,7 @@ body.ds-app.vis-management-dashboard.vis-superadmin-audit .data-table td:last-ch
     body.ds-app.vis-management-dashboard .vis-admin-sidebar { display: none; }
     body.ds-app.vis-management-dashboard .vis-admin-bottom-nav { display: grid; }
     body.ds-app.vis-management-dashboard .vis-admin-bottom-nav { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding: 6px; }
-    body.ds-app.vis-management-dashboard.superadmin-layout .vis-admin-bottom-nav { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    body.ds-app.vis-management-dashboard.superadmin-layout .vis-admin-bottom-nav { grid-template-columns: repeat(7, minmax(0, 1fr)); }
     body.ds-app.vis-management-dashboard .vis-admin-bottom-nav a { min-width: 0; min-height: 52px; padding: 5px 2px; font-size: 9px; }
     body.ds-app.vis-management-dashboard .vis-admin-bottom-nav a ion-icon { font-size: 18px; }
     body.ds-app.vis-management-dashboard .dashboard-header .brand-icon {
@@ -1259,7 +1275,7 @@ body.ds-app.vis-management-dashboard.vis-superadmin-audit .data-table td:last-ch
 }
 
 @media (max-width: 600px) {
-    body.ds-app.vis-management-dashboard.vis-superadmin-overview .superadmin-stats {
+    body.ds-app.vis-management-dashboard:is(.vis-superadmin-overview, .vis-superadmin-governance) .superadmin-stats {
         grid-template-columns: minmax(0, 1fr);
     }
     body.ds-app.vis-management-dashboard .dashboard-header { margin-top: 0; }
@@ -1271,6 +1287,9 @@ body.ds-app.vis-management-dashboard.vis-superadmin-audit .data-table td:last-ch
     body.ds-app.vis-management-dashboard .stat-card { min-height: 140px; padding: 16px; }
     body.ds-app.vis-management-dashboard .panel { padding: 18px; }
     body.ds-app.vis-management-dashboard .vis-health-grid { grid-template-columns: 1fr; }
+    .superadmin-governance-filters { align-items: stretch; flex-direction: column; }
+    .superadmin-governance-filters > label,
+    .superadmin-governance-filters .btn { width: 100%; }
     body.ds-app.vis-management-dashboard.vis-admin-farmers .admin-search-row {
         grid-template-columns: minmax(0, 1fr);
     }

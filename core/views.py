@@ -1350,12 +1350,28 @@ def superadmin_portal(request):
 
 @role_required("superadmin")
 def superadmin_governance(request):
-    users = list(User.objects.filter(is_archived=False, is_active=True).order_by("-id"))
+    active_queryset = User.objects.filter(is_archived=False, is_active=True)
+    active_search = request.GET.get("search", "").strip()
+    active_municipality = request.GET.get("municipality", "").strip()
+    if active_search:
+        active_queryset = active_queryset.filter(
+            Q(fullname__icontains=active_search)
+            | Q(email__icontains=active_search)
+            | Q(phone__icontains=active_search)
+        )
+    if active_municipality:
+        active_queryset = active_queryset.filter(municipality=active_municipality)
+    users = list(active_queryset.order_by("-id"))
+    all_active_users = User.objects.filter(is_archived=False, is_active=True)
     archived_users = list(User.objects.filter(is_archived=True).order_by("-id"))
     deactivated_users = list(User.objects.filter(is_archived=False, is_active=False).order_by("-id"))
     return render_template(request, "superadmin_governance.html", {
-        "total_users": len(users),
-        "active_user_count": len(users),
+        "total_users": all_active_users.count(),
+        "active_user_count": all_active_users.count(),
+        "active_result_count": len(users),
+        "active_search": active_search,
+        "active_municipality": active_municipality,
+        "municipalities": list(all_active_users.exclude(municipality="").values_list("municipality", flat=True).distinct().order_by("municipality")),
         "archived_user_count": len(archived_users),
         "deactivated_user_count": len(deactivated_users),
         "users": users,
@@ -1430,7 +1446,7 @@ def superadmin_archive_user(request):
         user.is_archived = True
         user.save(update_fields=["is_archived"])
         log_audit(f"User account archived: {user.fullname}", user_id=current.id if current else None)
-    return redirect("superadmin_portal")
+    return redirect("superadmin_governance")
 
 
 @role_required("superadmin")
