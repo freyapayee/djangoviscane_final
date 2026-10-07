@@ -308,7 +308,7 @@ class ExecutionTests(TestCase):
     def test_low_confidence_scan_is_rejected_before_it_is_saved(self):
         self.login_farmer()
         with tempfile.TemporaryDirectory() as folder, override_settings(PRIVATE_UPLOAD_ROOT=Path(folder)):
-            for confidence in (0.40, 0.499, 49.9):
+            for confidence in (0.40, 0.749, 74.9):
                 with self.subTest(confidence=confidence):
                     payload = {'variety': 'VMC 84-524', 'maturity_status': 'MATURE', 'confidence': confidence}
                     with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
@@ -318,7 +318,7 @@ class ExecutionTests(TestCase):
                     self.assertFalse(CvScanUpload.objects.exists())
                     self.assertNotIn('latest_cv_context', self.client.session)
 
-            for confidence in (0.50, 50):
+            for confidence in (0.75, 75):
                 with self.subTest(confidence=confidence):
                     payload['confidence'] = confidence
                     with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):

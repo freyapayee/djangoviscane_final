@@ -63,7 +63,7 @@ def render_template(request, template_name, context=None, status=200):
 
 
 INVALID_CV_IMAGE_MESSAGE = "Invalid Image. This Image is not supported"
-CV_CONFIDENCE_THRESHOLD = 0.50
+CV_CONFIDENCE_THRESHOLD = 0.75
 REGISTRATION_BARANGAYS = [
     "Amin", "Banogbanog", "Bulad", "Bungahin", "Cabcab", "Camangcamang", "Camp Clark",
     "Cansalongon", "Guintubhan", "Libas", "Limalima", "Makilignit", "Mansablay", "Maytubig",
