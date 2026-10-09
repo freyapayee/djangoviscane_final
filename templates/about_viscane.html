@@ -4,66 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
-    <meta name="description" content="Learn more about VISCANE, an edge-based AI system for sugarcane quality grading.">
+    <meta name="description" content="Learn more about VISCANE, an edge-based AI system for sugarcane quality grading and maturity detection.">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/about-viscane.css') }}?v=1">
-    <title>About VISCANE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about-viscane.css') }}?v=2">
+    <title>Learn More | VISCANE</title>
 </head>
 <body class="vis-about-page ds-app">
     <a class="vis-skip-link" href="#about-content">Skip to about VISCANE</a>
     <main id="about-content" class="vis-about-shell">
         <header class="vis-about-header">
-            {% include 'components/brand.html' %}
+            <a class="vis-about-brand" href="/" aria-label="VISCANE home">
+                <img src="{{ url_for('static', filename='favicon.png') }}" alt="" class="vis-about-logo">
+                <span><strong>VISCANE</strong><small>AI Sugarcane Quality Grading</small></span>
+            </a>
             <a class="vis-button is-tonal vis-about-back" href="/auth?mode=login">Back to Login</a>
         </header>
 
-        <section class="vis-about-hero" aria-labelledby="about-title">
-            <div>
-                <p class="vis-about-eyebrow">About the platform</p>
-                <h1 id="about-title">Smarter sugarcane decisions with VISCANE.</h1>
-                <p class="vis-about-lead">VISCANE is an edge-based artificial intelligence system for sugarcane quality grading. It helps farmers capture crop information, receive clear quality insights, and maintain organized farm records in one place.</p>
+        <nav class="vis-about-nav" aria-label="About VISCANE sections">
+            <a href="#overview">Overview</a><a href="#features">Features</a><a href="#workflow">Workflow</a><a href="#sdg-alignment">SDG Alignment</a><a href="#team">Developers</a>
+        </nav>
+
+        <section class="vis-about-hero vis-reveal" aria-labelledby="about-title">
+            <div class="vis-hero-copy">
+                <p class="vis-about-eyebrow">An edge-based AI system</p>
+                <h1 id="about-title"><span class="vis-title-mark">V</span>ISCANE</h1>
+                <p class="vis-hero-subtitle">Sugarcane quality grading and maturity detection using RGB-HSV imaging.</p>
+                <p class="vis-about-lead">A practical, accessible platform that transforms sugarcane images and agronomic inputs into clear quality insights, yield estimates, and recommendations.</p>
+                <div class="vis-hero-actions"><a class="vis-button" href="#overview">Explore VISCANE <span aria-hidden="true">&darr;</span></a><a class="vis-button is-tonal" href="/auth?mode=login">Use the system <span aria-hidden="true">&rarr;</span></a></div>
             </div>
-            <div class="vis-about-hero-mark" aria-hidden="true">&#127807;</div>
+            <div class="vis-hero-logo-wrap" aria-hidden="true"><span class="vis-logo-glow"></span><img src="{{ url_for('static', filename='favicon.png') }}" alt="" class="vis-hero-logo"></div>
         </section>
 
-        <div class="vis-about-grid">
-            <section class="vis-about-card vis-about-summary" aria-labelledby="summary-title">
-                <p class="vis-about-eyebrow">Executive summary</p>
-                <h2 id="summary-title">Turning crop observations into useful guidance</h2>
-                <p>VISCANE supports sugarcane farmers and agricultural decision-makers by combining image-based analysis with agronomic information. The system is designed to make quality assessment more accessible, consistent, and actionable—from submitting a scan to reviewing recommendations and historical records.</p>
-                <p>By bringing these tasks into one platform, VISCANE helps users understand crop conditions, plan next steps, and keep a dependable digital record of their farm activities.</p>
-            </section>
-
-            <section class="vis-about-card" aria-labelledby="features-title">
-                <p class="vis-about-eyebrow">What VISCANE offers</p>
-                <h2 id="features-title">Key features</h2>
-                <div class="vis-feature-list">
-                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#128247;</span><div><h3>Image analysis</h3><p>Capture or upload sugarcane images for AI-assisted assessment.</p></div></article>
-                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#10024;</span><div><h3>Quality grading</h3><p>Receive understandable quality and maturity insights to support decisions.</p></div></article>
-                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#128203;</span><div><h3>Farm records</h3><p>Keep scans, agronomic inputs, recommendations, and activity history organized.</p></div></article>
-                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#128200;</span><div><h3>Recommendations and monitoring</h3><p>Review guidance and follow farm activity through a connected platform.</p></div></article>
-                </div>
-            </section>
-        </div>
-
-        <section class="vis-about-card vis-team-card" aria-labelledby="team-title">
-            <div>
-                <p class="vis-about-eyebrow">Project team</p>
-                <h2 id="team-title">Developed by algoJAWM</h2>
-                <p class="vis-team-intro">VISCANE was developed by algoJAWM, a project team focused on building practical technology for sugarcane communities.</p>
-            </div>
-            <div class="vis-team-list">
-                <div><strong>Faye N. Cuevas</strong><span>Project Manager</span></div>
-                <div><strong>Windy D. Elipse</strong><span>System Analyst</span></div>
-                <div><strong>John Rolo C. Flores</strong><span>Programmer</span></div>
+        <section id="overview" class="vis-overview-section vis-reveal" aria-labelledby="overview-title">
+            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#9881;</span><span>System Overview</span></div>
+            <div class="vis-overview-grid">
+                <article class="vis-glass-panel vis-summary-panel"><p class="vis-about-eyebrow">Executive summary</p><h2 id="overview-title">From crop observation to confident action.</h2><p>VISCANE is an edge-based artificial intelligence system that analyzes sugarcane images using RGB-HSV imaging for quality grading and maturity detection. It uses computer vision and machine learning to provide accessible assessments that support better harvest and farm decisions.</p><p>The platform combines image analysis with agronomic information so users can review results, estimate yield, receive recommendations, and maintain organized records in one connected experience.</p></article>
+                <div class="vis-purpose-stack"><article class="vis-purpose-card"><span class="vis-purpose-icon" aria-hidden="true">&#128269;</span><div><h3>The problem</h3><p>Traditional grading can be subjective and slow, delaying feedback and making consistent crop evaluation difficult.</p></div></article><article class="vis-purpose-card"><span class="vis-purpose-icon" aria-hidden="true">&#127919;</span><div><h3>The purpose</h3><p>Deliver accessible AI-powered quality grading, maturity detection, yield estimation, and agronomic guidance.</p></div></article></div>
             </div>
         </section>
 
-        <footer class="vis-about-footer">
-            <a href="/auth?mode=login">Return to Login</a>
-            <a href="/">Back to Selection</a>
-        </footer>
+        <section id="features" class="vis-feature-section vis-reveal" aria-labelledby="features-title">
+            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#10024;</span><span id="features-title">Key Features</span></div>
+            <div class="vis-feature-grid">
+                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#127807;</span><div><h3>AI sugarcane grading</h3><p>Analyzes sugarcane images and provides an automated quality assessment.</p></div></article>
+                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#128300;</span><div><h3>Variety and maturity detection</h3><p>Uses image-based AI analysis to identify crop characteristics and estimate maturity.</p></div></article>
+                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#128200;</span><div><h3>Yield estimation</h3><p>Calculates expected yield from crop details and agronomic inputs.</p></div></article>
+                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#128203;</span><div><h3>Reports and analytics</h3><p>Presents scan results, trends, yield data, and system performance insights.</p></div></article>
+                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#127760;</span><div><h3>Multilingual support</h3><p>Provides interface and recommendation support in English and Hiligaynon.</p></div></article>
+                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#127793;</span><div><h3>Agronomic recommendations</h3><p>Provides personalized farming guidance to improve crop management and productivity.</p></div></article>
+            </div>
+        </section>
+
+        <section id="workflow" class="vis-workflow-section vis-reveal" aria-labelledby="workflow-title">
+            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#9881;</span><span id="workflow-title">System Workflow</span></div>
+            <div class="vis-workflow-body vis-glass-panel"><p class="vis-workflow-intro">VISCANE guides the user through a clear sequence from image capture to actionable farm guidance.</p><ol class="vis-workflow-list"><li><span>01</span><div><strong>Capture</strong><p>Upload or capture a sugarcane image.</p></div></li><li><span>02</span><div><strong>AI scan</strong><p>Analyze variety, quality, and maturity characteristics.</p></div></li><li><span>03</span><div><strong>Add inputs</strong><p>Enter relevant agronomic and crop information.</p></div></li><li><span>04</span><div><strong>Review results</strong><p>View grading, yield estimates, and recommendations.</p></div></li><li><span>05</span><div><strong>Keep records</strong><p>Save results and review farm history over time.</p></div></li></ol></div>
+        </section>
+
+        <section id="sdg-alignment" class="vis-sdg-section vis-reveal" aria-labelledby="sdg-title">
+            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#127758;</span><span id="sdg-title">Sustainable Development Goal Alignment</span></div>
+            <div class="vis-sdg-grid"><article class="vis-sdg-card sdg-12"><span class="vis-sdg-number">12</span><div><h3>Responsible Consumption and Production</h3><p>Supports data-informed crop assessment and more responsible agricultural production decisions.</p></div></article><article class="vis-sdg-card sdg-8"><span class="vis-sdg-number">8</span><div><h3>Decent Work and Economic Growth</h3><p>Helps improve productivity and decision-making for sugarcane farmers through accessible digital tools.</p></div></article><article class="vis-sdg-card sdg-9"><span class="vis-sdg-number">9</span><div><h3>Industry, Innovation and Infrastructure</h3><p>Applies AI and computer vision to strengthen digital innovation in agricultural practice.</p></div></article></div>
+        </section>
+
+        <section id="team" class="vis-team-section vis-reveal" aria-labelledby="team-title">
+            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#128101;</span><span>Developers</span></div>
+            <div class="vis-team-body vis-glass-panel"><div class="vis-team-heading"><p class="vis-about-eyebrow">Project team</p><h2 id="team-title">Developed by algoJAWM</h2><p>VISCANE was developed by algoJAWM, combining project leadership, analysis, and programming to build a practical AI system for sugarcane communities.</p></div><div class="vis-team-list"><div><strong>Faye N. Cuevas</strong><span>Project Manager</span></div><div><strong>Windy D. Elipse</strong><span>System Analyst</span></div><div><strong>John Rolo C. Flores</strong><span>Programmer</span></div></div></div>
+        </section>
+
+        <footer class="vis-about-footer"><a href="/auth?mode=login">Return to Login</a><a href="/">Back to Selection</a></footer>
     </main>
+    <script>
+        (() => {
+            const sections = [...document.querySelectorAll('.vis-reveal')];
+            const navLinks = [...document.querySelectorAll('.vis-about-nav a')];
+            if ('IntersectionObserver' in window) {
+                const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); revealObserver.unobserve(entry.target); } }), { threshold: 0.12 });
+                sections.forEach(section => revealObserver.observe(section));
+                const activeObserver = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) navLinks.forEach(link => link.classList.toggle('is-active', link.getAttribute('href') === `#${entry.target.id}`)); }), { rootMargin: '-25% 0px -65% 0px', threshold: 0 });
+                sections.filter(section => section.id).forEach(section => activeObserver.observe(section));
+            } else sections.forEach(section => section.classList.add('is-visible'));
+        })();
+    </script>
 </body>
 </html>
