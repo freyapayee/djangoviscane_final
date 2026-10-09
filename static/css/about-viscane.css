@@ -20,7 +20,8 @@ body.ds-app.vis-about-page { --about-green:#087a35; --about-deep:#075326; --abou
 .vis-team-body { background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(204,231,175,.48)); }.vis-team-list { display:grid; gap:10px; }.vis-team-list div { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:15px 18px; border:1px solid rgba(255,255,255,.8); border-radius:14px; background:rgba(255,255,255,.7); }.vis-team-list strong { color:var(--about-deep); }.vis-team-list span { color:#526d5d; font-size:14px; text-align:right; }.vis-about-footer { display:flex; justify-content:center; gap:25px; padding-top:25px; }.vis-about-footer a { color:white; font-size:14px; font-weight:750; text-decoration:none; }.vis-about-footer a:hover { color:#c8f27c; text-decoration:underline; }
 
 /* High-contrast title and formal interaction states. */
-.vis-about-hero h1, .vis-about-hero h1 .vis-title-mark { color:#fff !important; font-size:clamp(78px,13vw,150px); font-weight:950; text-shadow:0 5px 0 rgba(3,50,22,.45),0 10px 24px rgba(0,0,0,.18); }
+.vis-about-hero h1, .vis-about-hero h1 .vis-title-mark { color:#fff !important; font-size:clamp(92px,14vw,165px); font-weight:950; line-height:.82; text-shadow:0 5px 0 rgba(3,50,22,.45),0 10px 24px rgba(0,0,0,.18); }
+.vis-about-hero h1 .vis-title-mark { display:inline; font-size:1em; line-height:inherit; font-weight:inherit; vertical-align:baseline; }
 .vis-sdg-card h3 { color:#fff !important; text-shadow:0 2px 7px rgba(0,0,0,.22); }
 .vis-purpose-card, .vis-sdg-card, .vis-feature-card { will-change:transform; }
 .vis-purpose-card { transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s ease,background .35s ease; }
