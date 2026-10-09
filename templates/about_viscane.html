@@ -13,6 +13,19 @@
 <body class="vis-about-page ds-app">
     <a class="vis-skip-link" href="#about-content">Skip to about VISCANE</a>
     <main id="about-content" class="vis-about-shell">
+        <svg class="vis-icon-sprite" aria-hidden="true" focusable="false">
+            <symbol id="vis-icon-overview" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2M8.5 3.8 6.8 2.5M15.5 3.8l1.7-1.3M4.3 8.4 2.5 7.8M19.7 8.4l1.8-.6"/></symbol>
+            <symbol id="vis-icon-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3.2"/><path d="M12 8.8V7M12 17v-1.8M8.8 12H7M17 12h-1.8"/></symbol>
+            <symbol id="vis-icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2"/><path d="m15.5 8.5 4-4M16.5 4.5h3v3"/></symbol>
+            <symbol id="vis-icon-leaf" viewBox="0 0 24 24"><path d="M20 4C12 4 5 7 5 14c0 3.5 2.2 5 4.5 5C17 19 20 11 20 4Z"/><path d="M4 21c2.5-5 6-8 11-11"/></symbol>
+            <symbol id="vis-icon-variety" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5M7.5 7.5v6M10.5 7.5v6M13.5 7.5v6M6.5 10.5h8"/></symbol>
+            <symbol id="vis-icon-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="m7 15 3-4 3 2 5-7"/><path d="M15 6h3v3"/></symbol>
+            <symbol id="vis-icon-report" viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6zM15 3v4h4M9 16v2M12 13v5M15 10v8"/></symbol>
+            <symbol id="vis-icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.7 9h16.6M3.7 15h16.6M12 3.5c2.2 2.3 3.2 5.1 3.2 8.5s-1 6.2-3.2 8.5c-2.2-2.3-3.2-5.1-3.2-8.5s1-6.2 3.2-8.5Z"/></symbol>
+            <symbol id="vis-icon-workflow" viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="5" rx="1"/><rect x="16" y="4" width="5" height="5" rx="1"/><rect x="9.5" y="15" width="5" height="5" rx="1"/><path d="M8 6.5h8M18.5 9v3.5l-4 2.5M5.5 9v3.5l4 2.5"/></symbol>
+            <symbol id="vis-icon-globe-star" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="M3.7 8.5h14.6M3.7 13.5h11.5M11 3.5c2 2 3 4.5 3 7.5 0 1.2-.2 2.3-.5 3.3M11 3.5c-2 2-3 4.5-3 7.5s1 5.5 3 7.5"/><path d="m18.2 16.5.9 1.8 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/></symbol>
+            <symbol id="vis-icon-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.5-3 2.4-4.5 5.5-4.5s5 1.5 5.5 4.5M14 14.5c3.5-.7 5.8.7 6.5 3.5"/></symbol>
+        </svg>
         <header class="vis-about-header">
             <a class="vis-about-brand" href="/" aria-label="VISCANE home">
                 <img src="{{ url_for('static', filename='favicon.png') }}" alt="" class="vis-about-logo">
@@ -27,9 +40,8 @@
 
         <section class="vis-about-hero vis-reveal" aria-labelledby="about-title">
             <div class="vis-hero-copy">
-                <p class="vis-about-eyebrow">An edge-based AI system</p>
                 <h1 id="about-title"><span class="vis-title-mark">V</span>ISCANE</h1>
-                <p class="vis-hero-subtitle">Sugarcane quality grading and maturity detection using RGB-HSV imaging.</p>
+                <p class="vis-hero-subtitle">An Edge-Based AI System for Sugarcane Quality Grading and Maturity Detection Using RGB-HSV Imaging</p>
                 <p class="vis-about-lead">A practical, accessible platform that transforms sugarcane images and agronomic inputs into clear quality insights, yield estimates, and recommendations.</p>
                 <div class="vis-hero-actions"><a class="vis-button" href="#overview">Explore VISCANE <span aria-hidden="true">&darr;</span></a><a class="vis-button is-tonal" href="/auth?mode=login">Use the system <span aria-hidden="true">&rarr;</span></a></div>
             </div>
@@ -37,37 +49,38 @@
         </section>
 
         <section id="overview" class="vis-overview-section vis-reveal" aria-labelledby="overview-title">
-            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#9881;</span><span>System Overview</span></div>
+            <div class="vis-section-ribbon"><svg class="vis-ribbon-icon" aria-hidden="true"><use href="#vis-icon-overview"></use></svg><span>System Overview</span></div>
             <div class="vis-overview-grid">
                 <article class="vis-glass-panel vis-summary-panel"><p class="vis-about-eyebrow">Executive summary</p><h2 id="overview-title">From crop observation to confident action.</h2><p>VISCANE is an edge-based artificial intelligence system that analyzes sugarcane images using RGB-HSV imaging for quality grading and maturity detection. It uses computer vision and machine learning to provide accessible assessments that support better harvest and farm decisions.</p><p>The platform combines image analysis with agronomic information so users can review results, estimate yield, receive recommendations, and maintain organized records in one connected experience.</p></article>
-                <div class="vis-purpose-stack"><article class="vis-purpose-card"><span class="vis-purpose-icon" aria-hidden="true">&#128269;</span><div><h3>The problem</h3><p>Traditional grading can be subjective and slow, delaying feedback and making consistent crop evaluation difficult.</p></div></article><article class="vis-purpose-card"><span class="vis-purpose-icon" aria-hidden="true">&#127919;</span><div><h3>The purpose</h3><p>Deliver accessible AI-powered quality grading, maturity detection, yield estimation, and agronomic guidance.</p></div></article></div>
+                <div class="vis-purpose-stack"><article class="vis-purpose-card"><svg class="vis-purpose-icon" aria-hidden="true"><use href="#vis-icon-scan"></use></svg><div><h3>The problem</h3><p>Traditional grading can be subjective and slow, delaying feedback and making consistent crop evaluation difficult.</p></div></article><article class="vis-purpose-card"><svg class="vis-purpose-icon" aria-hidden="true"><use href="#vis-icon-target"></use></svg><div><h3>The purpose</h3><p>Deliver accessible AI-powered quality grading, maturity detection, yield estimation, and agronomic guidance.</p></div></article></div>
             </div>
         </section>
 
         <section id="features" class="vis-feature-section vis-reveal" aria-labelledby="features-title">
-            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#10024;</span><span id="features-title">Key Features</span></div>
+            <div class="vis-section-ribbon"><svg class="vis-ribbon-icon" aria-hidden="true"><use href="#vis-icon-leaf"></use></svg><span id="features-title">Key Features</span></div>
             <div class="vis-feature-grid">
-                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#127807;</span><div><h3>AI sugarcane grading</h3><p>Analyzes sugarcane images and provides an automated quality assessment.</p></div></article>
-                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#128300;</span><div><h3>Variety and maturity detection</h3><p>Uses image-based AI analysis to identify crop characteristics and estimate maturity.</p></div></article>
-                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#128200;</span><div><h3>Yield estimation</h3><p>Calculates expected yield from crop details and agronomic inputs.</p></div></article>
-                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#128203;</span><div><h3>Reports and analytics</h3><p>Presents scan results, trends, yield data, and system performance insights.</p></div></article>
-                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#127760;</span><div><h3>Multilingual support</h3><p>Provides interface and recommendation support in English and Hiligaynon.</p></div></article>
-                <article class="vis-feature-card"><span class="vis-feature-icon" aria-hidden="true">&#127793;</span><div><h3>Agronomic recommendations</h3><p>Provides personalized farming guidance to improve crop management and productivity.</p></div></article>
+                <article class="vis-feature-card"><svg class="vis-feature-icon" aria-hidden="true"><use href="#vis-icon-leaf"></use></svg><div><h3>AI sugarcane grading</h3><p>Analyzes sugarcane images and provides an automated quality assessment.</p></div></article>
+                <article class="vis-feature-card"><svg class="vis-feature-icon" aria-hidden="true"><use href="#vis-icon-variety"></use></svg><div><h3>Variety and maturity detection</h3><p>Uses image-based AI analysis to identify crop characteristics and estimate maturity.</p></div></article>
+                <article class="vis-feature-card"><svg class="vis-feature-icon" aria-hidden="true"><use href="#vis-icon-chart"></use></svg><div><h3>Yield estimation</h3><p>Calculates expected yield from crop details and agronomic inputs.</p></div></article>
+                <article class="vis-feature-card"><svg class="vis-feature-icon" aria-hidden="true"><use href="#vis-icon-report"></use></svg><div><h3>Reports and analytics</h3><p>Presents scan results, trends, yield data, and system performance insights.</p></div></article>
+                <article class="vis-feature-card"><svg class="vis-feature-icon" aria-hidden="true"><use href="#vis-icon-globe"></use></svg><div><h3>Multilingual support</h3><p>Provides interface and recommendation support in English and Hiligaynon.</p></div></article>
+                <article class="vis-feature-card"><svg class="vis-feature-icon" aria-hidden="true"><use href="#vis-icon-leaf"></use></svg><div><h3>Agronomic recommendations</h3><p>Provides personalized farming guidance to improve crop management and productivity.</p></div></article>
             </div>
         </section>
 
         <section id="workflow" class="vis-workflow-section vis-reveal" aria-labelledby="workflow-title">
-            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#9881;</span><span id="workflow-title">System Workflow</span></div>
+            <div class="vis-section-ribbon"><svg class="vis-ribbon-icon" aria-hidden="true"><use href="#vis-icon-workflow"></use></svg><span id="workflow-title">System Workflow</span></div>
             <div class="vis-workflow-body vis-glass-panel"><p class="vis-workflow-intro">VISCANE guides the user through a clear sequence from image capture to actionable farm guidance.</p><ol class="vis-workflow-list"><li><span>01</span><div><strong>Capture</strong><p>Upload or capture a sugarcane image.</p></div></li><li><span>02</span><div><strong>AI scan</strong><p>Analyze variety, quality, and maturity characteristics.</p></div></li><li><span>03</span><div><strong>Add inputs</strong><p>Enter relevant agronomic and crop information.</p></div></li><li><span>04</span><div><strong>Review results</strong><p>View grading, yield estimates, and recommendations.</p></div></li><li><span>05</span><div><strong>Keep records</strong><p>Save results and review farm history over time.</p></div></li></ol></div>
         </section>
 
         <section id="sdg-alignment" class="vis-sdg-section vis-reveal" aria-labelledby="sdg-title">
-            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#127758;</span><span id="sdg-title">Sustainable Development Goal Alignment</span></div>
-            <div class="vis-sdg-grid"><article class="vis-sdg-card sdg-12"><span class="vis-sdg-number">12</span><div><h3>Responsible Consumption and Production</h3><p>Supports data-informed crop assessment and more responsible agricultural production decisions.</p></div></article><article class="vis-sdg-card sdg-8"><span class="vis-sdg-number">8</span><div><h3>Decent Work and Economic Growth</h3><p>Helps improve productivity and decision-making for sugarcane farmers through accessible digital tools.</p></div></article><article class="vis-sdg-card sdg-9"><span class="vis-sdg-number">9</span><div><h3>Industry, Innovation and Infrastructure</h3><p>Applies AI and computer vision to strengthen digital innovation in agricultural practice.</p></div></article></div>
+            <div class="vis-section-ribbon"><svg class="vis-ribbon-icon" aria-hidden="true"><use href="#vis-icon-globe-star"></use></svg><span id="sdg-title">United Nations Sustainable Development Goals</span></div>
+            <div class="vis-sdg-intro vis-glass-panel"><img src="{{ url_for('static', filename='images/un-sustainable-development-goals.png') }}" alt="United Nations Sustainable Development Goals logo" class="vis-sdg-banner"><p>VISCANE aligns with the following goals by applying accessible AI and data-informed agricultural tools to support more productive and sustainable sugarcane practices.</p></div>
+            <div class="vis-sdg-grid"><article class="vis-sdg-card sdg-12"><img src="{{ url_for('static', filename='images/sdg-12.png') }}" alt="SDG 12 Responsible Consumption and Production" class="vis-sdg-logo"><div><h3>Responsible Consumption and Production</h3><p>Supports data-informed crop assessment and more responsible agricultural production decisions.</p></div></article><article class="vis-sdg-card sdg-8"><img src="{{ url_for('static', filename='images/sdg-8.png') }}" alt="SDG 8 Decent Work and Economic Growth" class="vis-sdg-logo"><div><h3>Decent Work and Economic Growth</h3><p>Helps improve productivity and decision-making for sugarcane farmers through accessible digital tools.</p></div></article><article class="vis-sdg-card sdg-9"><img src="{{ url_for('static', filename='images/sdg-9.png') }}" alt="SDG 9 Industry, Innovation and Infrastructure" class="vis-sdg-logo"><div><h3>Industry, Innovation and Infrastructure</h3><p>Applies AI and computer vision to strengthen digital innovation in agricultural practice.</p></div></article></div>
         </section>
 
         <section id="team" class="vis-team-section vis-reveal" aria-labelledby="team-title">
-            <div class="vis-section-ribbon"><span class="vis-ribbon-icon" aria-hidden="true">&#128101;</span><span>Developers</span></div>
+            <div class="vis-section-ribbon"><svg class="vis-ribbon-icon" aria-hidden="true"><use href="#vis-icon-team"></use></svg><span>Developers</span></div>
             <div class="vis-team-body vis-glass-panel"><div class="vis-team-heading"><p class="vis-about-eyebrow">Project team</p><h2 id="team-title">Developed by algoJAWM</h2><p>VISCANE was developed by algoJAWM, combining project leadership, analysis, and programming to build a practical AI system for sugarcane communities.</p></div><div class="vis-team-list"><div><strong>Faye N. Cuevas</strong><span>Project Manager</span></div><div><strong>Windy D. Elipse</strong><span>System Analyst</span></div><div><strong>John Rolo C. Flores</strong><span>Programmer</span></div></div></div>
         </section>
 
