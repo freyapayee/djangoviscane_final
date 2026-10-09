@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}?v=2">
+    <meta name="description" content="Learn more about VISCANE, an edge-based AI system for sugarcane quality grading.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about-viscane.css') }}?v=1">
+    <title>About VISCANE</title>
+</head>
+<body class="vis-about-page ds-app">
+    <a class="vis-skip-link" href="#about-content">Skip to about VISCANE</a>
+    <main id="about-content" class="vis-about-shell">
+        <header class="vis-about-header">
+            {% include 'components/brand.html' %}
+            <a class="vis-button is-tonal vis-about-back" href="/auth?mode=login">Back to Login</a>
+        </header>
+
+        <section class="vis-about-hero" aria-labelledby="about-title">
+            <div>
+                <p class="vis-about-eyebrow">About the platform</p>
+                <h1 id="about-title">Smarter sugarcane decisions with VISCANE.</h1>
+                <p class="vis-about-lead">VISCANE is an edge-based artificial intelligence system for sugarcane quality grading. It helps farmers capture crop information, receive clear quality insights, and maintain organized farm records in one place.</p>
+            </div>
+            <div class="vis-about-hero-mark" aria-hidden="true">&#127807;</div>
+        </section>
+
+        <div class="vis-about-grid">
+            <section class="vis-about-card vis-about-summary" aria-labelledby="summary-title">
+                <p class="vis-about-eyebrow">Executive summary</p>
+                <h2 id="summary-title">Turning crop observations into useful guidance</h2>
+                <p>VISCANE supports sugarcane farmers and agricultural decision-makers by combining image-based analysis with agronomic information. The system is designed to make quality assessment more accessible, consistent, and actionable—from submitting a scan to reviewing recommendations and historical records.</p>
+                <p>By bringing these tasks into one platform, VISCANE helps users understand crop conditions, plan next steps, and keep a dependable digital record of their farm activities.</p>
+            </section>
+
+            <section class="vis-about-card" aria-labelledby="features-title">
+                <p class="vis-about-eyebrow">What VISCANE offers</p>
+                <h2 id="features-title">Key features</h2>
+                <div class="vis-feature-list">
+                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#128247;</span><div><h3>Image analysis</h3><p>Capture or upload sugarcane images for AI-assisted assessment.</p></div></article>
+                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#10024;</span><div><h3>Quality grading</h3><p>Receive understandable quality and maturity insights to support decisions.</p></div></article>
+                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#128203;</span><div><h3>Farm records</h3><p>Keep scans, agronomic inputs, recommendations, and activity history organized.</p></div></article>
+                    <article class="vis-feature-item"><span class="vis-feature-icon" aria-hidden="true">&#128200;</span><div><h3>Recommendations and monitoring</h3><p>Review guidance and follow farm activity through a connected platform.</p></div></article>
+                </div>
+            </section>
+        </div>
+
+        <section class="vis-about-card vis-team-card" aria-labelledby="team-title">
+            <div>
+                <p class="vis-about-eyebrow">Project team</p>
+                <h2 id="team-title">Developed by algoJAWM</h2>
+                <p class="vis-team-intro">VISCANE was developed by algoJAWM, a project team focused on building practical technology for sugarcane communities.</p>
+            </div>
+            <div class="vis-team-list">
+                <div><strong>Faye N. Cuevas</strong><span>Project Manager</span></div>
+                <div><strong>Windy D. Elipse</strong><span>System Analyst</span></div>
+                <div><strong>John Rolo C. Flores</strong><span>Programmer</span></div>
+            </div>
+        </section>
+
+        <footer class="vis-about-footer">
+            <a href="/auth?mode=login">Return to Login</a>
+            <a href="/">Back to Selection</a>
+        </footer>
+    </main>
+</body>
+</html>

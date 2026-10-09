@@ -174,6 +174,10 @@ def portal(request):
     return render_template(request, "portal.html")
 
 
+def about_viscane(request):
+    return render_template(request, "about_viscane.html")
+
+
 @require_GET
 def favicon(request):
     favicon_path = Path(settings.BASE_DIR) / "static" / "favicon.png"
