@@ -23,7 +23,8 @@ class FarmerNotificationTests(TestCase):
         for href in ['/scan/new', '/homepage#scan-gallery', '/homepage#recent-scans', '/homepage#calc-form', '/farmer/recommendations', '/farmer/agronomic-logs', '/farmer/settings']:
             self.assertContains(response, f'href="{href}"')
         self.assertLess(html.index('header-date-weather'), html.index('id="farmer-menu-toggle"'))
-        self.assertLess(html.index('id="farmer-menu-toggle"'), html.index('data-start-farmer-tour'))
+        self.assertLess(html.index('data-start-farmer-tour'), html.index('id="farmer-menu-toggle"'))
+        self.assertLess(html.index('id="farmer-menu-toggle"'), html.index('farmer-settings-link'))
 
     def test_news_page_and_feedback_redirect(self):
         Notification.objects.create(title='New announcement', message='News message')

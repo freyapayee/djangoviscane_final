@@ -49,6 +49,11 @@ body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image { width:
 
 .farmer-header-navigation { display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 0 0 auto; white-space: nowrap; }
 body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap: 8px; }
+body.ds-app.vis-farmer-dashboard .header-actions .header-date-weather { order: 0; }
+body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { order: 1; }
+body.ds-app.vis-farmer-dashboard .header-actions #farmer-menu-toggle { order: 2; }
+body.ds-app.vis-farmer-dashboard .header-actions .tutorial-launch { order: 3; }
+body.ds-app.vis-farmer-dashboard .header-actions .farmer-settings-link { order: 4; }
 @media (max-width: 768px) {
     body.ds-app.vis-farmer-dashboard .header-actions { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
     body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { flex-shrink: 0; }
@@ -62,7 +67,7 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap
     }
     body.ds-app.vis-farmer-dashboard .header-actions {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px 6px;
     }
     body.ds-app.vis-farmer-dashboard .header-date-weather {
@@ -77,26 +82,23 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap
     }
     body.ds-app.vis-farmer-dashboard .header-date-weather ion-icon { font-size: 22px; }
     body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { display: contents; }
+    body.ds-app.vis-farmer-dashboard .header-actions :is(#farmer-menu-toggle,.tutorial-launch,.farmer-settings-link) { order: 0; }
     body.ds-app.vis-farmer-dashboard .header-actions .btn.light {
         box-sizing: border-box;
         width: 100%;
         min-width: 0;
-        min-height: 40px;
+        min-height: 44px;
         justify-content: center;
-        gap: 4px;
-        padding: 6px 5px;
-        font-size: 11px;
+        gap: 6px;
+        padding: 8px 10px;
+        font-size: 13px;
         line-height: 1.15;
         text-align: center;
         white-space: normal;
         overflow-wrap: anywhere;
     }
-    body.ds-app.vis-farmer-dashboard .header-actions .btn.light ion-icon { flex: 0 0 auto; font-size: 16px; }
+    body.ds-app.vis-farmer-dashboard .header-actions .btn.light ion-icon { flex: 0 0 auto; font-size: 18px; }
     body.ds-app.vis-farmer-dashboard .farmer-notification-count { padding: 2px 4px; font-size: 10px; }
-}
-
-@media (max-width: 360px) {
-    body.ds-app.vis-farmer-dashboard .header-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Keep the news card and live announcements readable in the Android WebView. */

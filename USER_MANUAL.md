@@ -56,10 +56,11 @@ Until that offline queue is implemented and tested on a physical device, treat a
 You need an active farmer account, the VISCANE Android application, and—when using the current release—an internet connection to the configured HTTPS server.
 
 1. Open VISCANE.
-2. Sign in with your registered email and password.
-3. If you do not have an account, select **Register** and provide your name, email, phone number, and location.
-4. Allow camera or gallery access when prompted if you plan to scan a crop.
-5. Select **Hiligaynon** from the language selector if preferred.
+2. Tap **Continue** on the VISCANE cover screen.
+3. Sign in with your registered email and password. If you are already signed in, Continue opens the farmer dashboard.
+4. If you do not have an account, select **Register** and provide your name, email, phone number, and location.
+5. Allow camera or gallery access when prompted if you plan to scan a crop.
+6. Select **Hiligaynon** from the language selector if preferred.
 
 ![VISCANE farmer sign-in screen — system capture](artifacts/ui/viscane-login-1366@2x.png)
 

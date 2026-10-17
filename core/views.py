@@ -171,6 +171,8 @@ def current_admin(request):
 
 
 def portal(request):
+    if "ViscaneFarmer/" in request.headers.get("User-Agent", ""):
+        return render_template(request, "mobile_cover.html", {"farmer_user": current_user(request)})
     return render_template(request, "portal.html")
 
 
@@ -1728,6 +1730,10 @@ def admin_logout(request):
 
 def auth(request):
     mode = request.GET.get("mode", "login")
+    if (request.method == "GET" and mode == "login" and not request.headers.get("HX-Request")
+            and "ViscaneFarmer/" in request.headers.get("User-Agent", "")
+            and request.GET.get("cover") != "done"):
+        return render_template(request, "mobile_cover.html", {"farmer_user": current_user(request)})
     if request.method == "POST":
         if mode == "register":
             fullname = request.POST.get("fullname", "").strip()

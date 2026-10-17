@@ -28,9 +28,21 @@ class FarmerMobileTests(TestCase):
 
     def test_apk_marker_hides_admin_and_blocks_navigation(self):
         client = Client(HTTP_USER_AGENT="Android ViscaneFarmer/1.0")
-        self.assertNotContains(client.get("/"), "Admin Portal")
+        cover = client.get("/")
+        self.assertContains(cover, "VISCANE")
+        self.assertContains(cover, "mobile-cover-logo")
+        self.assertContains(cover, "/auth?mode=login&amp;cover=done")
+        self.assertNotContains(cover, "Continue as Farmer")
+        self.assertNotContains(cover, "Admin Portal")
+        self.assertContains(client.get("/auth?mode=login"), "mobile-cover-logo")
+        self.assertContains(client.get("/auth?mode=login&cover=done"), 'id="login-btn"')
         self.assertEqual(client.get("/admin-login").status_code, 403)
         self.assertContains(self.client.get("/"), "Admin Portal")
+
+        session = client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        self.assertContains(client.get("/"), 'href="/homepage"')
 
     @override_settings(FARMER_ONLY=True)
     def test_mobile_language_news_about_and_favicon(self):

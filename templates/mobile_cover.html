@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#eaf5e9">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-cover.css') }}?v=1">
+    <title>VISCANE</title>
+</head>
+<body>
+    <main class="mobile-cover">
+        <div class="mobile-cover-content">
+            <img class="mobile-cover-logo" src="{{ url_for('static', filename='favicon.png') }}" alt="VISCANE logo">
+            <h1>VISCANE</h1>
+            <p>{{ farmer_text('AI-Based Sugarcane Quality Grading System') }}</p>
+        </div>
+        <a class="mobile-cover-continue" href="{{ '/homepage' if farmer_user else '/auth?mode=login&cover=done' }}">
+            {{ farmer_text('Continue') }}
+            <span aria-hidden="true">&rarr;</span>
+        </a>
+    </main>
+</body>
+</html>
