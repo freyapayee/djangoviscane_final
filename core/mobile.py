@@ -14,7 +14,8 @@ FARMER_PATHS = {
 
 
 def is_farmer_path(path):
-    return (path in FARMER_PATHS or
+    normalized_path = path.rstrip("/") or "/"
+    return (normalized_path in FARMER_PATHS or
             re.fullmatch(r"/farmer/cv-upload/[0-9]+/(delete|image)", path) is not None or
             path.startswith(("/static/", "/media/")))
 

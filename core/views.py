@@ -175,7 +175,7 @@ def portal(request):
 
 
 def about_viscane(request):
-    return render_template(request, "about_viscane.html")
+    return render_template(request, "about_viscane.html", {"farmer_user": current_user(request)})
 
 
 @require_GET

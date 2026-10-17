@@ -41,3 +41,8 @@
 @media (max-width: 480px) { .farmer-menu { padding: 16px; } .farmer-menu .panel { padding: 16px; } }
 
 body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image { width: 100%; height: auto; }
+
+.scan-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 600px) { .scan-header-actions { width: 100%; justify-content: space-between; } }
+
+.farmer-notification-status { position: absolute; }

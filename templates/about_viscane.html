@@ -31,7 +31,11 @@
                 <img src="{{ url_for('static', filename='favicon.png') }}" alt="" class="vis-about-logo">
                 <span><strong>VISCANE</strong><small>AI Sugarcane Quality Grading</small></span>
             </a>
+            {% if farmer_user %}
+            <a class="vis-button is-tonal vis-about-back" href="/homepage"><ion-icon name="home-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Back to Dashboard') }}</a>
+            {% else %}
             <a class="vis-button is-tonal vis-about-back" href="/auth?mode=login">Back to Login</a>
+            {% endif %}
         </header>
 
         <nav class="vis-about-nav" aria-label="About VISCANE sections">

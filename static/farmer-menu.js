@@ -8,14 +8,14 @@
     const status = document.getElementById('farmer-notification-status');
     const suggestionStatus = document.getElementById('farmer-menu-status');
     const list = document.getElementById('farmer-announcement-list');
-    const translate = text => document.documentElement.lang === 'hil' ? (window.farmerMenuLabels[text] || text) : text;
+    const translate = text => document.documentElement.lang === 'hil' ? ((window.farmerMenuLabels || {})[text] || text) : text;
     function render(data) {
         latest = data;
         const unread = data.unread_announcements + data.unread_suggestions;
         count.hidden = !unread;
         count.textContent = unread > 99 ? '99+' : String(unread);
         const message = unread ? `${translate('New announcements')}: ${data.unread_announcements}. ${translate('New suggestions')}: ${data.unread_suggestions}.` : translate('No new notifications.');
-        if (status.textContent !== message) status.textContent = message;
+        if (status && status.textContent !== message) status.textContent = message;
         if (!list) return;
         list.replaceChildren();
         for (const item of data.announcements) {
