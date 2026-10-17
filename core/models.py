@@ -2,6 +2,8 @@ from django.db import models
 
 
 class User(models.Model):
+    seen_announcement_id = models.PositiveIntegerField(default=0)
+    seen_suggestion_id = models.PositiveIntegerField(default=0)
     fullname = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20)

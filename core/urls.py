@@ -4,6 +4,7 @@ from . import views
 
 
 urlpatterns = [
+    path("farmer/notifications", views.farmer_notifications, name="farmer_notifications"),
     path("", views.portal, name="portal"),
     path("about-viscane", views.about_viscane, name="about_viscane"),
     path("favicon.ico", views.favicon, name="favicon"),

@@ -8,7 +8,7 @@ from django.http import HttpResponseForbidden
 FARMER_PATHS = {
     "/", "/auth", "/auth/register-success", "/logout", "/homepage",
     "/farmer/recommendations", "/farmer/agronomic-logs", "/farmer/settings",
-    "/farmer/feedback", "/scan/new", "/calculate", "/api/scan/predict",
+    "/farmer/notifications", "/farmer/feedback", "/scan/new", "/calculate", "/api/scan/predict",
     "/i18n/setlang/",
 }
 

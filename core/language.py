@@ -23,6 +23,18 @@ PROTECTED_TERMS = (
 
 # These short interface labels should be checked with local farmers before release.
 HILIGAYNON_LABELS = {
+    "Menu": "Menu",
+    "Close menu": "Isira ang menu",
+    "Farmer navigation": "Nabigasyon sang mangunguma",
+    "Suggestions": "Mga suhestyon",
+    "View saved suggestions": "Tan-awa ang gintipigan nga mga suhestyon",
+    "New announcements": "Bag-o nga mga pahibalo",
+    "New suggestions": "Bag-o nga mga suhestyon",
+    "No new notifications.": "Wala sang bag-o nga pahibalo.",
+    "Mark notifications as read": "Markahi ang mga pahibalo nga nabasa na",
+    "Your saved scan suggestions are available in Input Logs.": "Ang gintipigan nga mga suhestyon sang scan ara sa Input Logs.",
+    "Suggestions will appear after a scan assessment.": "Makita ang mga suhestyon pagkatapos sang pagsusi sang scan.",
+    "Could not mark notifications as read. Please try again.": "Indi mamarkahan ang mga pahibalo nga nabasa na. Palihog tilawi liwat.",
     "Home": "Balik sa Una",
     "Hello,": "Kumusta,",
     "Online": "Naka-online",

@@ -284,6 +284,33 @@ def homepage(request):
 
 
 @farmer_login_required
+def farmer_notifications(request):
+    user = current_user(request)
+    announcements = Notification.objects.order_by("-id")
+    suggestions = AgronomicLog.objects.filter(user=user).exclude(recommendations_snapshot=[]).order_by("-id")
+    if request.method == "POST":
+        try:
+            announcement_id = max(0, int(request.POST.get("announcement_id", 0)))
+            suggestion_id = max(0, int(request.POST.get("suggestion_id", 0)))
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Invalid notification IDs"}, status=400)
+        announcement_id = min(announcement_id, announcements.values_list("id", flat=True).first() or 0)
+        suggestion_id = min(suggestion_id, suggestions.values_list("id", flat=True).first() or 0)
+        User.objects.filter(pk=user.pk, seen_announcement_id__lt=announcement_id).update(seen_announcement_id=announcement_id)
+        User.objects.filter(pk=user.pk, seen_suggestion_id__lt=suggestion_id).update(seen_suggestion_id=suggestion_id)
+        user.refresh_from_db()
+    elif request.method != "GET":
+        return HttpResponse(status=405)
+    return JsonResponse({
+        "announcements": list(announcements.values("id", "title", "message", "created_at")),
+        "announcement_id": announcements.values_list("id", flat=True).first() or 0,
+        "suggestion_id": suggestions.values_list("id", flat=True).first() or 0,
+        "unread_announcements": announcements.filter(id__gt=user.seen_announcement_id).count(),
+        "unread_suggestions": suggestions.filter(id__gt=user.seen_suggestion_id).count(),
+    })
+
+
+@farmer_login_required
 def farmer_recommendations(request):
     user = current_user(request)
     recommendations = translate_recommendations(request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS)

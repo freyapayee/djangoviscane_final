@@ -1571,6 +1571,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=9">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard">
     <div class="dashboard-bg"></div>
@@ -1596,6 +1597,11 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn light" id="farmer-menu-toggle" type="button" aria-haspopup="dialog" aria-controls="farmer-menu" aria-expanded="false">
+                    <ion-icon name="menu-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Menu') }}</span>
+                    <span id="farmer-notification-count" class="farmer-notification-count" hidden></span>
+                </button>
+                <span id="farmer-notification-status" class="farmer-sr-only" role="status" aria-live="polite"></span>
                 <div class="farmer-info-chip header-date-weather" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
@@ -1848,33 +1854,22 @@
             {% include 'components/homepage_scan_gallery.html' %}
         </section>
 
-        <section class="section-grid two-col">
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <h3 class="panel-title">{{ farmer_text('Farmer Pages') }}</h3>
-                        <p class="panel-subtitle">{{ farmer_text('Open recommendations and agronomic logs') }}</p>
-                    </div>
-                    <span class="badge"><ion-icon name="compass-outline"></ion-icon>{{ farmer_text('Quick Access') }}</span>
-                </div>
-                <div class="icon-link-grid">
-                    <a class="icon-link-card" href="/farmer/recommendations">
-                        <span class="icon-link-badge"><ion-icon name="sparkles-outline"></ion-icon></span>
-                        <span class="icon-link-copy">
-                            <strong>{{ farmer_text('Recommendations') }}</strong>
-                            <span>{{ recommendations|length }} item{% if recommendations|length != 1 %}s{% endif %}</span>
-                        </span>
-                    </a>
-                    <a class="icon-link-card" href="/farmer/agronomic-logs">
-                        <span class="icon-link-badge"><ion-icon name="document-text-outline"></ion-icon></span>
-                        <span class="icon-link-copy">
-                            <strong>{{ farmer_text('Agronomic Input Logs') }}</strong>
-                            <span>{{ agronomic_logs|length }} log{% if agronomic_logs|length != 1 %}s{% endif %}</span>
-                        </span>
-                    </a>
-                </div>
-            </div>
+    <div class="footer-link">VISCANE {{ farmer_text('Farmer Portal') }} | {{ farmer_text('AI Assisted Grading') }}</div>
+    </main>
 
+
+    <dialog id="farmer-menu" class="farmer-menu" aria-labelledby="farmer-menu-title">
+        <div class="farmer-menu-heading"><h2 id="farmer-menu-title">{{ farmer_text('Menu') }}</h2><button type="button" class="btn light" id="farmer-menu-close" aria-label="{{ farmer_text('Close menu') }}">✕</button></div>
+        <nav class="farmer-menu-links" aria-label="{{ farmer_text('Farmer navigation') }}">
+            <a href="#farmer-news">{{ farmer_text('News & Announcements') }}</a>
+            <a href="#farmer-feedback">{{ farmer_text('Feedback Box') }}</a>
+        </nav>
+        <section id="farmer-suggestions" class="panel">
+            <h3>{{ farmer_text('Suggestions') }}</h3>
+            <p id="farmer-suggestion-status" role="status"></p>
+            <a class="btn light" href="/farmer/agronomic-logs">{{ farmer_text('View saved suggestions') }}</a>
+        </section>
+        <div id="farmer-news">
             <div class="panel">
                 <div class="panel-header">
                     <div>
@@ -1913,6 +1908,7 @@
                             </div>
                         </div>
                     </article>
+                    <div id="farmer-announcement-list">
                     {% if announcements %}
                         {% for announcement in announcements %}
                             <div class="list-row">
@@ -1929,11 +1925,11 @@
                     {% else %}
                         <div class="list-meta">{{ farmer_text('No announcements yet. New admin updates will appear here.') }}</div>
                     {% endif %}
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <section class="panel feedback-panel">
+        <section class="panel feedback-panel" id="farmer-feedback">
             <form method="POST" action="/farmer/feedback">
     {{ csrf_input }}
                 <div class="panel-header">
@@ -1946,13 +1942,13 @@
                         {{ farmer_text('Submit Feedback') }}
                     </button>
                 </div>
-                <div class="stat-label">{{ farmer_text('Your Feedback') }}</div>
-                <textarea class="stat-input feedback-input" name="feedback_message" rows="3" placeholder="{{ farmer_text('Write your feedback here...') }}" required></textarea>
+                <label class="stat-label" for="farmer-feedback-message">{{ farmer_text('Your Feedback') }}</label>
+                <textarea class="stat-input feedback-input" id="farmer-feedback-message" name="feedback_message" rows="3" placeholder="{{ farmer_text('Write your feedback here...') }}" required></textarea>
             </form>
         </section>
 
-    <div class="footer-link">VISCANE {{ farmer_text('Farmer Portal') }} | {{ farmer_text('AI Assisted Grading') }}</div>
-    </main>
+        </div>
+    </dialog>
 
     <nav class="farmer-bottom-nav" aria-label="Farmer navigation">
         <a class="farmer-bottom-link is-active" href="/homepage">
@@ -2841,5 +2837,7 @@
     <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=4"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
+    <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
+    <script src="/static/farmer-menu.js" defer></script>
 </body>
 </html>
