@@ -31,11 +31,13 @@
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
                 </div>
-                <a class="btn light" href="/homepage">
+                <div class="farmer-header-navigation">
+                    <a class="btn light" href="/homepage">
                     <ion-icon name="arrow-back-outline"></ion-icon>
-                    {{ farmer_text('Dashboard') }}
+                    {{ farmer_text('Home') }}
                 </a>
-                {% include 'components/farmer_menu_button.html' %}
+                    {% include 'components/farmer_menu_button.html' %}
+                </div>
             </div>
         </div>
     </header>

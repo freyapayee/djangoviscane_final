@@ -20,8 +20,10 @@
         </div>
         <div class="scan-header-actions">
             <div class="farmer-info-chip" aria-live="polite"><ion-icon name="partly-sunny-outline"></ion-icon><span data-farmer-info-text>Loading date...</span></div>
-            <a class="vis-button is-tonal" href="/homepage"><ion-icon name="home-outline"></ion-icon>{{ farmer_text('Home') }}</a>
-            {% include 'components/farmer_menu_button.html' %}
+            <div class="farmer-header-navigation">
+                <a class="vis-button is-tonal" href="/homepage"><ion-icon name="home-outline"></ion-icon>{{ farmer_text('Home') }}</a>
+                {% include 'components/farmer_menu_button.html' %}
+            </div>
         </div>
     </header>
     <main class="scan-flow" data-scan-flow data-current="{% if error %}details{% elif review_prediction %}review{% else %}capture{% endif %}">

@@ -46,3 +46,10 @@ body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image { width:
 @media (max-width: 600px) { .scan-header-actions { width: 100%; justify-content: space-between; } }
 
 .farmer-notification-status { position: absolute; }
+
+.farmer-header-navigation { display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 0 0 auto; white-space: nowrap; }
+body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap: 8px; }
+@media (max-width: 768px) {
+    body.ds-app.vis-farmer-dashboard .header-actions { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+    body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { flex-shrink: 0; }
+}

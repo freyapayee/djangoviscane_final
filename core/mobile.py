@@ -16,8 +16,9 @@ FARMER_PATHS = {
 def is_farmer_path(path):
     normalized_path = path.rstrip("/") or "/"
     return (normalized_path in FARMER_PATHS or
-            re.fullmatch(r"/farmer/cv-upload/[0-9]+/(delete|image)", path) is not None or
-            path.startswith(("/static/", "/media/")))
+            re.fullmatch(r"/farmer/cv-upload/[0-9]+/(delete|image)", normalized_path) is not None or
+            re.fullmatch(r"/farmer/profile-photo/[0-9]+", normalized_path) is not None or
+            normalized_path.startswith(("/static/", "/media/")))
 
 
 class FarmerPortalMiddleware:
