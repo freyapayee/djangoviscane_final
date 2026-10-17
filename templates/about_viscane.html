@@ -7,7 +7,7 @@
     <meta name="description" content="Learn more about VISCANE, an edge-based AI system for sugarcane quality grading and maturity detection.">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/about-viscane.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about-viscane.css') }}?v=4">
     <title>Learn More | VISCANE</title>
 </head>
 <body class="vis-about-page ds-app">
@@ -44,7 +44,7 @@
 
         <section class="vis-about-hero vis-reveal" aria-labelledby="about-title">
             <div class="vis-hero-copy">
-                <h1 id="about-title"><span class="vis-title-mark">V</span>ISCANE</h1>
+                <h1 id="about-title">VISCANE</h1>
                 <p class="vis-hero-subtitle">An Edge-Based AI System for Sugarcane Quality Grading and Maturity Detection Using RGB-HSV Imaging</p>
                 <p class="vis-about-lead">A practical, accessible platform that transforms sugarcane images and agronomic inputs into clear quality insights, yield estimates, and recommendations.</p>
                 <div class="vis-hero-actions"><a class="vis-button" href="#overview">Explore VISCANE <span aria-hidden="true">&darr;</span></a><a class="vis-button is-tonal" href="{{ '/homepage' if farmer_user else '/auth?mode=login' }}">{{ farmer_text('Back to Dashboard') if farmer_user else 'Use the system' }} <span aria-hidden="true">&rarr;</span></a></div>
