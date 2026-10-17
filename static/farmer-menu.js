@@ -23,7 +23,14 @@
         for (const item of data.announcements) {
             const article = document.createElement('article');
             article.className = 'list-row';
+            const badge = document.createElement('div');
+            badge.className = 'list-badge';
+            badge.setAttribute('aria-hidden', 'true');
+            const icon = document.createElement('ion-icon');
+            icon.setAttribute('name', 'notifications-outline');
+            badge.append(icon);
             const copy = document.createElement('div');
+            copy.className = 'farmer-announcement-copy';
             const title = document.createElement('h4');
             title.textContent = item.title;
             const body = document.createElement('p');
@@ -32,7 +39,7 @@
             date.dateTime = item.created_at;
             date.textContent = new Date(item.created_at).toLocaleString();
             copy.append(title, body, date);
-            article.append(copy);
+            article.append(badge, copy);
             list.append(article);
         }
         if (!data.announcements.length) list.textContent = translate('No announcements yet. New admin updates will appear here.');

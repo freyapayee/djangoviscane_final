@@ -44,7 +44,7 @@ class FarmerMobileTests(TestCase):
         self.assertContains(about, 'href="/homepage"')
         self.assertNotContains(about, 'href="/auth?mode=login"')
         news = self.client.get("/farmer/news")
-        self.assertContains(news, '/static/images/access-cane.svg')
+        self.assertContains(news, '/static/images/sra-equipment-upgrades.jpg')
         language = self.client.post("/i18n/setlang/", {"language": "en", "next": "/farmer/settings"})
         self.assertEqual(language.status_code, 302)
         self.assertEqual(language["Location"], "/farmer/settings")

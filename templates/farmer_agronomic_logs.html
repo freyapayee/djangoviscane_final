@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=3">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=4">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_agronomic_logs">
 
@@ -175,6 +175,6 @@
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
     {% include 'components/farmer_menu.html' %}
     <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
-    <script src="/static/farmer-menu.js?v=4" defer></script>
+    <script src="/static/farmer-menu.js?v=5" defer></script>
 </body>
 </html>

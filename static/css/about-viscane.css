@@ -39,3 +39,18 @@ body.ds-app.vis-about-page { --about-green:#087a35; --about-deep:#075326; --abou
 @media (max-width:900px) { .vis-about-hero { grid-template-columns:minmax(0,1fr) 220px; padding:45px 38px; }.vis-feature-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.vis-workflow-body,.vis-team-body { grid-template-columns:1fr; gap:20px; }.vis-workflow-list { grid-template-columns:repeat(5,minmax(120px,1fr)); overflow:auto; padding-bottom:8px; } }
 @media (max-width:700px) { body.ds-app.vis-about-page { padding:16px; background-attachment:scroll; }.vis-about-back { display:none!important; }.vis-about-nav { position:relative; top:auto; justify-content:flex-start; width:100%; overflow:auto; flex-wrap:nowrap; border-radius:16px; }.vis-about-nav a { flex:0 0 auto; }.vis-about-hero { grid-template-columns:1fr; min-height:0; padding:34px 24px 22px; border-radius:28px 12px 28px 12px; }.vis-hero-logo-wrap { min-height:155px; order:-1; }.vis-hero-logo { width:145px; }.vis-logo-glow { width:160px; height:160px; }.vis-about-hero h1 { font-size:clamp(58px,18vw,88px); }.vis-hero-subtitle { font-size:16px; }.vis-about-lead { font-size:15px; }.vis-section-ribbon { max-width:calc(100% - 20px); margin-left:8px; font-size:17px; }.vis-summary-panel,.vis-workflow-body,.vis-team-body { padding:24px; }.vis-feature-grid,.vis-sdg-grid { grid-template-columns:1fr; padding:16px; }.vis-feature-card { min-height:0; }.vis-workflow-list { grid-template-columns:repeat(5,150px); }.vis-sdg-intro { align-items:flex-start; flex-direction:column; gap:13px; padding:18px; }.vis-sdg-banner { width:100%; max-width:390px; }.vis-sdg-card { min-height:0; }.vis-sdg-logo { flex-basis:82px; width:82px; height:82px; }.vis-team-list div { align-items:flex-start; flex-direction:column; gap:3px; }.vis-team-list span { text-align:left; } }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; }.vis-reveal { opacity:1; transform:none; transition:none; }.vis-hero-logo,.vis-logo-glow { animation:none; }.vis-about-nav a,.vis-feature-card { transition:none; } }
+
+/* About VISCANE must read as one column on a phone, including inside the APK. */
+@media (max-width:700px) {
+    body.ds-app.vis-about-page { overflow-x: hidden; }
+    body.ds-app.vis-about-page .vis-about-header { flex-wrap: wrap; }
+    body.ds-app.vis-about-page .vis-about-back { display: inline-flex !important; }
+    body.ds-app.vis-about-page .vis-overview-grid { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-about-page .vis-purpose-stack,
+    body.ds-app.vis-about-page .vis-summary-panel,
+    body.ds-app.vis-about-page .vis-purpose-card { min-width: 0; }
+    body.ds-app.vis-about-page .vis-workflow-list { grid-template-columns: minmax(0, 1fr); overflow: visible; }
+    body.ds-app.vis-about-page .vis-workflow-list li { min-height: 0; }
+    body.ds-app.vis-about-page .vis-workflow-list li::after { display: none; }
+    body.ds-app.vis-about-page .vis-hero-actions { flex-wrap: wrap; }
+}

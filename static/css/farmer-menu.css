@@ -53,3 +53,47 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap
     body.ds-app.vis-farmer-dashboard .header-actions { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
     body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { flex-shrink: 0; }
 }
+
+/* Keep the news card and live announcements readable in the Android WebView. */
+body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+}
+body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 14px;
+}
+body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.farmer-news-page .sra-highlight-content { min-width: 0; }
+.farmer-news-page .sra-highlight-title { margin: 0 0 8px; line-height: 1.35; overflow-wrap: break-word; }
+.farmer-news-page .sra-highlight-source { margin-bottom: 16px; line-height: 1.4; }
+.farmer-news-page .sra-link { display: flex; align-items: center; gap: 8px; min-width: 0; line-height: 1.4; overflow-wrap: anywhere; }
+body.ds-app.vis-farmer-dashboard .farmer-news-page #farmer-announcement-list .list-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+}
+.farmer-news-page #farmer-announcement-list .list-badge { flex: 0 0 36px; width: 36px; height: 36px; }
+.farmer-news-page .farmer-announcement-copy { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.farmer-news-page .farmer-announcement-copy h4 { margin: 0; line-height: 1.35; }
+.farmer-news-page .farmer-announcement-copy p { margin: 8px 0; white-space: pre-wrap; line-height: 1.5; }
+.farmer-news-page .farmer-announcement-copy time { display: block; line-height: 1.4; }
+@media (max-width: 700px) {
+    body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-farmer-dashboard .farmer-news-page .panel { padding: 18px; }
+    .farmer-news-page .panel-header > div { min-width: 0; flex: 1 1 180px; }
+    .farmer-news-page .feedback-panel .panel-header .btn { width: 100%; justify-content: center; }
+}

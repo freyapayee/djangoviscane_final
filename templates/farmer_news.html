@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=3">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=4">
 </head>
-<body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_recommendations">
+<body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_news">
 
     <div class="dashboard-bg"></div>
 
@@ -60,8 +60,8 @@
                     <article class="sra-highlight">
                         <a class="sra-highlight-image" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer" aria-label="Open SRA official news article">
                             <img
-                                src="{{ url_for('static', filename='images/access-cane.svg') }}"
-                                alt="Sugarcane illustration"
+                                src="{{ url_for('static', filename='images/sra-equipment-upgrades.jpg') }}"
+                                alt="SRA equipment turnover in Negros Occidental"
                                 loading="lazy"
                             >
                         </a>
@@ -89,16 +89,16 @@
                     <div id="farmer-announcement-list">
                     {% if announcements %}
                         {% for announcement in announcements %}
-                            <div class="list-row">
-                                <div class="list-badge"><ion-icon name="notifications-outline"></ion-icon></div>
-                                <div style="flex: 1;">
-                                    <h4 style="margin: 0;">{{ announcement.title }}</h4>
-                                    <div class="list-meta" style="margin-top: 4px;">{{ announcement.message }}</div>
-                                    <div class="list-meta" style="margin-top: 6px;">
+                            <article class="list-row">
+                                <div class="list-badge" aria-hidden="true"><ion-icon name="notifications-outline"></ion-icon></div>
+                                <div class="farmer-announcement-copy">
+                                    <h4>{{ announcement.title }}</h4>
+                                    <p class="list-meta">{{ announcement.message }}</p>
+                                    <time datetime="{{ announcement.created_at.isoformat() if announcement.created_at else '' }}">
                                         {{ announcement.created_at.strftime('%b %d, %I:%M %p') if announcement.created_at else 'Date unavailable' }}
-                                    </div>
+                                    </time>
                                 </div>
-                            </div>
+                            </article>
                         {% endfor %}
                     {% else %}
                         <div class="list-meta">{{ farmer_text('No announcements yet. New admin updates will appear here.') }}</div>
@@ -130,7 +130,7 @@
     </main>
     {% include 'components/farmer_menu.html' %}
     <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
-    <script src="/static/farmer-menu.js?v=4" defer></script>
+    <script src="/static/farmer-menu.js?v=5" defer></script>
     <script src="/static/farmer_ui.js"></script>
     <script src="/static/farmer-tutorial.js?v=9"></script>
     {% include 'hiligaynon_runtime.html' %}

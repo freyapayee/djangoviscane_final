@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/calculate-page.css') }}?v=2">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=3">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=4">
 </head>
 <body class="farmer-layout ds-app vis-calculate-page">
     <div class="dashboard-bg"></div>
@@ -191,6 +191,6 @@
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
     {% include 'components/farmer_menu.html' %}
     <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
-    <script src="/static/farmer-menu.js?v=4" defer></script>
+    <script src="/static/farmer-menu.js?v=5" defer></script>
 </body>
 </html>

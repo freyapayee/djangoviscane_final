@@ -1571,7 +1571,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=9">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=3">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=4">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard">
     <div class="dashboard-bg"></div>
@@ -2747,6 +2747,6 @@
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
     <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
-    <script src="/static/farmer-menu.js?v=4" defer></script>
+    <script src="/static/farmer-menu.js?v=5" defer></script>
 </body>
 </html>
