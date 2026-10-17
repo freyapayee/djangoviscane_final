@@ -32,6 +32,33 @@ class FarmerMobileTests(TestCase):
         self.assertEqual(client.get("/admin-login").status_code, 403)
         self.assertContains(self.client.get("/"), "Admin Portal")
 
+    @override_settings(FARMER_ONLY=True)
+    def test_mobile_language_news_about_and_favicon(self):
+        session = self.client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        for path in ("/farmer/news", "/about-viscane", "/favicon.ico"):
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 200)
+        about = self.client.get("/about-viscane")
+        self.assertContains(about, 'href="/homepage"')
+        self.assertNotContains(about, 'href="/auth?mode=login"')
+        news = self.client.get("/farmer/news")
+        self.assertContains(news, '/static/images/access-cane.svg')
+        language = self.client.post("/i18n/setlang/", {"language": "en", "next": "/farmer/settings"})
+        self.assertEqual(language.status_code, 302)
+        self.assertEqual(language["Location"], "/farmer/settings")
+        self.assertEqual(self.client.get("/admin-login").status_code, 403)
+
+    @override_settings(FARMER_ONLY=False)
+    def test_apk_marker_can_switch_language(self):
+        client = Client(HTTP_USER_AGENT="Android ViscaneFarmer/1.0")
+        response = client.post("/i18n/setlang/", {"language": "en", "next": "/farmer/settings"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/farmer/settings")
+        self.assertEqual(client.get("/favicon.ico").status_code, 200)
+        self.assertEqual(client.get("/admin-login").status_code, 403)
+
     def test_csrf_required_and_login_rotates_session(self):
         client = Client(enforce_csrf_checks=True)
         client.get("/auth")

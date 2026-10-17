@@ -9,7 +9,7 @@ FARMER_PATHS = {
     "/", "/auth", "/auth/register-success", "/logout", "/homepage",
     "/farmer/recommendations", "/farmer/agronomic-logs", "/farmer/settings",
     "/farmer/news", "/about-viscane", "/farmer/notifications", "/farmer/feedback", "/scan/new", "/calculate", "/api/scan/predict",
-    "/i18n/setlang/",
+    "/i18n/setlang", "/favicon.ico",
 }
 
 
@@ -35,6 +35,6 @@ class FarmerPortalMiddleware:
         if request.farmer_only:
             from django.utils.cache import patch_vary_headers
             patch_vary_headers(response, ("User-Agent",))
-        if request.path in FARMER_PATHS and not request.path.startswith("/static/"):
+        if is_farmer_path(request.path) and not request.path.startswith("/static/"):
             response["Cache-Control"] = "no-store"
         return response

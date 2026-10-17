@@ -27,7 +27,7 @@
             <symbol id="vis-icon-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3.5 19c.5-3 2.4-4.5 5.5-4.5s5 1.5 5.5 4.5M14 14.5c3.5-.7 5.8.7 6.5 3.5"/></symbol>
         </svg>
         <header class="vis-about-header">
-            <a class="vis-about-brand" href="/" aria-label="VISCANE home">
+            <a class="vis-about-brand" href="{{ '/homepage' if farmer_user else '/' }}" aria-label="VISCANE home">
                 <img src="{{ url_for('static', filename='favicon.png') }}" alt="" class="vis-about-logo">
                 <span><strong>VISCANE</strong><small>AI Sugarcane Quality Grading</small></span>
             </a>
@@ -47,7 +47,7 @@
                 <h1 id="about-title"><span class="vis-title-mark">V</span>ISCANE</h1>
                 <p class="vis-hero-subtitle">An Edge-Based AI System for Sugarcane Quality Grading and Maturity Detection Using RGB-HSV Imaging</p>
                 <p class="vis-about-lead">A practical, accessible platform that transforms sugarcane images and agronomic inputs into clear quality insights, yield estimates, and recommendations.</p>
-                <div class="vis-hero-actions"><a class="vis-button" href="#overview">Explore VISCANE <span aria-hidden="true">&darr;</span></a><a class="vis-button is-tonal" href="/auth?mode=login">Use the system <span aria-hidden="true">&rarr;</span></a></div>
+                <div class="vis-hero-actions"><a class="vis-button" href="#overview">Explore VISCANE <span aria-hidden="true">&darr;</span></a><a class="vis-button is-tonal" href="{{ '/homepage' if farmer_user else '/auth?mode=login' }}">{{ farmer_text('Back to Dashboard') if farmer_user else 'Use the system' }} <span aria-hidden="true">&rarr;</span></a></div>
             </div>
             <div class="vis-hero-logo-wrap" aria-hidden="true"><span class="vis-logo-glow"></span><img src="{{ url_for('static', filename='favicon.png') }}" alt="" class="vis-hero-logo"></div>
         </section>
@@ -88,7 +88,7 @@
             <div class="vis-team-body vis-glass-panel"><div class="vis-team-heading"><p class="vis-about-eyebrow">Project team</p><h2 id="team-title">Developed by algoJAWM</h2><p>VISCANE was developed by algoJAWM, combining project leadership, analysis, and programming to build a practical AI system for sugarcane communities.</p></div><div class="vis-team-list"><div><strong>Faye N. Cuevas</strong><span>Project Manager</span></div><div><strong>Windy D. Elipse</strong><span>System Analyst</span></div><div><strong>John Rolo C. Flores</strong><span>Programmer</span></div></div></div>
         </section>
 
-        <footer class="vis-about-footer"><a href="/auth?mode=login">Return to Login</a><a href="/">Back to Selection</a></footer>
+        <footer class="vis-about-footer">{% if farmer_user %}<a href="/homepage">{{ farmer_text('Back to Dashboard') }}</a>{% else %}<a href="/auth?mode=login">Return to Login</a><a href="/">Back to Selection</a>{% endif %}</footer>
     </main>
     <script>
         (() => {
