@@ -1,0 +1,1267 @@
+[
+{
+  "model": "core.user",
+  "pk": 1,
+  "fields": {
+    "fullname": "Faye Cuevas",
+    "email": "fayecuevas1213@gmail.com",
+    "phone": "09690470270",
+    "password": "pbkdf2_sha256$1000000$T8rGvhsNVgox5bYiV8eVFM$dREBUB2eK8dgH1cTUq/de2gqeccIRb/BZkc1o9pNcSI=",
+    "profile_photo_path": "",
+    "created_at": "2026-08-24T15:52:31.818Z",
+    "province": "Negros Occidental",
+    "municipality": "Isabela",
+    "barangay": "Cabcab",
+    "is_active": true,
+    "is_archived": false
+  }
+},
+{
+  "model": "core.user",
+  "pk": 2,
+  "fields": {
+    "fullname": "Faye Cuevas",
+    "email": "freyapayecuevas@gmail.com",
+    "phone": "09690470270",
+    "password": "pbkdf2_sha256$1000000$9h6ATJDJzHvC7iEPdkYj7W$vytQ+xY506IKC6oGXJbLBBEeUoY+5Lwr6bI+FwGeTO0=",
+    "profile_photo_path": "farmer-2-ebb3f1e4ba02368a.jpg",
+    "created_at": "2026-10-03T16:22:03.238Z",
+    "province": "Negros Occidental",
+    "municipality": "Isabela",
+    "barangay": "Amin",
+    "is_active": true,
+    "is_archived": false
+  }
+},
+{
+  "model": "core.admin",
+  "pk": 1,
+  "fields": {
+    "username": "viscane_2",
+    "full_name": "",
+    "email": "viscane@gmail.com",
+    "password_hash": "pbkdf2_sha256$1000000$w9MCkIHEyfec2jQEuuRP28$9+9gTmSsPjMsAqaLBiM8ox29qX3SGB1/+kcFbVTdU+I=",
+    "role": "superadmin",
+    "is_archived": false
+  }
+},
+{
+  "model": "core.admin",
+  "pk": 2,
+  "fields": {
+    "username": "viscane_superadmin",
+    "full_name": "",
+    "email": "viscane2026@gmail.com",
+    "password_hash": "pbkdf2_sha256$1000000$3kbM38VWlKPceZA0cdLxMa$+kt3J+RHPTxhxQKVPgeQTYBayTgGB+7YJTnHTDPxGn4=",
+    "role": "superadmin",
+    "is_archived": false
+  }
+},
+{
+  "model": "core.admin",
+  "pk": 3,
+  "fields": {
+    "username": "viscanesuperadmin1",
+    "full_name": "",
+    "email": "viscanesadmin@gmail.com",
+    "password_hash": "pbkdf2_sha256$1000000$7B8vEUIC3SBpcmFvnIFdjL$g71xWuWHm77uYQOVHnHrAn3ICdRF6dhYdKW44ZedEYA=",
+    "role": "superadmin",
+    "is_archived": false
+  }
+},
+{
+  "model": "core.admin",
+  "pk": 4,
+  "fields": {
+    "username": "admin1viscane",
+    "full_name": "pia cuevas",
+    "email": "admin1viscane@gmail.com",
+    "password_hash": "pbkdf2_sha256$1000000$wYC4vIzyi2Y0jvY7TUKH92$wKjkCrYcQFFoUfD09DpvKlBGTxYIL7Gu4NkzSKSuahw=",
+    "role": "admin",
+    "is_archived": false
+  }
+},
+{
+  "model": "core.admin",
+  "pk": 5,
+  "fields": {
+    "username": "superadminviscane1",
+    "full_name": "Pia Cuevas",
+    "email": "superadminviscane1@gmail.com",
+    "password_hash": "pbkdf2_sha256$1000000$xJtgLAgY6b0BGuHFzouY13$KrR2d9jj8RrhhODT1J2/KKLgmGssUD/mCheATv9887g=",
+    "role": "superadmin",
+    "is_archived": false
+  }
+},
+{
+  "model": "core.scan",
+  "pk": 1,
+  "fields": {
+    "user": 2,
+    "cv_upload": 27,
+    "hidden_from_recent": false,
+    "plot_name": "Plot1",
+    "grade": "C",
+    "maturity_pct": 95,
+    "status": "monitor",
+    "created_at": "2026-10-03T16:27:02.643Z"
+  }
+},
+{
+  "model": "core.scan",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "cv_upload": 29,
+    "hidden_from_recent": false,
+    "plot_name": "Punta",
+    "grade": "C",
+    "maturity_pct": 95,
+    "status": "monitor",
+    "created_at": "2026-10-03T16:39:11.189Z"
+  }
+},
+{
+  "model": "core.scan",
+  "pk": 3,
+  "fields": {
+    "user": 2,
+    "cv_upload": 30,
+    "hidden_from_recent": false,
+    "plot_name": "piyak",
+    "grade": "B",
+    "maturity_pct": 65,
+    "status": "monitor",
+    "created_at": "2026-10-03T16:43:33.435Z"
+  }
+},
+{
+  "model": "core.scan",
+  "pk": 4,
+  "fields": {
+    "user": 2,
+    "cv_upload": 31,
+    "hidden_from_recent": false,
+    "plot_name": "Punta",
+    "grade": "B",
+    "maturity_pct": 65,
+    "status": "monitor",
+    "created_at": "2026-10-03T16:53:24.355Z"
+  }
+},
+{
+  "model": "core.scan",
+  "pk": 5,
+  "fields": {
+    "user": 2,
+    "cv_upload": 33,
+    "hidden_from_recent": false,
+    "plot_name": "kilid",
+    "grade": "B",
+    "maturity_pct": 65,
+    "status": "monitor",
+    "created_at": "2026-10-03T17:09:22.666Z"
+  }
+},
+{
+  "model": "core.scan",
+  "pk": 6,
+  "fields": {
+    "user": 2,
+    "cv_upload": 34,
+    "hidden_from_recent": false,
+    "plot_name": "punta2",
+    "grade": "B",
+    "maturity_pct": 65,
+    "status": "monitor",
+    "created_at": "2026-10-03T23:54:56.386Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 1,
+  "fields": {
+    "user_id": 1,
+    "action": "Superadmin account created: viscane_2",
+    "timestamp": "2026-09-27T10:57:20.672Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 2,
+  "fields": {
+    "user_id": null,
+    "action": "Superadmin account registered: viscane_superadmin",
+    "timestamp": "2026-09-27T10:59:37.804Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 3,
+  "fields": {
+    "user_id": null,
+    "action": "Superadmin account registered: viscanesuperadmin1",
+    "timestamp": "2026-09-29T06:35:23.776Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 4,
+  "fields": {
+    "user_id": 2,
+    "action": "User 2 uploaded a scan for Plot1",
+    "timestamp": "2026-10-03T16:27:02.645Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 5,
+  "fields": {
+    "user_id": 2,
+    "action": "User 2 uploaded a scan for Punta",
+    "timestamp": "2026-10-03T16:39:11.191Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 6,
+  "fields": {
+    "user_id": 2,
+    "action": "User 2 uploaded a scan for piyak",
+    "timestamp": "2026-10-03T16:43:33.437Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 7,
+  "fields": {
+    "user_id": 2,
+    "action": "User 2 uploaded a scan for Punta",
+    "timestamp": "2026-10-03T16:53:24.356Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 8,
+  "fields": {
+    "user_id": 2,
+    "action": "User 2 uploaded a scan for kilid",
+    "timestamp": "2026-10-03T17:09:22.668Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 9,
+  "fields": {
+    "user_id": 2,
+    "action": "User 2 uploaded a scan for punta2",
+    "timestamp": "2026-10-03T23:54:56.388Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 10,
+  "fields": {
+    "user_id": 2,
+    "action": "Admin account registered: admin1viscane",
+    "timestamp": "2026-10-04T07:10:26.405Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 11,
+  "fields": {
+    "user_id": 3,
+    "action": "Superadmin account registered: superadminviscane1",
+    "timestamp": "2026-10-04T07:58:56.522Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 12,
+  "fields": {
+    "user_id": 2,
+    "action": "Farmer updated profile details: Faye Cuevas",
+    "timestamp": "2026-10-04T09:15:45.676Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 13,
+  "fields": {
+    "user_id": 2,
+    "action": "Farmer updated profile details: Faye Cuevas",
+    "timestamp": "2026-10-04T09:16:21.110Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 14,
+  "fields": {
+    "user_id": 2,
+    "action": "Farmer updated profile details: Faye Cuevas",
+    "timestamp": "2026-10-04T09:24:29.314Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 15,
+  "fields": {
+    "user_id": 2,
+    "action": "Farmer updated profile details: Faye Cuevas",
+    "timestamp": "2026-10-04T09:26:34.683Z"
+  }
+},
+{
+  "model": "core.auditlog",
+  "pk": 16,
+  "fields": {
+    "user_id": 2,
+    "action": "Farmer updated profile details: Faye Cuevas",
+    "timestamp": "2026-10-04T09:26:53.862Z"
+  }
+},
+{
+  "model": "core.systemconfig",
+  "pk": 1,
+  "fields": {
+    "system_name": "VISCANE",
+    "maintenance_mode": false,
+    "model_filename": null,
+    "updated_at": "2026-09-27T11:00:34.459Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 1,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-947",
+    "hectares": "2-3 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "2",
+    "fertilizer_count": "3",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.6740000000000002,
+    "predicted_tc_ha": 641.25,
+    "predicted_lkg": 1073.4525,
+    "recommendations_summary": "Fertilizer Guidance: Follow 3-time fertilizer schedule for VMC 84-947 | Weeding Guidance: Follow 2-time weeding schedule for VMC 84-947 | Weeding Guidance: Consider 3-time weeding for VMC 84-947 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-947 | Plowing Guidance: Consider 3-time plowing for VMC 84-947",
+    "recommendations_snapshot": [],
+    "created_at": "2026-08-24T15:54:28.842Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 2,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "MAURITIO RC888",
+    "hectares": "1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "2",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.9980000000000002,
+    "predicted_tc_ha": 245.75400000000002,
+    "predicted_lkg": 491.0164920000001,
+    "recommendations_summary": "Fertilizer Guidance: Follow 2-time fertilizer schedule for MAURITIO RC888 | Fertilizer Guidance: Consider 3-time fertilizer application for MAURITIO RC888 | Weeding Guidance: Follow 3-time weeding schedule for MAURITIO RC888 | Plowing Guidance: Follow 2-time plowing schedule for MAURITIO RC888 | Plowing Guidance: Consider 3-time plowing for MAURITIO RC888",
+    "recommendations_snapshot": [],
+    "created_at": "2026-08-24T15:54:34.090Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 3,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "MAURITIO RC888",
+    "hectares": "1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "2",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.9980000000000002,
+    "predicted_tc_ha": 245.75400000000002,
+    "predicted_lkg": 491.0164920000001,
+    "recommendations_summary": "Fertilizer Guidance: Follow 2-time fertilizer schedule for MAURITIO RC888 | Fertilizer Guidance: Consider 3-time fertilizer application for MAURITIO RC888 | Weeding Guidance: Follow 3-time weeding schedule for MAURITIO RC888 | Plowing Guidance: Follow 2-time plowing schedule for MAURITIO RC888 | Plowing Guidance: Consider 3-time plowing for MAURITIO RC888",
+    "recommendations_snapshot": [],
+    "created_at": "2026-08-24T15:56:20.986Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 4,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-524",
+    "hectares": "Less than 1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "2",
+    "ratoon_stage": "2nd Ratoon",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.3199999999999998,
+    "predicted_tc_ha": 36.849999999999994,
+    "predicted_lkg": 48.64199999999999,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Fertilizer Guidance: Follow 2-time fertilizer schedule for VMC 84-524 | Fertilizer Guidance: Consider 3-time fertilizer application for VMC 84-524 | Weeding Guidance: Follow 3-time weeding schedule for VMC 84-524 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-524 | Plowing Guidance: Consider 3-time plowing for VMC 84-524",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T10:42:29.566Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 5,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "MAURITIO RC888",
+    "hectares": "Less than 1 Hectares",
+    "plowing_count": "3",
+    "weeding_count": "3",
+    "fertilizer_count": "3",
+    "ratoon_stage": "1st Ratoon",
+    "rssi_infected": "Yes",
+    "predicted_lkg_tc": 0.18080000000000016,
+    "predicted_tc_ha": 10.034400000000009,
+    "predicted_lkg": 1.814219520000003,
+    "recommendations_summary": "Harvest Directives: Delay cutting for sucrose accumulation | Pest and Disease: RSSI infected: apply PHILSURIN control protocol | Fertilizer Guidance: Follow 3-time fertilizer schedule for MAURITIO RC888 | Weeding Guidance: Follow 3-time weeding schedule for MAURITIO RC888 | Plowing Guidance: Follow 3-time plowing schedule for MAURITIO RC888",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T10:44:08.308Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 6,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "MAURITIO RC888",
+    "hectares": "1-2 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "2",
+    "fertilizer_count": "2",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.9980000000000002,
+    "predicted_tc_ha": 368.63100000000003,
+    "predicted_lkg": 736.5247380000002,
+    "recommendations_summary": "Harvest Directives: Finalize immediate harvest logistics | Fertilizer Guidance: Follow 2-time fertilizer schedule for MAURITIO RC888 | Fertilizer Guidance: Consider 3-time fertilizer application for MAURITIO RC888 | Weeding Guidance: Follow 2-time weeding schedule for MAURITIO RC888 | Weeding Guidance: Consider 3-time weeding for MAURITIO RC888 | Plowing Guidance: Follow 2-time plowing schedule for MAURITIO RC888 | Plowing Guidance: Consider 3-time plowing for MAURITIO RC888",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T10:54:52.183Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 7,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-947",
+    "hectares": "1-2 Hectares",
+    "plowing_count": "1",
+    "weeding_count": "2",
+    "fertilizer_count": "3",
+    "ratoon_stage": "1st Ratoon",
+    "rssi_infected": "Yes",
+    "predicted_lkg_tc": 0.25680000000000025,
+    "predicted_tc_ha": 46.08000000000004,
+    "predicted_lkg": 11.833344000000022,
+    "recommendations_summary": "Harvest Directives: Delay cutting for sucrose accumulation | Plowing Guidance: Increase plowing from 1 to at least 2 | Pest and Disease: RSSI infected: apply PHILSURIN control protocol | Fertilizer Guidance: Follow 3-time fertilizer schedule for VMC 84-947 | Weeding Guidance: Follow 2-time weeding schedule for VMC 84-947 | Weeding Guidance: Consider 3-time weeding for VMC 84-947 | Plowing Guidance: Follow 1-time plowing schedule for VMC 84-947 | Plowing Guidance: For VMC 84-947 ratoon, avoid plowing",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T13:30:30.654Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 8,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-524",
+    "hectares": "1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "3",
+    "ratoon_stage": "2nd Ratoon",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.3199999999999998,
+    "predicted_tc_ha": 73.69999999999999,
+    "predicted_lkg": 97.28399999999998,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Fertilizer Guidance: Follow 3-time fertilizer schedule for VMC 84-524 | Weeding Guidance: Follow 3-time weeding schedule for VMC 84-524 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-524 | Plowing Guidance: Consider 3-time plowing for VMC 84-524",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T13:33:15.100Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 9,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-524",
+    "hectares": "1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "3",
+    "ratoon_stage": "2nd Ratoon",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.3199999999999998,
+    "predicted_tc_ha": 73.69999999999999,
+    "predicted_lkg": 97.28399999999998,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Fertilizer Guidance: Follow 3-time fertilizer schedule for VMC 84-524 | Weeding Guidance: Follow 3-time weeding schedule for VMC 84-524 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-524 | Plowing Guidance: Consider 3-time plowing for VMC 84-524",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T13:37:59.367Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 10,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-947",
+    "hectares": "1 Hectares",
+    "plowing_count": "1",
+    "weeding_count": "2",
+    "fertilizer_count": "1",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.2648,
+    "predicted_tc_ha": 193.79999999999998,
+    "predicted_lkg": 245.11823999999996,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Plowing Guidance: Increase plowing from 1 to at least 2 | Fertilizer Guidance: Increase fertilizer from 1 to at least 2 | Fertilizer Guidance: Follow 1-time fertilizer schedule for VMC 84-947 | Fertilizer Guidance: Consider 2-time fertilizer application for VMC 84-947 | Fertilizer Guidance: Consider 3-time fertilizer application for VMC 84-947 | Weeding Guidance: Follow 2-time weeding schedule for VMC 84-947 | Weeding Guidance: Consider 3-time weeding for VMC 84-947 | Plowing Guidance: Follow 1-time plowing schedule for VMC 84-947 | Plowing Guidance: Consider 2-time plowing for VMC 84-947 | Plowing Guidance: Consider 3-time plowing for VMC 84-947",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T13:40:31.793Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 11,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": "VMC 84-947",
+    "hectares": "2 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "1",
+    "fertilizer_count": "2",
+    "ratoon_stage": "1st Ratoon",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.2412,
+    "predicted_tc_ha": 296.96,
+    "predicted_lkg": 368.586752,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Weeding Guidance: Increase weeding from 1 to at least 2 | Fertilizer Guidance: Follow 2-time fertilizer schedule for VMC 84-947 | Fertilizer Guidance: Consider 3-time fertilizer application for VMC 84-947 | Weeding Guidance: Follow 1-time weeding schedule for VMC 84-947 | Weeding Guidance: Consider 2-time weeding for VMC 84-947 | Weeding Guidance: Consider 3-time weeding for VMC 84-947 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-947 | Plowing Guidance: For VMC 84-947 ratoon, avoid plowing",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T13:50:42.518Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 12,
+  "fields": {
+    "user": 1,
+    "scan": null,
+    "variety": null,
+    "hectares": null,
+    "plowing_count": null,
+    "weeding_count": null,
+    "fertilizer_count": null,
+    "ratoon_stage": null,
+    "rssi_infected": null,
+    "predicted_lkg_tc": null,
+    "predicted_tc_ha": null,
+    "predicted_lkg": null,
+    "recommendations_summary": "Missing Inputs: Complete missing agronomic inputs | Fertilizer Guidance: Choose fertilizer timing for VMC 84-524 | Weeding Guidance: Choose weeding schedule for VMC 84-524 | Plowing Guidance: Choose plowing schedule for VMC 84-524",
+    "recommendations_snapshot": [],
+    "created_at": "2026-09-27T13:51:04.725Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 13,
+  "fields": {
+    "user": 2,
+    "scan": null,
+    "variety": "VMC 84-947",
+    "hectares": "1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "2",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.2648,
+    "predicted_tc_ha": 193.79999999999998,
+    "predicted_lkg": 245.11823999999996,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Fertilizer Guidance: Follow 2-time fertilizer schedule for VMC 84-947 | Fertilizer Guidance: Consider 3-time fertilizer application for VMC 84-947 | Weeding Guidance: Follow 3-time weeding schedule for VMC 84-947 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-947 | Plowing Guidance: Consider 3-time plowing for VMC 84-947",
+    "recommendations_snapshot": [],
+    "created_at": "2026-10-03T16:25:42.853Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 14,
+  "fields": {
+    "user": 2,
+    "scan": null,
+    "variety": "VMC 84-524",
+    "hectares": "1 Hectares",
+    "plowing_count": "2",
+    "weeding_count": "3",
+    "fertilizer_count": "2",
+    "ratoon_stage": "Plant",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.53,
+    "predicted_tc_ha": 179.25,
+    "predicted_lkg": 274.2525,
+    "recommendations_summary": "Harvest Directives: Expedite harvest to prevent further yield loss | Fertilizer Guidance: Follow 2-time fertilizer schedule for VMC 84-524 | Fertilizer Guidance: Consider 3-time fertilizer application for VMC 84-524 | Weeding Guidance: Follow 3-time weeding schedule for VMC 84-524 | Plowing Guidance: Follow 2-time plowing schedule for VMC 84-524 | Plowing Guidance: Consider 3-time plowing for VMC 84-524",
+    "recommendations_snapshot": [],
+    "created_at": "2026-10-03T16:39:30.673Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 15,
+  "fields": {
+    "user": 2,
+    "scan": null,
+    "variety": "MAURITIO RC888",
+    "hectares": "1 Hectares",
+    "plowing_count": "1",
+    "weeding_count": "2",
+    "fertilizer_count": "1",
+    "ratoon_stage": "1st Ratoon",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.3107999999999997,
+    "predicted_tc_ha": 145.4988,
+    "predicted_lkg": 190.71982703999996,
+    "recommendations_summary": "Harvest Directives: Delay cutting for sucrose accumulation | Plowing Guidance: Increase plowing from 1 to at least 2 | Fertilizer Guidance: Increase fertilizer from 1 to at least 2 | Fertilizer Guidance: Follow 1-time fertilizer schedule for MAURITIO RC888 | Fertilizer Guidance: Consider 2-time fertilizer application for MAURITIO RC888 | Fertilizer Guidance: Consider 3-time fertilizer application for MAURITIO RC888 | Weeding Guidance: Follow 2-time weeding schedule for MAURITIO RC888 | Weeding Guidance: Consider 3-time weeding for MAURITIO RC888 | Plowing Guidance: Follow 1-time plowing schedule for MAURITIO RC888 | Plowing Guidance: Consider 2-time plowing for MAURITIO RC888 | Plowing Guidance: Consider 3-time plowing for MAURITIO RC888",
+    "recommendations_snapshot": [],
+    "created_at": "2026-10-03T17:09:42.572Z"
+  }
+},
+{
+  "model": "core.agronomiclog",
+  "pk": 16,
+  "fields": {
+    "user": 2,
+    "scan": 6,
+    "variety": "MAURITIO RC888",
+    "hectares": "1 Hectares",
+    "plowing_count": "3",
+    "weeding_count": "2",
+    "fertilizer_count": "1",
+    "ratoon_stage": "1st Ratoon",
+    "rssi_infected": "No",
+    "predicted_lkg_tc": 1.3107999999999997,
+    "predicted_tc_ha": 145.4988,
+    "predicted_lkg": 190.71982703999996,
+    "recommendations_summary": "Harvest Directives: Delay cutting for sucrose accumulation | Fertilizer Guidance: Increase fertilizer from 1 to at least 2 | Fertilizer Guidance: Follow 1-time fertilizer schedule for MAURITIO RC888 | Fertilizer Guidance: Consider 2-time fertilizer application for MAURITIO RC888 | Fertilizer Guidance: Consider 3-time fertilizer application for MAURITIO RC888 | Weeding Guidance: Follow 2-time weeding schedule for MAURITIO RC888 | Weeding Guidance: Consider 3-time weeding for MAURITIO RC888 | Plowing Guidance: Follow 3-time plowing schedule for MAURITIO RC888",
+    "recommendations_snapshot": [
+      {
+        "icon": "pause-circle-outline",
+        "title": "Delay cutting for sucrose accumulation",
+        "meta": "Real-time harvest directive: \"Not Mature\" classification indicates stalks should not be cut yet. Delay harvest to allow optimal sucrose accumulation before scheduling transport.",
+        "tag": "Advisory",
+        "tag_class": "warning",
+        "category": "Harvest Directives"
+      },
+      {
+        "icon": "trending-up-outline",
+        "title": "Increase fertilizer from 1 to at least 2",
+        "meta": "Low input level is pulling down predicted LKG.",
+        "tag": "Improve",
+        "tag_class": "warning",
+        "category": "Fertilizer Guidance"
+      },
+      {
+        "icon": "leaf-outline",
+        "title": "Follow 1-time fertilizer schedule for MAURITIO RC888",
+        "meta": "1-Time: Apply full N-P-K at planting.",
+        "tag": "Guide",
+        "tag_class": "",
+        "category": "Fertilizer Guidance"
+      },
+      {
+        "icon": "trending-up-outline",
+        "title": "Consider 2-time fertilizer application for MAURITIO RC888",
+        "meta": "2-Time: Basal dose at planting, then top dress around 3 months.",
+        "tag": "Upgrade",
+        "tag_class": "warning",
+        "category": "Fertilizer Guidance"
+      },
+      {
+        "icon": "trending-up-outline",
+        "title": "Consider 3-time fertilizer application for MAURITIO RC888",
+        "meta": "3-Time: Split nitrogen into 3 doses within first 3-4 months, or at 30, 60, and 90 days after planting.",
+        "tag": "Upgrade",
+        "tag_class": "warning",
+        "category": "Fertilizer Guidance"
+      },
+      {
+        "icon": "leaf-outline",
+        "title": "Follow 2-time weeding schedule for MAURITIO RC888",
+        "meta": "2-Time: Possible, but reduced weeding can increase disease risk.",
+        "tag": "Guide",
+        "tag_class": "",
+        "category": "Weeding Guidance"
+      },
+      {
+        "icon": "trending-up-outline",
+        "title": "Consider 3-time weeding for MAURITIO RC888",
+        "meta": "3-Time: Best practice. Perform manual weeding at 25, 45, and 65 days after planting to reduce stress and disease outbreaks.",
+        "tag": "Upgrade",
+        "tag_class": "warning",
+        "category": "Weeding Guidance"
+      },
+      {
+        "icon": "leaf-outline",
+        "title": "Follow 3-time plowing schedule for MAURITIO RC888",
+        "meta": "3-Time: Strongly recommended to bury residues/weeds and improve drainage against waterlogging stress.",
+        "tag": "Guide",
+        "tag_class": "",
+        "category": "Plowing Guidance"
+      }
+    ],
+    "created_at": "2026-10-03T23:55:20.997Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 1,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090628-8ab46a74790f13df.jpg",
+    "original_filename": "01ec21c8-51d0-48f7-92e0-c8127b5ebef2.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "yolov8",
+    "confidence": 0.9923561811447144,
+    "created_at": "2026-08-31T09:06:28.597Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 2,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090645-da2b1d10a1d81546.jpg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "resnet18",
+    "confidence": 0.9087972044944763,
+    "created_at": "2026-08-31T09:06:45.396Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 3,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090730-0a61a354cbdce6c0.jpg",
+    "original_filename": "97e678cd-e15d-42ec-80f5-42f8102fae1f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "resnet18",
+    "confidence": 0.9999996423721313,
+    "created_at": "2026-08-31T09:07:30.445Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 4,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090746-e2c44f65a7a11a2f.jpg",
+    "original_filename": "27372740-6336-4150-ab83-c8692aca9cad.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "resnet18",
+    "confidence": 0.9999982118606567,
+    "created_at": "2026-08-31T09:07:46.734Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 5,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090817-3136d5bd21d828e2.jpg",
+    "original_filename": "sugarcane-pic.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "MATURE",
+    "model_name": "resnet18",
+    "confidence": 0.993916928768158,
+    "created_at": "2026-08-31T09:08:17.761Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 6,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090826-eb33633a8fc48c7d.jpg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "resnet18",
+    "confidence": 0.9087972044944763,
+    "created_at": "2026-08-31T09:08:26.740Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 7,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090841-5a647bdcd6b2cec9.jpg",
+    "original_filename": "mauritio.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "MATURE",
+    "model_name": "resnet18",
+    "confidence": 0.9985847473144531,
+    "created_at": "2026-08-31T09:08:41.974Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 8,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260831090958-2e5af3ab1b832c32.jpg",
+    "original_filename": "IMG_20260409_111246.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "yolov8",
+    "confidence": 0.9997896552085876,
+    "created_at": "2026-08-31T09:09:58.727Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 9,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927102542-9a82a177876586f6.jpg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpg",
+    "variety": null,
+    "maturity_status": null,
+    "model_name": null,
+    "confidence": null,
+    "created_at": "2026-09-27T10:25:42.300Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 10,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927104053-1eacf130656c1232.jpg",
+    "original_filename": "01ec21c8-51d0-48f7-92e0-c8127b5ebef2.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "MATURE",
+    "model_name": "",
+    "confidence": 0.5545467734336853,
+    "created_at": "2026-09-27T10:40:53.077Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 11,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927104108-77ba97b9a21c7650.jpg",
+    "original_filename": "01ec21c8-51d0-48f7-92e0-c8127b5ebef2.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "MATURE",
+    "model_name": "",
+    "confidence": 0.5545467734336853,
+    "created_at": "2026-09-27T10:41:08.268Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 12,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927104129-c83cd4e4391b7ba2.jpg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.844352126121521,
+    "created_at": "2026-09-27T10:41:29.175Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 13,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927104347-899997bc3c5bcfe7.jpg",
+    "original_filename": "IMG_20260422_092858.jpg",
+    "variety": "MAURITIO RC888",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.9134151935577393,
+    "created_at": "2026-09-27T10:43:47.739Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 14,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927105311-8e9a1833091c53f0.jpg",
+    "original_filename": "97e678cd-e15d-42ec-80f5-42f8102fae1f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.9669829607009888,
+    "created_at": "2026-09-27T10:53:11.083Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 15,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927105416-45fe45ee48d71242.jpg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.844352126121521,
+    "created_at": "2026-09-27T10:54:16.427Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 16,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927105434-115803d41621e09a.jpg",
+    "original_filename": "IMG_20260420_171737-201.jpg",
+    "variety": "MAURITIO RC888",
+    "maturity_status": "MATURE",
+    "model_name": "",
+    "confidence": 0.9421272277832031,
+    "created_at": "2026-09-27T10:54:34.261Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 17,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927125511-b80d1410fd5808ea.jpg",
+    "original_filename": "IMG_20260409_111118.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.7112241387367249,
+    "created_at": "2026-09-27T12:55:11.063Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 18,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927125855-25ba215a6c6f4692.jpg",
+    "original_filename": "IMG_20260409_112424.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.6933915019035339,
+    "created_at": "2026-09-27T12:58:55.852Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 19,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927132945-93b8d2959cac525e.jpg",
+    "original_filename": "497495640_4143754289243285_2807455325249846413_n.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.7567760944366455,
+    "created_at": "2026-09-27T13:29:45.181Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 20,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927133245-bea9feff4fdc1c2e.jpg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.844352126121521,
+    "created_at": "2026-09-27T13:32:45.881Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 21,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927133837-327bd13f7d3036d5.jpg",
+    "original_filename": "524.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "MATURE",
+    "model_name": "",
+    "confidence": 0.336984246969223,
+    "created_at": "2026-09-27T13:38:37.544Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 22,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927133936-2d0d27c8a6cc2454.jpg",
+    "original_filename": "847.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.3802472651004791,
+    "created_at": "2026-09-27T13:39:36.505Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 23,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927134000-ca1c06b427c32d59.jpg",
+    "original_filename": "IMG_20260409_150213.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.9624241590499878,
+    "created_at": "2026-09-27T13:40:00.253Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 24,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20260927135019-f6b492d2cf734037.jpg",
+    "original_filename": "IMG_20260409_150511.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.9320986270904541,
+    "created_at": "2026-09-27T13:50:19.808Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 25,
+  "fields": {
+    "user": 1,
+    "image_path": "uploads/cv_scans/cv-20261002103746-afb515a11bbc29ca.jpg",
+    "original_filename": "Happening-Now-Layout.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.39801985025405884,
+    "created_at": "2026-10-02T10:37:46.447Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 26,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003162508-63388b0797a08349.jpg",
+    "original_filename": "IMG_20260409_150218.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.9438656568527222,
+    "created_at": "2026-10-03T16:25:08.698Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 27,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003162635-6ed24784dc40097a.jpg",
+    "original_filename": "IMG_20260409_150225.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.9292532801628113,
+    "created_at": "2026-10-03T16:26:35.368Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 28,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003162947-bf7308ce2a0bfec5.jpeg",
+    "original_filename": "01ec21c8-51d0-48f7-92e0-c8127b5ebef2.jpeg",
+    "variety": "VMC 84-947",
+    "maturity_status": "MATURE",
+    "model_name": "",
+    "confidence": 0.556201696395874,
+    "created_at": "2026-10-03T16:29:47.277Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 29,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003163855-8c0768b1ce6ac683.jpeg",
+    "original_filename": "0cbc714a-cc8d-48ce-b7c0-a0d55fc9e43f.jpeg",
+    "variety": "VMC 84-524",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.8116040825843811,
+    "created_at": "2026-10-03T16:38:55.685Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 30,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003164259-0315492450364c94.jpeg",
+    "original_filename": "97e678cd-e15d-42ec-80f5-42f8102fae1f.jpeg",
+    "variety": "VMC 84-524",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.966680645942688,
+    "created_at": "2026-10-03T16:42:59.664Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 31,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003164737-c9ebd661f4e08f3d.jpg",
+    "original_filename": "IMG_20260422_092856.jpg",
+    "variety": "MAURITIO RC888",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.9084271192550659,
+    "created_at": "2026-10-03T16:47:37.799Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 32,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003165350-44dbd3eea404c664.jpg",
+    "original_filename": "IMG_20260422_092935.jpg",
+    "variety": "MAURITIO RC888",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.9392474889755249,
+    "created_at": "2026-10-03T16:53:50.632Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 33,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003170904-2c898717340b8959.jpg",
+    "original_filename": "IMG_20260422_092856.jpg",
+    "variety": "MAURITIO RC888",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.929890513420105,
+    "created_at": "2026-10-03T17:09:04.156Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 34,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261003235444-7a1963e3a9ad0a04.jpg",
+    "original_filename": "IMG_20260422_093332.jpg",
+    "variety": "MAURITIO RC888",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.9108288288116455,
+    "created_at": "2026-10-03T23:54:44.491Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 35,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261004085003-1e7857d87afde00b.jpg",
+    "original_filename": "6e6f4557-36b8-415c-9a15-2a51ca6a1171.jpg",
+    "variety": "VMC 84-947",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.6356391906738281,
+    "created_at": "2026-10-04T08:50:03.321Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 36,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261004085020-cc60af229bafeef5.jpeg",
+    "original_filename": "072f7535-3f14-4227-877b-e299ed813ffc.jpeg",
+    "variety": "VMC 84-947",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.4307907819747925,
+    "created_at": "2026-10-04T08:50:20.059Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 37,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261004085151-fb6acd14d02adc52.jpeg",
+    "original_filename": "6e6f4557-36b8-415c-9a15-2a51ca6a1171.jpeg",
+    "variety": "VMC 84-947",
+    "maturity_status": "OVER_MATURE",
+    "model_name": "",
+    "confidence": 0.631739616394043,
+    "created_at": "2026-10-04T08:51:51.136Z"
+  }
+},
+{
+  "model": "core.cvscanupload",
+  "pk": 38,
+  "fields": {
+    "user": 2,
+    "image_path": "private/cv_scans/cv-20261004085216-cda4f589454ac0dd.jpeg",
+    "original_filename": "97e678cd-e15d-42ec-80f5-42f8102fae1f.jpeg",
+    "variety": "VMC 84-524",
+    "maturity_status": "NOT_MATURE",
+    "model_name": "",
+    "confidence": 0.966680645942688,
+    "created_at": "2026-10-04T08:52:16.761Z"
+  }
+}
+]

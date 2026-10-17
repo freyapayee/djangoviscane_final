@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980">
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#000"/></marker></defs>
+  <rect width="1600" height="980" fill="#fff"/>
+  <g font-family="Times New Roman, serif" fill="#000" stroke="#000" stroke-width="2">
+    <text x="800" y="42" text-anchor="middle" font-size="28" font-weight="bold" stroke="none">LEVEL 0 — CONTEXT DIAGRAM</text>
+    <rect x="625" y="345" width="350" height="230" fill="#fff" rx="0"/>
+    <text x="800" y="380" text-anchor="middle" font-size="24" font-weight="bold" stroke="none">0</text>
+    <text x="800" y="422" text-anchor="middle" font-size="22" font-weight="bold" stroke="none">VISCANE</text>
+    <text x="800" y="455" text-anchor="middle" font-size="19" stroke="none">Sugarcane Variety,</text>
+    <text x="800" y="483" text-anchor="middle" font-size="19" stroke="none">Maturity and Agronomic</text>
+    <text x="800" y="511" text-anchor="middle" font-size="19" stroke="none">Assessment System</text>
+
+    <rect x="75" y="390" width="240" height="120" fill="#fff"/>
+    <text x="195" y="438" text-anchor="middle" font-size="23" font-weight="bold" stroke="none">FARMER /</text>
+    <text x="195" y="470" text-anchor="middle" font-size="23" font-weight="bold" stroke="none">END-USER</text>
+
+    <rect x="1280" y="150" width="240" height="120" fill="#fff"/>
+    <text x="1400" y="220" text-anchor="middle" font-size="23" font-weight="bold" stroke="none">SYSTEM ADMIN</text>
+
+    <rect x="1260" y="720" width="280" height="120" fill="#fff"/>
+    <text x="1400" y="765" text-anchor="middle" font-size="21" font-weight="bold" stroke="none">SRA IT DEPARTMENT</text>
+    <text x="1400" y="795" text-anchor="middle" font-size="21" font-weight="bold" stroke="none">(SUPERADMIN)</text>
+
+    <rect x="65" y="120" width="250" height="105" fill="#fff"/>
+    <text x="190" y="165" text-anchor="middle" font-size="21" font-weight="bold" stroke="none">PREDICTION API</text>
+    <text x="190" y="195" text-anchor="middle" font-size="17" stroke="none">Variety and maturity</text>
+
+    <rect x="1260" y="420" width="280" height="100" fill="#fff"/>
+    <text x="1400" y="462" text-anchor="middle" font-size="21" font-weight="bold" stroke="none">TRANSLATION SERVICE</text>
+    <text x="1400" y="490" text-anchor="middle" font-size="17" stroke="none">Optional integration</text>
+
+    <path d="M315 410 H625" fill="none" marker-end="url(#a)"/>
+    <text x="470" y="395" text-anchor="middle" font-size="17" stroke="none">Credentials, images, inputs</text>
+    <path d="M625 510 H315" fill="none" marker-end="url(#a)"/>
+    <text x="470" y="548" text-anchor="middle" font-size="17" stroke="none">Results, estimates, recommendations</text>
+
+    <path d="M1280 210 H1120 V345 H975" fill="none" marker-end="url(#a)"/>
+    <text x="1120" y="190" text-anchor="middle" font-size="17" stroke="none">Admin credentials and requests</text>
+    <path d="M975 430 H1120 V270 H1280" fill="none" marker-end="url(#a)"/>
+    <text x="1120" y="295" text-anchor="middle" font-size="17" stroke="none">Reports and monitoring data</text>
+
+    <path d="M1260 780 H1080 V575 H900" fill="none" marker-end="url(#a)"/>
+    <text x="1090" y="760" text-anchor="middle" font-size="17" stroke="none">Security and model actions</text>
+    <path d="M800 575 V720 H1260" fill="none" marker-end="url(#a)"/>
+    <text x="1030" y="705" text-anchor="middle" font-size="17" stroke="none">Audit logs and training reports</text>
+
+    <path d="M315 172 H520 V345 H700" fill="none" marker-end="url(#a)"/>
+    <text x="510" y="155" text-anchor="middle" font-size="17" stroke="none">Validated crop image</text>
+    <path d="M900 390 H1110 V172 H315" fill="none" marker-end="url(#a)"/>
+    <text x="1070" y="155" text-anchor="middle" font-size="17" stroke="none">Prediction result</text>
+
+    <path d="M975 500 H1260" fill="none" marker-end="url(#a)"/>
+    <text x="1120" y="485" text-anchor="middle" font-size="17" stroke="none">Recommendation text</text>
+    <path d="M1260 520 H1050 V545 H975" fill="none" marker-end="url(#a)"/>
+    <text x="1120" y="558" text-anchor="middle" font-size="17" stroke="none">Translated content</text>
+  </g>
+</svg>

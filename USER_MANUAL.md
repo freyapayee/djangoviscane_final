@@ -6,6 +6,24 @@
 **Primary farmer device:** Android mobile phone  
 **Languages:** English and Hiligaynon, where translations are available
 
+## How to use this manual
+
+This manual is organized by user role. Follow the **Farmer manual** for the mobile farmer portal, the **Administrator manual** for the web console, and the **Superadministrator manual** for governance tasks.
+
+Screenshots marked **System capture** are taken from the VISCANE interface in this repository. They show the implemented layout and controls; some visible names and records are test data used for verification.
+
+### Screenshot map
+
+| Feature | System capture |
+|---|---|
+| Farmer sign-in and registration | [Sign-in](artifacts/ui/viscane-login-1366@2x.png) · [Registration confirmation](artifacts/ui/registration-success-1366.png) |
+| Farmer dashboard, scanning entry point, assessment inputs, announcements, and feedback | [Farmer dashboard](artifacts/ui/farmer-dashboard-1366.png) |
+| Recommendations | [Recommendations](artifacts/ui/farmer_recommendations-1366.png) |
+| Input logs | [Agronomic input logs](artifacts/ui/farmer_agronomic_logs-1366.png) |
+| Profile and account settings | [Account settings](artifacts/ui/farmer_settings-1366.png) |
+| Admin access and dashboard | [Admin access](artifacts/ui/admin-access-1366.png) · [Admin dashboard](artifacts/ui/verified-admin.png) |
+| Superadmin dashboard | [Superadmin dashboard](artifacts/ui/verified-superadmin.png) |
+
 ## 1. About VISCANE
 
 VISCANE helps farmers record sugarcane field information, scan a sugarcane image, review AI-based variety and maturity results, estimate production, and read agronomic recommendations. Administrators use the web console to manage farmer accounts, review submissions, monitor predictions, publish announcements, and produce reports.
@@ -43,9 +61,23 @@ You need an active farmer account, the VISCANE Android application, and—when u
 4. Allow camera or gallery access when prompted if you plan to scan a crop.
 5. Select **Hiligaynon** from the language selector if preferred.
 
+![VISCANE farmer sign-in screen — system capture](artifacts/ui/viscane-login-1366@2x.png)
+
+*Figure 1. VISCANE farmer sign-in screen (system capture).*
+
+After registration, the application shows a confirmation screen before the farmer signs in:
+
+![VISCANE registration confirmation — system capture](artifacts/ui/registration-success-1366.png)
+
+*Figure 2. Registration confirmation screen (system capture).*
+
 ### For administrators
 
 Administrators use the protected web console, not the farmer APK. Open the supplied HTTPS administration URL and select the appropriate administrator login. Never share administrator credentials with farmers.
+
+![VISCANE administrator access screen — system capture](artifacts/ui/admin-access-1366.png)
+
+*Figure 3. Administrator access screen (system capture).*
 
 ## 3. Farmer manual
 
@@ -63,6 +95,10 @@ The dashboard provides access to:
 
 Use the bottom navigation on a phone. Return to the dashboard before closing the app if a form is still being completed.
 
+![VISCANE farmer dashboard — system capture](artifacts/ui/farmer-dashboard-1366.png)
+
+*Figure 4. Farmer dashboard with scan entry, assessment parameters, recent scans, announcements, and feedback (system capture).*
+
 ### 3.2 Create a sugarcane scan
 
 1. Open **New Scan**.
@@ -78,6 +114,12 @@ Use the bottom navigation on a phone. Return to the dashboard before closing the
 8. Submit the assessment and wait for the completion message.
 
 The displayed confidence is the model's confidence for that image. It is not the same as the overall measured accuracy of the model.
+
+The dashboard’s **Scan Sugarcane** card is the implemented entry point for this workflow:
+
+![Scan Sugarcane entry point on the farmer dashboard — system capture](artifacts/ui/farmer-dashboard-390.png)
+
+*Figure 5. Scan Sugarcane entry point (system capture).*
 
 ### 3.3 Enter agronomic information
 
@@ -115,15 +157,27 @@ Recommendations are grouped around farm actions such as nutrient application, we
 
 Use professional agronomic judgment and local guidance before applying chemicals or changing field practices. Do not treat an AI suggestion as a pesticide label, laboratory diagnosis, or guaranteed yield.
 
+![VISCANE recommendations screen — system capture](artifacts/ui/farmer_recommendations-1366.png)
+
+*Figure 6. Recommendations grouped as next actions (system capture).*
+
 ### 3.6 Review input logs
 
 Open **Input Logs** to review previous agronomic assessments and their associated scan results. Use the plot name and date to distinguish fields. Keep the phone connected when opening recently created records if the current release has not synchronized them locally.
+
+![VISCANE agronomic input logs — system capture](artifacts/ui/farmer_agronomic_logs-1366.png)
+
+*Figure 7. Agronomic input log history (system capture).*
 
 ### 3.7 Announcements, feedback, and profile
 
 Read announcements for maintenance notices, model updates, and operational instructions. Use **Feedback** to report an incorrect result, upload problem, account problem, or recommendation concern. Include the plot name, date, and a short description; do not include another person's password.
 
 In **Profile**, update only your own information. Sign out after using a shared device.
+
+![VISCANE account settings — system capture](artifacts/ui/farmer_settings-1366.png)
+
+*Figure 8. Profile details, password update, and sign-out controls (system capture).*
 
 ### 3.8 Offline and weak-signal procedure
 
@@ -142,6 +196,10 @@ For the final offline release, look for an explicit status such as **Saved on de
 ### 4.1 Admin dashboard
 
 The Admin Console summarizes scan activity, farmer activity, data health, and recent system logs. Use the module tiles to open the detailed pages.
+
+![VISCANE admin dashboard — system capture](artifacts/ui/verified-admin.png)
+
+*Figure 9. Admin Console overview with activity, farmer counts, and module access (system capture).*
 
 ### 4.2 Manage farmer accounts
 
@@ -203,6 +261,10 @@ Superadmins have elevated access and should use it only for governance tasks:
 - inspect the audit log.
 
 Use separate named accounts. Do not use a superadmin account for routine farmer support. Archive access promptly when a staff member leaves or changes role.
+
+![VISCANE superadmin dashboard — system capture](artifacts/ui/verified-superadmin.png)
+
+*Figure 10. Superadmin Console with system health, model metrics, and governance modules (system capture).*
 
 ## 6. Security and privacy practices
 

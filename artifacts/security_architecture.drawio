@@ -1,0 +1,54 @@
+<mxfile host="app.diagrams.net" modified="2026-10-07T00:00:00.000Z" agent="Codex">
+  <diagram id="security-architecture" name="Security Architecture">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="VISCANE Security Architecture" style="text;html=1;fontFamily=Times New Roman;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="500" y="25" width="600" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="clients" value="&lt;b&gt;CLIENTS&lt;/b&gt;&lt;br&gt;&lt;br&gt;Farmer Android Phone&lt;br&gt;Administrator Computer&lt;br&gt;Browser or Mobile Access" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="70" y="350" width="230" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="network" value="&lt;b&gt;NETWORK SECURITY&lt;/b&gt;&lt;br&gt;&lt;br&gt;HTTPS / TLS&lt;br&gt;Cloudflare DNS and Protection&lt;br&gt;Restricted Host Access" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="370" y="350" width="250" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="app" value="&lt;b&gt;APPLICATION SECURITY&lt;/b&gt;&lt;br&gt;&lt;br&gt;Django Session Authentication&lt;br&gt;Role-Based Authorization&lt;br&gt;CSRF Protection&lt;br&gt;Input Validation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="690" y="350" width="270" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="data" value="&lt;b&gt;DATA SECURITY&lt;/b&gt;&lt;br&gt;&lt;br&gt;Password Hashing&lt;br&gt;Foreign-Key Integrity&lt;br&gt;Private Database Access&lt;br&gt;Protected File Storage" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="350" width="250" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="monitoring" value="&lt;b&gt;MONITORING AND ACCOUNTABILITY&lt;/b&gt;&lt;br&gt;&lt;br&gt;Audit Logs&lt;br&gt;Administrative Monitoring&lt;br&gt;Feedback Review&lt;br&gt;Model and System Status" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="680" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="availability" value="&lt;b&gt;AVAILABILITY AND RECOVERY&lt;/b&gt;&lt;br&gt;&lt;br&gt;AWS Lightsail Hosting&lt;br&gt;Docker Deployment&lt;br&gt;Database Backup and Restore&lt;br&gt;Service Monitoring" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="680" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="external" value="&lt;b&gt;EXTERNAL SERVICES&lt;/b&gt;&lt;br&gt;&lt;br&gt;Prediction API&lt;br&gt;ResNet-18 and YOLOv8&lt;br&gt;Optional OpenAI SDK&lt;br&gt;Controlled API Requests" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="690" y="120" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="clients" target="network"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="authenticated request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="network" target="app"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="validated data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="app" target="data"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="authorized API request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="app" target="external"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="audit and status data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="app" target="monitoring"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="backup and recovery" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="data" target="availability"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="cross-cutting controls" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;dashed=1;dashPattern=8 4;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="monitoring" target="app"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="legend" value="Solid connectors = protected data flow&#xa;Dashed connector = monitoring and accountability control" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontFamily=Times New Roman;fontSize=13;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="70" y="900" width="520" height="45" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

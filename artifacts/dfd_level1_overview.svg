@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1250" viewBox="0 0 1800 1250">
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 Z" fill="#000"/></marker></defs>
+  <rect width="1800" height="1250" fill="#fff"/>
+  <g font-family="Times New Roman, serif" fill="#000" stroke="#000" stroke-width="2">
+    <text x="900" y="42" text-anchor="middle" font-size="28" font-weight="bold" stroke="none">LEVEL 1 — MAJOR PROCESSES AND DATA STORES</text>
+    <rect x="65" y="535" width="200" height="90" fill="#fff"/><text x="165" y="570" text-anchor="middle" font-size="21" font-weight="bold" stroke="none">FARMER</text><text x="165" y="600" text-anchor="middle" font-size="17" stroke="none">End-user</text>
+    <rect x="1535" y="535" width="200" height="90" fill="#fff"/><text x="1635" y="570" text-anchor="middle" font-size="21" font-weight="bold" stroke="none">SYSTEM</text><text x="1635" y="600" text-anchor="middle" font-size="17" stroke="none">ADMIN</text>
+    <rect x="780" y="90" width="250" height="90" fill="#fff"/><text x="905" y="125" text-anchor="middle" font-size="20" font-weight="bold" stroke="none">PREDICTION API</text><text x="905" y="155" text-anchor="middle" font-size="16" stroke="none">External service</text>
+
+    <rect x="340" y="220" width="270" height="105" fill="#fff"/><text x="475" y="260" text-anchor="middle" font-size="18" font-weight="bold" stroke="none">1.0 AUTHENTICATION</text><text x="475" y="288" text-anchor="middle" font-size="18" stroke="none">AND USER MANAGEMENT</text>
+    <rect x="735" y="220" width="270" height="105" fill="#fff"/><text x="870" y="260" text-anchor="middle" font-size="18" font-weight="bold" stroke="none">2.0 SCAN AND</text><text x="870" y="288" text-anchor="middle" font-size="18" stroke="none">COMPUTER VISION</text>
+    <rect x="1130" y="220" width="270" height="105" fill="#fff"/><text x="1265" y="260" text-anchor="middle" font-size="18" font-weight="bold" stroke="none">3.0 AGRONOMIC</text><text x="1265" y="288" text-anchor="middle" font-size="18" stroke="none">ESTIMATION</text>
+    <rect x="500" y="700" width="300" height="105" fill="#fff"/><text x="650" y="740" text-anchor="middle" font-size="18" font-weight="bold" stroke="none">4.0 DATA PERSISTENCE</text><text x="650" y="768" text-anchor="middle" font-size="18" stroke="none">AND RECORD MANAGEMENT</text>
+    <rect x="1000" y="700" width="320" height="105" fill="#fff"/><text x="1160" y="740" text-anchor="middle" font-size="18" font-weight="bold" stroke="none">5.0 ADMINISTRATION,</text><text x="1160" y="768" text-anchor="middle" font-size="18" stroke="none">REPORTING AND COMMUNICATION</text>
+
+    <rect x="300" y="960" width="220" height="90" fill="#fff"/><text x="410" y="995" text-anchor="middle" font-size="17" font-weight="bold" stroke="none">D1 USER / ADMIN</text><text x="410" y="1022" text-anchor="middle" font-size="17" stroke="none">ACCOUNTS</text>
+    <rect x="590" y="960" width="220" height="90" fill="#fff"/><text x="700" y="995" text-anchor="middle" font-size="17" font-weight="bold" stroke="none">D2 SCAN AND</text><text x="700" y="1022" text-anchor="middle" font-size="17" stroke="none">CV UPLOADS</text>
+    <rect x="880" y="960" width="240" height="90" fill="#fff"/><text x="1000" y="995" text-anchor="middle" font-size="17" font-weight="bold" stroke="none">D3 AGRONOMIC LOGS</text><text x="1000" y="1022" text-anchor="middle" font-size="17" stroke="none">AND RECOMMENDATIONS</text>
+    <rect x="1190" y="960" width="230" height="90" fill="#fff"/><text x="1305" y="995" text-anchor="middle" font-size="17" font-weight="bold" stroke="none">D4 NOTIFICATIONS</text><text x="1305" y="1022" text-anchor="middle" font-size="17" stroke="none">AND FEEDBACK</text>
+
+    <path d="M265 565 H340" fill="none" marker-end="url(#a)"/><path d="M340 600 H265" fill="none" marker-end="url(#a)"/>
+    <path d="M265 545 H400 V325" fill="none" marker-end="url(#a)"/>
+    <path d="M265 585 H735" fill="none" marker-end="url(#a)"/><path d="M265 605 H1130" fill="none" marker-end="url(#a)"/>
+    <path d="M610 272 H735" fill="none" marker-end="url(#a)"/><path d="M1005 272 H1130" fill="none" marker-end="url(#a)"/>
+    <path d="M870 180 V220" fill="none" marker-end="url(#a)"/><path d="M905 220 V180" fill="none" marker-end="url(#a)"/>
+    <path d="M1265 325 V700" fill="none" marker-end="url(#a)"/><path d="M870 325 V700" fill="none" marker-end="url(#a)"/>
+    <path d="M800 750 H1000" fill="none" marker-end="url(#a)"/>
+    <path d="M650 805 V960" fill="none" marker-end="url(#a)"/><path d="M700 805 V960" fill="none" marker-end="url(#a)"/><path d="M1160 805 V960" fill="none" marker-end="url(#a)"/>
+    <path d="M1535 565 H1320 V805" fill="none" marker-end="url(#a)"/><path d="M1535 595 H1400 V960" fill="none" marker-end="url(#a)"/>
+    <text x="900" y="1170" text-anchor="middle" font-size="17" stroke="none">All boxes represent external entities, system processes, or data stores. Arrows represent data movement.</text>
+  </g>
+</svg>

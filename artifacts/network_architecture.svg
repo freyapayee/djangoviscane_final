@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <title>VISCANE Network Architecture</title>
+  <desc>Black and white network architecture diagram showing farmer phone and administrator computer connections through the Internet, Cloudflare, AWS Lightsail, Django, PostgreSQL, prediction API, and OpenAI SDK.</desc>
+  <defs>
+    <style>
+      text { font-family: "Times New Roman", Times, serif; fill: #000; }
+      .label { font-size: 23px; text-anchor: middle; }
+      .small { font-size: 19px; text-anchor: middle; }
+      .title { font-size: 30px; font-weight: bold; text-anchor: middle; }
+      .box { fill: #fff; stroke: #000; stroke-width: 2; }
+      .line { fill: none; stroke: #000; stroke-width: 2.5; }
+      .thin { fill: none; stroke: #000; stroke-width: 1.8; }
+      .icon { fill: #fff; stroke: #000; stroke-width: 4.5; }
+      .detail { fill: none; stroke: #000; stroke-width: 3.2; }
+      .arrow { fill: #000; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" class="arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="35" y="30" width="1130" height="1425" class="box"/>
+  <text x="600" y="82" class="title">VISCANE Network Architecture</text>
+
+  <!-- Internet -->
+  <g transform="translate(520 105)">
+    <circle cx="80" cy="65" r="52" class="icon"/>
+    <path d="M28 65h104M80 13c-22 17-27 35-27 52s5 35 27 52M80 13c22 17 27 35 27 52s-5 35-27 52M38 34c25 12 59 12 84 0M38 96c25-12 59-12 84 0" class="detail"/>
+    <text x="80" y="145" class="label">Internet</text>
+  </g>
+
+  <!-- Main service line -->
+  <path d="M600 270 L600 335" class="line" marker-end="url(#arrow)"/>
+
+  <!-- Cloudflare -->
+  <g transform="translate(500 335)">
+    <path d="M32 70h125c27 0 43-18 43-39 0-23-19-41-42-41-6 0-12 1-17 4C130-28 84-19 77 18c-25 1-45 21-45 45 0 2 0 5 0 7z" class="icon"/>
+    <path d="M58 69c18-20 48-23 70-6 10-26 35-40 62-33" class="detail"/>
+    <text x="100" y="112" class="label">Cloudflare</text>
+    <text x="100" y="138" class="small">DNS • HTTPS • Protection</text>
+  </g>
+
+  <path d="M570 500 L570 555" class="line" marker-end="url(#arrow)"/>
+
+  <!-- AWS / Django server -->
+  <g transform="translate(425 555)">
+    <rect x="45" y="0" width="260" height="160" rx="5" class="icon"/>
+    <rect x="65" y="25" width="220" height="27" class="detail"/>
+    <rect x="65" y="66" width="220" height="27" class="detail"/>
+    <rect x="65" y="107" width="220" height="27" class="detail"/>
+    <circle cx="80" cy="38" r="5"/><circle cx="80" cy="79" r="5"/><circle cx="80" cy="120" r="5"/>
+    <text x="175" y="196" class="label">AWS Lightsail</text>
+    <text x="175" y="222" class="small">Django Application Server</text>
+  </g>
+
+  <!-- server branches -->
+  <path d="M470 715 L255 900" class="line" marker-end="url(#arrow)"/>
+  <path d="M600 715 L600 920" class="line" marker-end="url(#arrow)"/>
+  <path d="M730 715 L945 908" class="line" marker-end="url(#arrow)"/>
+
+  <!-- Database -->
+  <g transform="translate(150 900)">
+    <ellipse cx="105" cy="25" rx="85" ry="25" class="icon"/>
+    <path d="M20 25v100c0 14 38 25 85 25s85-11 85-25V25M20 75c0 14 38 25 85 25s85-11 85-25M20 125c0 14 38 25 85 25s85-11 85-25" class="detail"/>
+    <text x="105" y="195" class="label">PostgreSQL</text>
+    <text x="105" y="221" class="small">Database</text>
+  </g>
+
+  <!-- AI prediction -->
+  <g transform="translate(495 900)">
+    <rect x="22" y="25" width="155" height="115" rx="18" class="icon"/>
+    <path d="M60 25v-22M99 25v-22M138 25v-22M60 140v22M99 140v22M138 140v22M22 58H0M22 95H0M177 58h22M177 95h22" class="detail"/>
+    <circle cx="99" cy="82" r="31" class="detail"/>
+    <path d="M84 82h30M99 67v30" class="detail"/>
+    <circle cx="60" cy="3" r="4"/><circle cx="99" cy="3" r="4"/><circle cx="138" cy="3" r="4"/><circle cx="60" cy="162" r="4"/><circle cx="99" cy="162" r="4"/><circle cx="138" cy="162" r="4"/>
+    <text x="99" y="210" class="label">Prediction API</text>
+    <text x="99" y="236" class="small">ResNet-18 • YOLOv8</text>
+  </g>
+
+  <!-- OpenAI SDK -->
+  <g transform="translate(850 900)">
+    <circle cx="105" cy="85" r="72" class="icon"/>
+    <path d="M70 92c-18-30 17-61 45-43 19-16 51 2 43 28 23 12 14 48-13 51-9 26-48 25-58 0-27 3-39-25-17-36z" class="detail"/>
+    <path d="M72 92l43-24 43 25M87 128l28-60M143 128l-28-60" class="detail"/>
+    <text x="105" y="195" class="label">OpenAI SDK</text>
+    <text x="105" y="221" class="small">Optional Translation</text>
+  </g>
+
+  <!-- clients connect to the public Internet, not directly to internal services -->
+  <path d="M305 1280 C495 1280 680 1245 915 1245" class="line" marker-end="url(#arrow)"/>
+  <path d="M700 1240 C780 1240 835 1250 915 1260" class="line" marker-end="url(#arrow)"/>
+  <text x="560" y="1235" class="small">HTTPS</text>
+  <text x="805" y="1220" class="small">HTTPS</text>
+
+  <!-- mobile -->
+  <g transform="translate(165 1180)">
+    <rect x="25" y="0" width="115" height="200" rx="17" class="icon"/>
+    <rect x="39" y="25" width="87" height="138" class="detail"/>
+    <circle cx="82" cy="181" r="7" class="detail"/>
+    <path d="M58 76h50M58 99h50M58 122h35" class="detail"/>
+    <text x="82" y="245" class="label">Farmer Android Phone</text>
+    <text x="82" y="271" class="small">Camera and Input</text>
+  </g>
+
+  <!-- admin -->
+  <g transform="translate(510 1180)">
+    <rect x="10" y="10" width="180" height="120" class="icon"/>
+    <rect x="25" y="25" width="150" height="90" class="detail"/>
+    <path d="M75 145h50M100 130v15M55 155h90" class="detail"/>
+    <text x="100" y="205" class="label">Administrator PC</text>
+    <text x="100" y="231" class="small">Reports and Monitoring</text>
+  </g>
+
+  <!-- internet/client connector -->
+  <g transform="translate(880 1180)">
+    <circle cx="105" cy="85" r="70" class="icon"/>
+    <path d="M35 85h140M105 15c-27 23-34 47-34 70s7 47 34 70M105 15c27 23 34 47 34 70s-7 47-34 70M50 50c34 16 76 16 110 0M50 120c34-16 76-16 110 0" class="detail"/>
+    <text x="105" y="195" class="label">Internet Users</text>
+    <text x="105" y="221" class="small">Secure HTTPS Access</text>
+  </g>
+
+  <!-- legend -->
+  <line x1="110" y1="1400" x2="180" y2="1400" class="line" marker-end="url(#arrow)"/>
+  <text x="205" y="1407" class="small" text-anchor="start">HTTPS / API / Database Communication</text>
+</svg>

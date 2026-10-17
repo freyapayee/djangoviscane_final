@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" modified="2026-10-07T00:00:00.000Z" agent="Codex">
+  <diagram id="application-module-architecture" name="Application Module Architecture">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="VISCANE Application / Module Architecture" style="text;html=1;fontFamily=Times New Roman;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="500" y="25" width="600" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="client" value="&lt;b&gt;CLIENT INTERFACE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Farmer Dashboard&lt;br&gt;Administrator Dashboard&lt;br&gt;Mobile / Web Access" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="220" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="auth" value="&lt;b&gt;AUTHENTICATION AND USER MANAGEMENT&lt;/b&gt;&lt;br&gt;&lt;br&gt;Login and registration&lt;br&gt;Role-based access&lt;br&gt;Profile management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="150" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="scan" value="&lt;b&gt;SCAN AND COMPUTER-VISION MODULE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Image upload&lt;br&gt;Prediction request&lt;br&gt;Variety and maturity result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="370" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="agro" value="&lt;b&gt;AGRONOMIC ESTIMATION MODULE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Input validation&lt;br&gt;Variety-specific weights&lt;br&gt;Yield estimation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="740" y="370" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="recommend" value="&lt;b&gt;RECOMMENDATION MODULE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Fertilizer guidance&lt;br&gt;Weeding and plowing advice&lt;br&gt;Yield improvement suggestions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="370" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="data" value="&lt;b&gt;DATA PERSISTENCE MODULE&lt;/b&gt;&lt;br&gt;&lt;br&gt;User accounts&lt;br&gt;Scan and agronomic logs&lt;br&gt;Prediction and recommendation records" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="740" y="650" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="admin" value="&lt;b&gt;ADMINISTRATION AND REPORTING MODULE&lt;/b&gt;&lt;br&gt;&lt;br&gt;User and account management&lt;br&gt;Monitoring and filtering&lt;br&gt;Reports and model status" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="650" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="communication" value="&lt;b&gt;COMMUNICATION MODULE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Notifications&lt;br&gt;Feedback&lt;br&gt;Language and translation support" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="650" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="security" value="&lt;b&gt;SECURITY AND VALIDATION LAYER&lt;/b&gt;&lt;br&gt;&lt;br&gt;HTTPS communication&lt;br&gt;Session authentication&lt;br&gt;CSRF protection&lt;br&gt;Role restrictions and audit logging" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;dashed=1;dashPattern=8 4;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="870" width="620" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="external" value="&lt;b&gt;EXTERNAL SERVICES&lt;/b&gt;&lt;br&gt;&lt;br&gt;Prediction API&lt;br&gt;ResNet-18 and YOLOv8&lt;br&gt;Optional OpenAI SDK translation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=14;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="150" width="270" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="client" target="auth"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="validated request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="client" target="scan"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="agronomic input" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="client" target="agro"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="image request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="scan" target="external"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="prediction result" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="external" target="agro"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="calculated result" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="agro" target="recommend"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="store and retrieve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="agro" target="data"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" value="logs and reports" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="data" target="admin"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" value="recommendations" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="recommend" target="client"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" value="notifications and feedback" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="communication" target="client"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" value="security controls all modules" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=30;html=1;dashed=1;dashPattern=8 4;strokeColor=#000000;fontColor=#000000;fontFamily=Times New Roman;fontSize=11;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="security" target="data"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="legend" value="Solid connectors = module data flow&#xa;Dashed connector = cross-cutting security control" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontFamily=Times New Roman;fontSize=13;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="940" width="420" height="45" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
