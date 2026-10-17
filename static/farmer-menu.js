@@ -6,7 +6,7 @@
     let busy = false;
     const count = document.getElementById('farmer-notification-count');
     const status = document.getElementById('farmer-notification-status');
-    const suggestionStatus = document.getElementById('farmer-suggestion-status');
+    const suggestionStatus = document.getElementById('farmer-menu-status');
     const list = document.getElementById('farmer-announcement-list');
     const translate = text => document.documentElement.lang === 'hil' ? (window.farmerMenuLabels[text] || text) : text;
     function render(data) {
@@ -16,7 +16,7 @@
         count.textContent = unread > 99 ? '99+' : String(unread);
         const message = unread ? `${translate('New announcements')}: ${data.unread_announcements}. ${translate('New suggestions')}: ${data.unread_suggestions}.` : translate('No new notifications.');
         if (status.textContent !== message) status.textContent = message;
-        suggestionStatus.textContent = data.suggestion_id ? translate('Your saved scan suggestions are available in Input Logs.') : translate('Suggestions will appear after a scan assessment.');
+        if (!list) return;
         list.replaceChildren();
         for (const item of data.announcements) {
             const article = document.createElement('article');
@@ -62,11 +62,8 @@
         document.body.classList.remove('farmer-menu-open');
         toggle.focus();
     });
-    const markRead = document.createElement('button');
-    markRead.type = 'button';
-    markRead.className = 'btn light';
-    markRead.textContent = translate('Mark notifications as read');
-    menu.querySelector('.farmer-menu-links').after(markRead);
+    menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => menu.close()));
+    const markRead = document.getElementById('farmer-mark-read');
     markRead.addEventListener('click', async () => {
         if (!latest) return;
         markRead.disabled = true;

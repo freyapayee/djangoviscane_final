@@ -23,6 +23,8 @@ PROTECTED_TERMS = (
 
 # These short interface labels should be checked with local farmers before release.
 HILIGAYNON_LABELS = {
+    "Updates for": "Mga balita para kay",
+    "About VISCANE": "Parte sa VISCANE",
     "Menu": "Menu",
     "Close menu": "Isira ang menu",
     "Farmer navigation": "Nabigasyon sang mangunguma",

@@ -1,0 +1,18 @@
+<dialog id="farmer-menu" class="farmer-menu" aria-labelledby="farmer-menu-title">
+    <div class="farmer-menu-heading"><h2 id="farmer-menu-title">{{ farmer_text('Menu') }}</h2><button type="button" class="btn light" id="farmer-menu-close" aria-label="{{ farmer_text('Close menu') }}">✕</button></div>
+    <nav class="farmer-menu-links" aria-label="{{ farmer_text('Farmer navigation') }}">
+        <a href="/homepage"><ion-icon name="home-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Home') }}</span></a>
+        <a href="/scan/new"><ion-icon name="camera-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Scan Sugarcane') }}</span></a>
+        <a href="/homepage#recent-scans"><ion-icon name="time-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Recent Scans') }}</span></a>
+        <a href="/homepage#scan-gallery"><ion-icon name="images-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Scan Gallery') }}</span></a>
+        <a href="/homepage#calc-form"><ion-icon name="calculator-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Calculate') }}</span></a>
+        <a href="/farmer/recommendations"><ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Recommendations') }}</span></a>
+        <a href="/farmer/agronomic-logs"><ion-icon name="document-text-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Input Logs') }}</span></a>
+        <a href="/farmer/news"><ion-icon name="newspaper-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('News & Announcements') }}</span></a>
+        <a href="/farmer/settings"><ion-icon name="person-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Settings') }}</span></a>
+        <a href="/about-viscane"><ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('About VISCANE') }}</span></a>
+    </nav>
+    <div hidden>{{ csrf_input }}</div>
+    <button type="button" class="btn light" id="farmer-mark-read">{{ farmer_text('Mark notifications as read') }}</button>
+    <p id="farmer-menu-status" role="status"></p>
+</dialog>

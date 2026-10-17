@@ -1,6 +1,8 @@
 (function () {
-    const stateKey = 'viscane-farmer-tour';
+    const stateKey = 'viscane-farmer-tour-v2';
     const steps = [
+        { path: '/homepage', target: 'farmer-menu', title: 'Find your features in Menu', description: 'Open Menu beside Tutorial and Settings to go to scanning, your gallery, calculations, recommendations, input logs, or news. The red badge shows unread announcements and suggestions. Close the menu, then continue to visit News.', next: '/farmer/news' },
+        { path: '/farmer/news', target: 'farmer-news', title: 'Read updates and send feedback', description: 'News opens this page with official news links, admin announcements, and the Feedback Box. Write a suggestion or support concern and select Submit Feedback.', next: '/homepage' },
         { path: '/homepage', target: 'home-scan', title: 'Start with a sugarcane scan', description: 'This button opens the camera flow where you can scan a stalk or upload a photo for AI analysis.', next: '/scan/new' },
         { path: '/scan/new', target: 'scan-upload', title: 'Choose a photo or use your camera', description: 'Try Choose photo to select an image from your phone, or Use camera to capture a new one.', next: '/farmer/recommendations' },
         { path: '/farmer/recommendations', target: 'recommendations', title: 'Review your recommendations', description: 'After a calculation, this page shows the next best actions for harvest, pests, fertilizer, weeding, and plowing.', next: '/farmer/agronomic-logs' },
@@ -52,8 +54,9 @@
     target.classList.add('farmer-tour-target');
     // Keep the guide in the document flow, immediately below the feature it explains.
     // Using the containing section avoids placing a large card inside a button row.
-    const anchor = target.closest('.hero-panel, .scanner-screen, main > section, .settings-layout') || target;
-    anchor.insertAdjacentElement('afterend', modal);
+    const anchor = target.closest('.dashboard-header, .hero-panel, .scanner-screen, main > section, .settings-layout') || target;
+    if (target.matches('main')) target.prepend(modal);
+    else anchor.insertAdjacentElement('afterend', modal);
     modal.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     const finish = () => { sessionStorage.removeItem(stateKey); target.classList.remove('farmer-tour-target'); document.body.classList.remove('has-farmer-tour'); modal.remove(); };
     const navigate = (index) => { sessionStorage.setItem(stateKey, JSON.stringify({ step: index })); window.location.href = steps[index].path; };

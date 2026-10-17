@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=2">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_agronomic_logs">
 
@@ -28,6 +29,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                {% include 'components/farmer_menu_button.html' %}
                 <div class="farmer-info-chip" aria-live="polite">
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
@@ -166,8 +168,11 @@
         </a>
     </nav>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
-    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=3"></script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=7"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
+    {% include 'components/farmer_menu.html' %}
+    <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
+    <script src="/static/farmer-menu.js?v=2" defer></script>
 </body>
 </html>

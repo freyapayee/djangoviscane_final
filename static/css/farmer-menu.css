@@ -18,17 +18,26 @@
 .farmer-menu::backdrop { background: #10251f80; }
 .farmer-menu-open { overflow: hidden; }
 .farmer-menu-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.farmer-menu-links { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
-.farmer-menu-links a { color: #285c32; padding: 10px 0; font-weight: 700; }
-.farmer-menu .panel { margin: 18px 0; padding: 20px; }
-.farmer-menu .panel-header { flex-wrap: wrap; gap: 12px; }
-.farmer-menu .feedback-input { width: 100%; box-sizing: border-box; min-height: 120px; max-height: none; }
-.farmer-menu .list-row { overflow-wrap: anywhere; }
-.farmer-menu .list-row h4 { margin: 0; }
-.farmer-menu .list-row p { white-space: pre-wrap; }
-.farmer-menu time { font-size: .8rem; color: #576b5b; }
-.farmer-menu .sra-highlight-image img { width: 100%; height: auto; border-radius: 12px; }
+.farmer-menu-links { display: grid; gap: 8px; margin: 12px 0 24px; }
+.farmer-menu-links a { display: flex; align-items: center; gap: 12px; color: #285c32; padding: 14px 16px; font-weight: 700; text-decoration: none; background: white; border: 1px solid #dae5d9; border-radius: 12px; min-height: 48px; box-sizing: border-box; }
+.farmer-menu-links a:hover, .farmer-menu-links a:focus-visible { background: #e5f1e2; outline: 2px solid #397746; outline-offset: 2px; }
+.farmer-menu-links ion-icon { font-size: 22px; flex: none; }
+.farmer-news-page { max-width: 1040px; }
+.farmer-news-page .panel { margin-bottom: 24px; padding: 24px; }
+.farmer-news-page .panel-header { flex-wrap: wrap; gap: 12px; }
+.farmer-news-page .feedback-input { width: 100%; box-sizing: border-box; min-height: 140px; resize: vertical; }
+.farmer-news-page .list-row { overflow-wrap: anywhere; }
+.farmer-news-page .list-row h4 { margin: 0; }
+.farmer-news-page .list-row p { white-space: pre-wrap; }
+.farmer-news-page time { font-size: .8rem; color: #576b5b; }
+.farmer-news-page .sra-highlight { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin: 20px 0; }
+.farmer-news-page .sra-highlight-image img { width: 100%; height: auto; border-radius: 12px; }
+.farmer-news-page .sra-links { display: grid; gap: 12px; }
+.farmer-news-page .sra-link { color: #285c32; }
+@media (max-width: 600px) { .farmer-news-page .sra-highlight { grid-template-columns: 1fr; } .farmer-news-page .panel { padding: 16px; } }
 .farmer-notification-count { border-radius: 999px; background: #b32b2b; color: white; padding: 3px 7px; font-size: .75rem; }
 .farmer-notification-count[hidden] { display: none; }
 .farmer-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 480px) { .farmer-menu { padding: 16px; } .farmer-menu .panel { padding: 16px; } }
+
+body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image { width: 100%; height: auto; }

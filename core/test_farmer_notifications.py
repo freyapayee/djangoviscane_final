@@ -18,7 +18,25 @@ class FarmerNotificationTests(TestCase):
         self.assertNotIn('News &amp; Announcements', main)
         self.assertNotIn('feedback_message', main)
         self.assertContains(response, 'id="farmer-menu"')
+        self.assertNotContains(response, 'id="farmer-feedback-message"')
+        self.assertContains(response, 'href="/farmer/news"')
+        for href in ['/scan/new', '/homepage#scan-gallery', '/homepage#recent-scans', '/homepage#calc-form', '/farmer/recommendations', '/farmer/agronomic-logs', '/farmer/settings']:
+            self.assertContains(response, f'href="{href}"')
+        self.assertLess(html.index('header-date-weather'), html.index('id="farmer-menu-toggle"'))
+        self.assertLess(html.index('id="farmer-menu-toggle"'), html.index('data-start-farmer-tour'))
+
+    def test_news_page_and_feedback_redirect(self):
+        Notification.objects.create(title='New announcement', message='News message')
+        response = self.client.get('/farmer/news', HTTP_USER_AGENT='ViscaneFarmer/1.0')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'News message')
         self.assertContains(response, 'id="farmer-feedback-message"')
+        self.assertContains(response, 'data-tour-target="farmer-news"')
+        response = self.client.post('/farmer/feedback', {'feedback_message': 'My suggestion', 'return_to': 'news'})
+        self.assertTrue(response.url.startswith('/farmer/news?message='))
+        response = self.client.post('/farmer/feedback', {'feedback_message': '', 'return_to': 'news'})
+        self.assertTrue(response.url.startswith('/farmer/news?error='))
+        self.assertEqual(Client().get('/farmer/news').status_code, 302)
 
     def test_unread_persistence_new_items_and_user_isolation(self):
         item = Notification.objects.create(title='Update', message='Announcement')

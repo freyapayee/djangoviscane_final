@@ -284,6 +284,17 @@ def homepage(request):
 
 
 @farmer_login_required
+@require_GET
+def farmer_news(request):
+    return render_template(request, "farmer_news.html", {
+        "user": current_user(request),
+        "announcements": list(Notification.objects.order_by("-created_at")),
+        "message": request.GET.get("message"),
+        "error": request.GET.get("error"),
+    })
+
+
+@farmer_login_required
 def farmer_notifications(request):
     user = current_user(request)
     announcements = Notification.objects.order_by("-id")
@@ -786,12 +797,13 @@ def farmer_profile_photo(request, user_id):
 @require_POST
 def farmer_feedback(request):
     user = current_user(request)
+    destination = "farmer_news" if request.POST.get("return_to") == "news" else "homepage"
     feedback_message = request.POST.get("feedback_message", "").strip()
     if not feedback_message:
-        return redirect("homepage", error="Please enter your feedback before submitting.")
+        return redirect(destination, error="Please enter your feedback before submitting.")
     Feedback.objects.create(user_id=user.id, message=feedback_message)
     log_audit(f"Farmer feedback submitted by {user.fullname}", user_id=user.id)
-    return redirect("homepage", message="Thank you. Your feedback was submitted successfully.")
+    return redirect(destination, message="Thank you. Your feedback was submitted successfully.")
 
 
 @login_required

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>VISCANE | News & Announcements</title>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=2">
+</head>
+<body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_recommendations">
+
+    <div class="dashboard-bg"></div>
+
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon">
+                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                </div>
+                <div class="brand-copy">
+                    <p class="brand-system">VISCANE</p>
+                    <p class="brand-title">{{ farmer_text('News & Announcements') }}</p>
+                    <p class="brand-subtitle">{{ farmer_text('Updates for') }} {{ user.fullname }}</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                {% include 'components/farmer_menu_button.html' %}
+                <div class="farmer-info-chip" aria-live="polite">
+                    <ion-icon name="partly-sunny-outline"></ion-icon>
+                    <span data-farmer-info-text>Loading date...</span>
+                </div>
+                <a class="btn light" href="/homepage">
+                    <ion-icon name="home-outline"></ion-icon>
+                    {{ farmer_text('Home') }}
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container farmer-mobile-shell farmer-news-page" data-tour-target="farmer-news">
+        {% if message %}<div class="form-success" role="status">{{ farmer_text(message) }}</div>{% endif %}
+        {% if error %}<div class="form-error" role="alert">{{ farmer_text(error) }}</div>{% endif %}
+        <div id="farmer-news">
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">{{ farmer_text('News & Announcements') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Posted by admin') }}</p>
+                    </div>
+                    <span class="badge"><ion-icon name="megaphone-outline"></ion-icon>{{ farmer_text('Latest') }}</span>
+                </div>
+                <div>
+                    <article class="sra-highlight">
+                        <a class="sra-highlight-image" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer" aria-label="Open SRA official news article">
+                            <img
+                                src="https://www.sra.gov.ph/storage/thumbnails/article/600--38btsLgW4dJWGMOmR6gm2025-03-10lvc2vdel1CPicture1.jpg"
+                                alt="SRA equipment turnover update photo"
+                                loading="lazy"
+                            >
+                        </a>
+                        <div class="sra-highlight-content">
+                            <h4 class="sra-highlight-title">{{ farmer_text('SRA Official Update: Negros Occidental equipment upgrades') }}</h4>
+                            <div class="sra-highlight-source">
+                                Sugar Regulatory Administration
+                            </div>
+                            <div class="sra-links">
+                                <a class="sra-link" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer">
+                                    <ion-icon name="newspaper-outline"></ion-icon>
+                                    <span>{{ farmer_text('Read the official news article') }}</span>
+                                </a>
+                                <a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_supply_demand/9e7zeeuxA9vK6zL" target="_blank" rel="noopener noreferrer">
+                                    <ion-icon name="bar-chart-outline"></ion-icon>
+                                    <span>{{ farmer_text('Sugar supply and demand file') }}</span>
+                                </a>
+                                <a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_statistics/rfVxohuYIc6DiBs" target="_blank" rel="noopener noreferrer">
+                                    <ion-icon name="stats-chart-outline"></ion-icon>
+                                    <span>{{ farmer_text('Sugar statistics file') }}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                    <div id="farmer-announcement-list">
+                    {% if announcements %}
+                        {% for announcement in announcements %}
+                            <div class="list-row">
+                                <div class="list-badge"><ion-icon name="notifications-outline"></ion-icon></div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0;">{{ announcement.title }}</h4>
+                                    <div class="list-meta" style="margin-top: 4px;">{{ announcement.message }}</div>
+                                    <div class="list-meta" style="margin-top: 6px;">
+                                        {{ announcement.created_at.strftime('%b %d, %I:%M %p') if announcement.created_at else 'Date unavailable' }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-meta">{{ farmer_text('No announcements yet. New admin updates will appear here.') }}</div>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        <section class="panel feedback-panel" id="farmer-feedback">
+            <form method="POST" action="/farmer/feedback">
+    {{ csrf_input }}
+    <input type="hidden" name="return_to" value="news">
+                <div class="panel-header">
+                    <div>
+                        <h3 class="panel-title">{{ farmer_text('Feedback Box') }}</h3>
+                        <p class="panel-subtitle">{{ farmer_text('Tell us your suggestions or support concerns') }}</p>
+                    </div>
+                    <button class="btn primary" type="submit">
+                        <ion-icon name="send-outline"></ion-icon>
+                        {{ farmer_text('Submit Feedback') }}
+                    </button>
+                </div>
+                <label class="stat-label" for="farmer-feedback-message">{{ farmer_text('Your Feedback') }}</label>
+                <textarea class="stat-input feedback-input" id="farmer-feedback-message" name="feedback_message" rows="3" placeholder="{{ farmer_text('Write your feedback here...') }}" required></textarea>
+            </form>
+        </section>
+
+        </div>
+    </main>
+    {% include 'components/farmer_menu.html' %}
+    <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
+    <script src="/static/farmer-menu.js?v=2" defer></script>
+    <script src="/static/farmer_ui.js"></script>
+    <script src="/static/farmer-tutorial.js?v=7"></script>
+    {% include 'hiligaynon_runtime.html' %}
+</body>
+</html>

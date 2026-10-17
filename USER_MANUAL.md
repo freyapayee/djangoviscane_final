@@ -171,7 +171,11 @@ Open **Input Logs** to review previous agronomic assessments and their associate
 
 ### 3.7 Announcements, feedback, and profile
 
-Read announcements for maintenance notices, model updates, and operational instructions. Use **Feedback** to report an incorrect result, upload problem, account problem, or recommendation concern. Include the plot name, date, and a short description; do not include another person's password.
+Open **Menu**, beside **Tutorial** and **Settings**, to access scanning, recent scans, the scan gallery, calculations, recommendations, input logs, news, and settings. Select **News & Announcements** to open the dedicated news, announcements, and feedback page. The dashboard stays focused on scans and the gallery.
+
+The menu badge counts unread announcements and scan suggestions. Use **Mark notifications as read** to clear the unread count. Select **Tutorial** to follow the updated guide, starting with the menu and news page.
+
+Read announcements for maintenance notices, model updates, and operational instructions. Use the **Feedback Box** on the news page to report an incorrect result, upload problem, account problem, or recommendation concern. Include the plot name, date, and a short description; do not include another person's password.
 
 In **Profile**, update only your own information. Sign out after using a shared device.
 
