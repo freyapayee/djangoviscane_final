@@ -8,6 +8,8 @@
     const status = document.getElementById('farmer-notification-status');
     const suggestionStatus = document.getElementById('farmer-menu-status');
     const list = document.getElementById('farmer-announcement-list');
+    const notificationsUrl = menu.querySelector('a[href="/homepage?view=news"]')
+        ? '/homepage?view=notifications' : '/farmer/notifications';
     const translate = text => document.documentElement.lang === 'hil' ? ((window.farmerMenuLabels || {})[text] || text) : text;
     function render(data) {
         latest = data;
@@ -39,7 +41,7 @@
         if (busy || document.hidden) return;
         busy = true;
         try {
-            const response = await fetch('/farmer/notifications', {headers: {Accept: 'application/json'}});
+            const response = await fetch(notificationsUrl, {headers: {Accept: 'application/json'}});
             if (response.ok && response.headers.get('content-type')?.includes('application/json')) render(await response.json());
         } catch (_) { /* Keep existing content available if the network drops. */ }
         finally { busy = false; }
@@ -68,7 +70,7 @@
         if (!latest) return;
         markRead.disabled = true;
         try {
-            const response = await fetch('/farmer/notifications', {
+            const response = await fetch(notificationsUrl, {
                 method: 'POST',
                 headers: {'X-CSRFToken': menu.querySelector('[name=csrfmiddlewaretoken]').value},
                 body: new URLSearchParams({announcement_id: latest.announcement_id, suggestion_id: latest.suggestion_id})

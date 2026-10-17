@@ -195,6 +195,14 @@ def admin_access(request):
 @farmer_login_required
 def homepage(request):
     user = current_user(request)
+    if request.GET.get("view") == "news":
+        return farmer_news(request)
+    if request.GET.get("view") == "about":
+        return about_viscane(request)
+    if request.GET.get("view") == "notifications":
+        return farmer_notifications(request)
+    if request.GET.get("view") == "profile-photo":
+        return farmer_profile_photo(request, user.id)
     show_farmer_tutorial = request.session.pop("show_farmer_tutorial", False)
     scan_section = request.GET.get("scan_section")
     sample_plot_names = ("Plot #1 Sample", "Plot #2 Sample", "Plot #4 Sample")
@@ -798,11 +806,16 @@ def farmer_profile_photo(request, user_id):
 def farmer_feedback(request):
     user = current_user(request)
     destination = "farmer_news" if request.POST.get("return_to") == "news" else "homepage"
+    mobile_news = destination == "farmer_news" and request.farmer_only
     feedback_message = request.POST.get("feedback_message", "").strip()
     if not feedback_message:
+        if mobile_news:
+            return redirect("homepage", view="news", error="Please enter your feedback before submitting.")
         return redirect(destination, error="Please enter your feedback before submitting.")
     Feedback.objects.create(user_id=user.id, message=feedback_message)
     log_audit(f"Farmer feedback submitted by {user.fullname}", user_id=user.id)
+    if mobile_news:
+        return redirect("homepage", view="news", message="Thank you. Your feedback was submitted successfully.")
     return redirect(destination, message="Thank you. Your feedback was submitted successfully.")
 
 

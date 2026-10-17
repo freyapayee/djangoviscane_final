@@ -59,6 +59,46 @@ class FarmerMobileTests(TestCase):
         self.assertEqual(client.get("/favicon.ico").status_code, 200)
         self.assertEqual(client.get("/admin-login").status_code, 403)
 
+    @override_settings(FARMER_ONLY=False)
+    def test_apk_menu_pages_and_notifications_use_dashboard_path(self):
+        client = Client(HTTP_USER_AGENT="Android ViscaneFarmer/1.0")
+        session = client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        dashboard = client.get("/homepage")
+        self.assertContains(dashboard, 'href="/homepage?view=news"')
+        self.assertContains(dashboard, 'href="/homepage?view=about"')
+        self.assertContains(client.get("/homepage?view=news"), 'id="farmer-feedback-message"')
+        self.assertContains(client.get("/homepage?view=about"), 'href="/homepage"')
+        self.assertEqual(client.get("/homepage?view=notifications").status_code, 200)
+        self.assertEqual(client.post("/homepage?view=notifications", {
+            "announcement_id": 0, "suggestion_id": 0,
+        }).status_code, 200)
+        feedback = client.post("/farmer/feedback", {
+            "feedback_message": "Mobile feedback", "return_to": "news",
+        })
+        self.assertTrue(feedback["Location"].startswith("/homepage?view=news&"))
+
+    @override_settings(FARMER_ONLY=False)
+    def test_apk_profile_photo_uses_dashboard_path(self):
+        client = Client(HTTP_USER_AGENT="Android ViscaneFarmer/1.0")
+        session = client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        with tempfile.TemporaryDirectory() as folder, override_settings(PRIVATE_UPLOAD_ROOT=Path(folder)):
+            photo_dir = Path(folder) / "profile_photos"
+            photo_dir.mkdir()
+            photo = BytesIO()
+            Image.new("RGB", (2, 2), "green").save(photo, format="JPEG")
+            (photo_dir / "mobile.jpg").write_bytes(photo.getvalue())
+            self.farmer.profile_photo_path = "mobile.jpg"
+            self.farmer.save(update_fields=["profile_photo_path"])
+            self.assertContains(client.get("/farmer/settings"), 'src="/homepage?view=profile-photo"')
+            response = client.get("/homepage?view=profile-photo")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(b"".join(response.streaming_content), photo.getvalue())
+            response.close()
+
     def test_csrf_required_and_login_rotates_session(self):
         client = Client(enforce_csrf_checks=True)
         client.get("/auth")
