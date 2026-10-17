@@ -55,16 +55,27 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap
 }
 
 @media (max-width: 600px) {
+    body.ds-app.vis-farmer-dashboard .header-content { position: relative; }
+    body.ds-app.vis-farmer-dashboard .header-content .brand {
+        min-width: 0;
+        max-width: calc(100% - 126px);
+    }
     body.ds-app.vis-farmer-dashboard .header-actions {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px 6px;
     }
     body.ds-app.vis-farmer-dashboard .header-date-weather {
-        grid-column: 1 / -1;
+        position: absolute;
+        top: 0;
+        right: 0;
         margin: 0;
         min-height: 0;
+        padding: 2px 0;
+        font-size: 14px;
+        white-space: nowrap;
     }
+    body.ds-app.vis-farmer-dashboard .header-date-weather ion-icon { font-size: 22px; }
     body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { display: contents; }
     body.ds-app.vis-farmer-dashboard .header-actions .btn.light {
         box-sizing: border-box;
