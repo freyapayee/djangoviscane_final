@@ -14,13 +14,17 @@ body { color: #163426; background: linear-gradient(155deg, #f6fcf3 0%, #eaf5e9 5
     text-align: center;
 }
 .mobile-cover-content { width: 100%; }
-.mobile-cover-logo { display: block; width: clamp(110px, 34vw, 158px); height: auto; margin: 0 auto 24px; animation: mobile-logo-appear 800ms cubic-bezier(.2,.8,.2,1) both; }
+.mobile-cover-logo { display: block; width: clamp(110px, 34vw, 158px); height: auto; margin: 0 auto 24px; animation: mobile-logo-appear 1500ms cubic-bezier(.2,.8,.2,1) both; }
 @keyframes mobile-logo-appear {
     from { opacity: 0; transform: translateY(16px) scale(.82); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.mobile-cover h1 { margin: 0; color: #527b5d; font-size: clamp(42px, 13vw, 64px); font-weight: 900; line-height: 1; letter-spacing: -.045em; }
-.mobile-cover p { max-width: 290px; margin: 15px auto 0; color: #486652; font-size: 16px; line-height: 1.5; }
+@keyframes mobile-cover-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.mobile-cover h1 { margin: 0; color: #527b5d; font-size: clamp(42px, 13vw, 64px); font-weight: 900; line-height: 1; letter-spacing: -.045em; animation: mobile-cover-rise 1300ms ease-out 400ms both; }
+.mobile-cover p { max-width: 290px; margin: 15px auto 0; color: #486652; font-size: 16px; line-height: 1.5; animation: mobile-cover-rise 1300ms ease-out 750ms both; }
 .mobile-cover-continue {
     display: inline-flex;
     align-items: center;
@@ -35,9 +39,10 @@ body { color: #163426; background: linear-gradient(155deg, #f6fcf3 0%, #eaf5e9 5
     font-size: 17px;
     font-weight: 700;
     text-decoration: none;
+    animation: mobile-cover-rise 1300ms ease-out 1100ms both;
 }
 .mobile-cover-continue:focus-visible { outline: 3px solid #254d31; outline-offset: 4px; }
 .mobile-cover-continue span { font-size: 22px; line-height: 1; }
 @media (prefers-reduced-motion: reduce) {
-    .mobile-cover-logo { animation: none; }
+    .mobile-cover-logo, .mobile-cover h1, .mobile-cover p, .mobile-cover-continue { animation: none; }
 }
