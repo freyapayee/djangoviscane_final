@@ -1,5 +1,7 @@
 (function () {
     const stateKey = 'viscane-farmer-tour-v2';
+    const translate = value => document.documentElement.lang === 'hil'
+        ? ((window.farmerMenuLabels || {})[value] || value) : value;
     const newsPath = document.querySelector('#farmer-menu a[href="/homepage?view=news"]')
         ? '/homepage?view=news' : '/farmer/news';
     const steps = [
@@ -41,16 +43,16 @@
     modal.setAttribute('aria-labelledby', 'farmer-tour-title');
     modal.innerHTML = `
         <div class="farmer-tutorial-dialog farmer-tour-card">
-            <button class="farmer-tutorial-close" type="button" id="farmer-tutorial-close" aria-label="Skip tour"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
+            <button class="farmer-tutorial-close" type="button" id="farmer-tutorial-close" aria-label="${translate('Skip tour')}"><ion-icon name="close-outline" aria-hidden="true"></ion-icon></button>
             <div class="farmer-tutorial-progress" aria-hidden="true">${steps.map((_, index) => `<span class="${index === saved.step ? 'is-active' : ''}"></span>`).join('')}</div>
             <div class="farmer-tutorial-icon"><ion-icon name="navigate-outline" aria-hidden="true"></ion-icon></div>
-            <p class="farmer-tutorial-kicker">Guided tour · ${saved.step + 1} of ${steps.length}</p>
-            <h2 id="farmer-tour-title">${step.title}</h2>
-            <p class="farmer-tour-description">${step.description}</p>
-            <p class="farmer-tour-hint"><ion-icon name="hand-left-outline" aria-hidden="true"></ion-icon> The highlighted area is the feature to try.</p>
+            <p class="farmer-tutorial-kicker">${translate('Guided tour')} · ${saved.step + 1} ${translate('of')} ${steps.length}</p>
+            <h2 id="farmer-tour-title">${translate(step.title)}</h2>
+            <p class="farmer-tour-description">${translate(step.description)}</p>
+            <p class="farmer-tour-hint"><ion-icon name="hand-left-outline" aria-hidden="true"></ion-icon> ${translate('The highlighted area is the feature to try.')}</p>
             <div class="farmer-tutorial-actions">
-                <button class="btn ghost farmer-tutorial-back" type="button" id="farmer-tutorial-back" ${saved.step === 0 ? 'hidden' : ''}>Back</button>
-                <button class="btn primary farmer-tutorial-next" type="button" id="farmer-tutorial-next">${step.next ? 'Continue tour' : 'Finish tour'}</button>
+                <button class="btn ghost farmer-tutorial-back" type="button" id="farmer-tutorial-back" ${saved.step === 0 ? 'hidden' : ''}>${translate('Back')}</button>
+                <button class="btn primary farmer-tutorial-next" type="button" id="farmer-tutorial-next">${translate(step.next ? 'Continue tour' : 'Finish tour')}</button>
             </div>
         </div>`;
 

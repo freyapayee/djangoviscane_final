@@ -91,6 +91,20 @@ class FarmerMobileTests(TestCase):
         })
         self.assertTrue(feedback["Location"].startswith("/homepage?view=news&"))
 
+    def test_hiligaynon_scan_instructions_and_tutorial_catalog(self):
+        client = Client(HTTP_USER_AGENT="Android ViscaneFarmer/1.0")
+        session = client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        client.post("/i18n/setlang/", {"language": "hil", "next": "/scan/new"})
+        scan = client.get("/scan/new")
+        self.assertContains(scan, "Pilia ang hulagway sa imo telepono")
+        self.assertContains(scan, "Siguruhon nga maathag ang puno sang tubo")
+        self.assertContains(scan, "Gamita ang kamera")
+        dashboard = client.get("/homepage")
+        self.assertContains(dashboard, "Pangitaa ang mga gamit sa Menu")
+        self.assertContains(dashboard, 'farmer-tutorial.js')
+
     @override_settings(FARMER_ONLY=False)
     def test_apk_profile_photo_uses_dashboard_path(self):
         client = Client(HTTP_USER_AGENT="Android ViscaneFarmer/1.0")

@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/scan-page.css') }}?v=6">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=4">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=8">
 </head>
 <body class="scanner-layout ds-app vis-scan-page">
     <header class="vis-scan-header">
         <div class="vis-scan-heading">
-            <p class="vis-section-kicker">AI crop assessment</p>
+            <p class="vis-section-kicker">{{ farmer_text('AI crop assessment') }}</p>
             <h1>{{ farmer_text('Scan Sugarcane') }}</h1>
             <p>{{ farmer_text('Capture or upload a sugarcane image for AI quality analysis.') }}</p>
         </div>
@@ -62,8 +62,8 @@
                 <button type="button" class="vis-upload-button" id="upload-image-btn" data-tour-target="scan-upload"><ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Choose photo') }}</button>
                 <button type="button" class="vis-upload-button is-secondary" id="take-photo-btn"><ion-icon name="camera-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Use camera') }}</button>
                 <button type="button" class="capture-btn" id="capture-btn" disabled hidden><ion-icon name="camera-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Take photo') }}</span></button>
-                <input id="scan-native-camera" type="file" accept="image/*" capture="environment" aria-label="Take a sugarcane photo" hidden>
-                <input id="scan-upload" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload sugarcane image" hidden>
+                <input id="scan-native-camera" type="file" accept="image/*" capture="environment" aria-label="{{ farmer_text('Take a sugarcane photo') }}" hidden>
+                <input id="scan-upload" type="file" accept="image/jpeg,image/png,image/webp" aria-label="{{ farmer_text('Upload a sugarcane photo') }}" hidden>
             </div>
             <button type="button" class="scan-back-button" id="close-camera-btn" hidden>{{ farmer_text('Close camera') }}</button>
         </div>
@@ -626,7 +626,7 @@
             });
         })();
     </script>
-    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=9"></script>
+    <script src="{{ url_for('static', filename='farmer-tutorial.js') }}?v=10" defer></script>
     <script src="{{ url_for('static', filename='farmer_ui.js') }}"></script>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>

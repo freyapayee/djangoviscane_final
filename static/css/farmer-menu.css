@@ -49,11 +49,6 @@ body.ds-app.vis-farmer-dashboard .farmer-news-page .sra-highlight-image { width:
 
 .farmer-header-navigation { display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 0 0 auto; white-space: nowrap; }
 body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { gap: 8px; }
-body.ds-app.vis-farmer-dashboard .header-actions .header-date-weather { order: 0; }
-body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { order: 1; }
-body.ds-app.vis-farmer-dashboard .header-actions #farmer-menu-toggle { order: 2; }
-body.ds-app.vis-farmer-dashboard .header-actions .tutorial-launch { order: 3; }
-body.ds-app.vis-farmer-dashboard .header-actions .farmer-settings-link { order: 4; }
 @media (max-width: 768px) {
     body.ds-app.vis-farmer-dashboard .header-actions { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
     body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { flex-shrink: 0; }
@@ -61,13 +56,13 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-settings-link { order: 
 
 @media (max-width: 600px) {
     body.ds-app.vis-farmer-dashboard .header-content { position: relative; }
-    body.ds-app.vis-farmer-dashboard .header-content .brand {
+    body.ds-app.vis-farmer-dashboard:not(.vis-farmer-page) .header-content .brand {
         min-width: 0;
         max-width: calc(100% - 126px);
     }
     body.ds-app.vis-farmer-dashboard .header-actions {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px 6px;
     }
     body.ds-app.vis-farmer-dashboard .header-date-weather {
@@ -81,8 +76,6 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-settings-link { order: 
         white-space: nowrap;
     }
     body.ds-app.vis-farmer-dashboard .header-date-weather ion-icon { font-size: 22px; }
-    body.ds-app.vis-farmer-dashboard .header-actions .farmer-header-navigation { display: contents; }
-    body.ds-app.vis-farmer-dashboard .header-actions :is(#farmer-menu-toggle,.tutorial-launch,.farmer-settings-link) { order: 0; }
     body.ds-app.vis-farmer-dashboard .header-actions .btn.light {
         box-sizing: border-box;
         width: 100%;
@@ -99,6 +92,52 @@ body.ds-app.vis-farmer-dashboard .header-actions .farmer-settings-link { order: 
     }
     body.ds-app.vis-farmer-dashboard .header-actions .btn.light ion-icon { flex: 0 0 auto; font-size: 18px; }
     body.ds-app.vis-farmer-dashboard .farmer-notification-count { padding: 2px 4px; font-size: 10px; }
+    body.ds-app.vis-farmer-dashboard.vis-farmer-page .header-actions,
+    body.ds-app.vis-calculate-page .dashboard-header .header-actions,
+    body.ds-app.vis-scan-page .scan-header-actions {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        width: 100%;
+        gap: 6px;
+    }
+    body.ds-app.vis-farmer-dashboard.vis-farmer-page .header-actions .farmer-info-chip,
+    body.ds-app.vis-calculate-page .dashboard-header .farmer-info-chip,
+    body.ds-app.vis-scan-page .scan-header-actions .farmer-info-chip {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 40px;
+        margin: 0;
+        padding: 5px 2px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    body.ds-app.vis-farmer-dashboard.vis-farmer-page .header-actions .farmer-info-chip ion-icon,
+    body.ds-app.vis-calculate-page .dashboard-header .farmer-info-chip ion-icon,
+    body.ds-app.vis-scan-page .scan-header-actions .farmer-info-chip ion-icon { flex: 0 0 auto; font-size: 16px; }
+    body.ds-app.vis-farmer-dashboard.vis-farmer-page .header-actions .farmer-header-navigation,
+    body.ds-app.vis-calculate-page .dashboard-header .farmer-header-navigation,
+    body.ds-app.vis-scan-page .scan-header-actions .farmer-header-navigation {
+        display: inline-flex;
+        flex: 0 1 auto;
+        min-width: 0;
+        gap: 6px;
+    }
+    body.ds-app.vis-farmer-dashboard.vis-farmer-page .header-actions .btn.light,
+    body.ds-app.vis-calculate-page .dashboard-header .header-actions .btn.light,
+    body.ds-app.vis-scan-page .scan-header-actions :is(.btn.light,.vis-button) {
+        width: auto;
+        min-width: 0;
+        min-height: 40px;
+        padding: 6px 8px;
+        font-size: 11px;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    body.ds-app.vis-farmer-dashboard.vis-farmer-page .header-actions .btn.light ion-icon,
+    body.ds-app.vis-calculate-page .dashboard-header .header-actions .btn.light ion-icon,
+    body.ds-app.vis-scan-page .scan-header-actions :is(.btn.light,.vis-button) ion-icon { font-size: 16px; }
 }
 
 /* Keep the news card and live announcements readable in the Android WebView. */
