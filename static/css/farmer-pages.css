@@ -325,3 +325,9 @@ body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-
     body.ds-app.farmer_settings .settings-password-trigger { min-height: 62px; padding: 10px 12px; gap: 10px; }
     body.ds-app.farmer_settings .settings-signout-button { min-height: 60px; padding: 10px 12px; gap: 10px; }
 }
+.farmer-feedback-history { margin-top: 20px; }
+.farmer-feedback-entry { padding: 14px 0; border-top: 1px solid #e0ebe2; overflow-wrap: anywhere; }
+.farmer-feedback-entry time { color: #5c7763; font-size: 12px; }
+.farmer-feedback-entry p { margin: 8px 0; }
+.farmer-admin-reply { margin: 10px 0 0; padding: 12px; border-left: 3px solid #71a77a; border-radius: 8px; background: #edf7ef; }
+.farmer-admin-reply p { margin-bottom: 0; }

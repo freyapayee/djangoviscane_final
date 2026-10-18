@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=6">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
     <link rel="stylesheet" href="/static/css/farmer-menu.css?v=8">
 </head>
@@ -125,6 +125,18 @@
                 <textarea class="stat-input feedback-input" id="farmer-feedback-message" name="feedback_message" rows="3" placeholder="{{ farmer_text('Write your feedback here...') }}" required></textarea>
             </form>
         </section>
+        {% if feedback_history %}
+        <section class="panel farmer-feedback-history" aria-label="Your feedback and admin replies">
+            <h3 class="panel-title">{{ farmer_text('Your feedback and replies') }}</h3>
+            {% for entry in feedback_history %}
+            <article class="farmer-feedback-entry">
+                <time>{{ entry.created_at.strftime('%b %d, %Y · %I:%M %p') }}</time>
+                <p>{{ entry.message }}</p>
+                {% for reply in entry.replies.all() %}<div class="farmer-admin-reply"><strong>{{ farmer_text('Admin reply') }}</strong><p>{{ reply.message }}</p></div>{% endfor %}
+            </article>
+            {% endfor %}
+        </section>
+        {% endif %}
 
         </div>
     </main>

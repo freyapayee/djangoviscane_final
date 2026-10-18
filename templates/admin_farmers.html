@@ -8,7 +8,7 @@
     <title>VISCANE | Farmer Account Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-farmers.css') }}?v=avatar-centered-3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-farmers.css') }}?v=account-reasons-1">
 </head>
 <body class="admin-layout admin-farmers-page has-vis-sidebar ds-app vis-management-dashboard vis-admin-farmers">
     {% include 'components/admin_navigation.html' %}
@@ -43,7 +43,7 @@
             </article>
             <article class="farmer-summary-card">
                 <span class="summary-icon summary-icon-inactive"><ion-icon name="pause-circle-outline"></ion-icon></span>
-                <div><p>Deactivated</p><strong>{{ inactive_count }}</strong></div>
+                <div><p>Held or Deactivated</p><strong>{{ inactive_count }}</strong></div>
             </article>
         </section>
 
@@ -79,12 +79,13 @@
                                     <td data-label="Contact"><span class="cell-primary">{{ user.phone or 'Not provided' }}</span></td>
                                     <td data-label="Registered address"><span class="cell-primary farmer-address">{% if user.barangay or user.municipality or user.province %}{{ user.barangay or '' }}{% if user.barangay and (user.municipality or user.province) %}, {% endif %}{{ user.municipality or '' }}{% if user.municipality and user.province %}, {% endif %}{{ user.province or '' }}{% else %}Not provided{% endif %}</span></td>
                                     <td data-label="Registered"><span class="cell-primary">{{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'N/A' }}</span></td>
-                                    <td data-label="Status">{% if user.is_active %}<span class="account-status is-active"><span></span>Active</span>{% else %}<span class="account-status is-inactive"><span></span>Deactivated</span>{% endif %}</td>
+                                    <td data-label="Status">{% if user.is_active %}<span class="account-status is-active"><span></span>Active</span>{% else %}<span class="account-status is-inactive"><span></span>{{ 'On hold' if user.restriction_type == 'hold' else 'Deactivated' }}</span>{% if user.restriction_reason %}<small class="account-reason">Reason: {{ user.restriction_reason }}</small>{% endif %}{% endif %}</td>
                                     <td data-label="Actions" class="actions-cell">
                                         <div class="farmer-action-row">
                                             <a class="farmer-action-btn" href="/admin/farmers/{{ user.id }}/edit" aria-label="Edit {{ user.fullname }}"><ion-icon name="create-outline"></ion-icon><span>Edit</span></a>
                                             <button class="farmer-action-btn account-action-trigger" type="button" data-action="reset" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="key-outline"></ion-icon><span>Reset</span></button>
                                             {% if user.is_active %}
+                                                <button class="farmer-action-btn is-warning account-action-trigger" type="button" data-action="hold" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="hourglass-outline"></ion-icon><span>Hold</span></button>
                                                 <button class="farmer-action-btn is-warning account-action-trigger" type="button" data-action="deactivate" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="pause-circle-outline"></ion-icon><span>Deactivate</span></button>
                                             {% else %}
                                                 <button class="farmer-action-btn is-positive account-action-trigger" type="button" data-action="activate" data-user-id="{{ user.id }}" data-user-name="{{ user.fullname }}"><ion-icon name="play-circle-outline"></ion-icon><span>Activate</span></button>
@@ -177,6 +178,7 @@
             <p id="account-modal-description">Are you sure you want to continue?</p>
             <form method="POST" action="/admin/farmers" class="admin-reset-actions">
                 {{ csrf_input }}<input type="hidden" name="action" id="account-action"><input type="hidden" name="user_id" id="account-user-id">
+                <label class="account-reason-field" id="account-reason-field" hidden>Reason for account restriction<textarea name="reason" id="account-reason" rows="3" maxlength="1000" placeholder="Explain why this account is being held or deactivated"></textarea></label>
                 <button class="btn ghost" id="account-cancel-button" type="button" data-close-account-modal>No, Keep This</button><button class="btn primary" id="account-confirm-button" type="submit">Yes, Continue</button>
             </form>
         </div>
@@ -204,6 +206,7 @@
             const actions = {
                 reset: ['Reset farmer password?', (name) => `Are you sure you want to reset ${name}’s password to the temporary password 12345?`, 'Yes, Reset Password', 'is-primary', 'No, Keep This'],
                 deactivate: ['Deactivate farmer account?', (name) => `Are you sure you want to deactivate ${name}’s account? They will no longer be able to sign in.`, 'Yes, Deactivate This', 'is-warning', 'No, Keep This'],
+                hold: ['Put farmer account on hold?', (name) => `Put ${name}’s account on hold? They will not be able to sign in until reactivated.`, 'Yes, Put on Hold', 'is-warning', 'No, Keep This'],
                 activate: ['Reactivate farmer account?', (name) => `Reactivate ${name}’s account and restore their access to VISCANE?`, 'Yes, Activate This', 'is-positive', 'No, Keep This'],
                 delete: ['Delete farmer account?', (name) => `Are you sure you want to delete ${name}’s account? The account will be removed from this directory.`, 'Yes, Delete This', 'is-danger', 'No, Do Not Delete This']
             };
@@ -221,6 +224,11 @@
                 lastTrigger = button;
                 title.textContent = content[0]; description.textContent = content[1](button.dataset.userName || 'this farmer');
                 actionInput.value = action; userIdInput.value = button.dataset.userId || ''; confirmButton.textContent = content[2]; cancelButton.textContent = content[4];
+                const reasonField = document.getElementById('account-reason-field');
+                const reasonInput = document.getElementById('account-reason');
+                reasonField.hidden = !['hold', 'deactivate'].includes(action);
+                reasonInput.required = !reasonField.hidden;
+                reasonInput.value = '';
                 confirmButton.className = `btn primary ${content[3]}`; modalCard.className = `dashboard-modal-card panel ${content[3]}`;
                 setOpen(true);
             }));

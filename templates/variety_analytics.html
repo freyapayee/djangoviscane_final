@@ -73,6 +73,13 @@
                 {% for row in variety_rows %}<tr><td>{{ row.label }}</td><td>{{ row.predictions }}</td><td>{{ '%.2f'|format(row.avg_lkg_tc) }}</td><td>{{ '%.2f'|format(row.avg_lkg_ha) }}</td><td>{{ '%.2f'|format(row.total_lkg) }}</td></tr>{% else %}<tr><td colspan="5">No results available.</td></tr>{% endfor %}
             </tbody></table></div>
         </section>
+        <section class="yield-chart-grid" aria-label="Daily and weekly yield data">
+            {% for period, rows in [('Daily', daily_rows), ('Weekly', weekly_rows)] %}
+            <article class="panel yield-chart-card"><div class="panel-header"><div><h2 class="panel-title">{{ period }} Yield</h2><p class="panel-subtitle">Completed calculations in the selected period.</p></div><ion-icon name="calendar-outline"></ion-icon></div>
+                <div class="yield-table-wrap"><table class="yield-table"><thead><tr><th>{{ 'Date' if period == 'Daily' else 'Week' }}</th><th>Results</th><th>Avg LKG/TC</th><th>Avg LKG/HA</th><th>Total LKG</th></tr></thead><tbody data-period-table="{{ period|lower }}">{% for row in rows %}<tr><td>{{ row.label }}</td><td>{{ row.predictions }}</td><td>{{ '%.2f'|format(row.avg_lkg_tc) }}</td><td>{{ '%.2f'|format(row.avg_lkg_ha) }}</td><td>{{ '%.2f'|format(row.total_lkg) }}</td></tr>{% else %}<tr><td colspan="5">No results available.</td></tr>{% endfor %}</tbody></table></div>
+            </article>
+            {% endfor %}
+        </section>
         <div class="footer-link">VISCANE | Yield Analytics</div>
     </main>
     {% include 'hiligaynon_runtime.html' %}
@@ -118,6 +125,10 @@
                 document.querySelector('[data-analytics-varieties]').textContent = data.variety_rows.length;
                 document.querySelector('[data-analytics-maturity]').textContent = data.maturity_rows.length;
                 updateTable(data.variety_rows);
+                for (const period of ['daily', 'weekly']) {
+                    const table = document.querySelector(`[data-period-table="${period}"]`);
+                    if (table) table.innerHTML = data[`${period}_rows`].length ? data[`${period}_rows`].map(row => `<tr><td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.predictions)}</td><td>${Number(row.avg_lkg_tc).toFixed(2)}</td><td>${Number(row.avg_lkg_ha).toFixed(2)}</td><td>${Number(row.total_lkg).toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="5">No results available.</td></tr>';
+                }
             } catch (error) {
                 console.warn('Yield analytics refresh failed.', error);
             }

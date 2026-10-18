@@ -9,6 +9,7 @@ from unittest.mock import patch
 from django.contrib.auth.hashers import make_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
+from django.utils import timezone
 
 from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, Notification, Scan, User
 from .services import normalize_cv_variety_name
@@ -163,7 +164,7 @@ class ExecutionTests(TestCase):
         self.assertContains(response, 'href="/superadmin/settings"')
         self.assertEqual(self.client.post('/admin/models').status_code, 405)
 
-    def test_admin_dashboard_uses_recorded_logs_and_filters_users(self):
+    def test_admin_dashboard_uses_recorded_logs_without_user_management(self):
         inactive = User.objects.create(fullname='Inactive Farmer', email='inactive@example.invalid',
                                        phone='09999999999', password=make_password('Local-test-123!'),
                                        is_active=False)
@@ -172,15 +173,15 @@ class ExecutionTests(TestCase):
         self.assertContains(response, 'No system activity has been recorded yet.')
         self.assertNotContains(response, 'Uptime 99.9%')
         self.assertNotContains(response, 'Database Backup')
-        self.assertContains(response, 'class="admin-user-filter"')
+        self.assertNotContains(response, 'Admin Modules')
+        self.assertNotContains(response, 'User Management')
 
         AuditLog.objects.create(action='Admin created farmer account: Real Farmer')
-        response = self.client.get('/admin?user_search=Inactive&user_status=inactive')
+        response = self.client.get('/admin')
         self.assertContains(response, 'Admin created farmer account: Real Farmer')
-        self.assertContains(response, 'Inactive Farmer')
-        self.assertNotContains(response, 'Execution Farmer')
-        self.assertContains(response, 'class="admin-user-filter" open')
-        self.assertContains(response, 'No scans yet')
+        self.assertNotContains(response, 'Inactive Farmer')
+        self.assertNotContains(response, 'User Management')
+        self.assertContains(self.client.get('/admin/farmers'), 'Inactive Farmer')
 
     def test_superadmin_combined_cv_result_uses_report(self):
         self.login_admin()
@@ -229,7 +230,8 @@ class ExecutionTests(TestCase):
 
         reports = self.client.get('/admin/reports?municipality=Unspecified')
         self.assertContains(reports, 'Farm Performance')
-        export = self.client.get('/admin/reports?download=csv')
+        today = timezone.localdate()
+        export = self.client.get(f'/admin/reports?download=csv&year={today.year}&month={today.month}')
         self.assertEqual(export.status_code, 200)
         self.assertIn('text/csv', export['Content-Type'])
         self.assertIn('Execution Farmer', export.content.decode())
@@ -432,7 +434,7 @@ class ExecutionTests(TestCase):
         user.refresh_from_db()
         self.assertEqual(user.fullname, 'Updated Farmer')
         for action, expected in [('deactivate', False), ('activate', True)]:
-            self.client.post('/admin/farmers', {'action': action, 'user_id': user.pk})
+            self.client.post('/admin/farmers', {'action': action, 'user_id': user.pk, 'reason': 'Account review'})
             user.refresh_from_db()
             self.assertEqual(user.is_active, expected)
 
@@ -448,7 +450,7 @@ class ExecutionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Total Farmers')
         self.assertContains(response, 'Active Accounts')
-        self.assertContains(response, 'Deactivated')
+        self.assertContains(response, 'Held or Deactivated')
         self.assertContains(response, 'aria-label="Farmer account pages"')
         self.assertContains(response, 'data-action="reset"')
         self.assertContains(response, 'data-action="deactivate"')
@@ -654,7 +656,7 @@ class ExecutionTests(TestCase):
 
     def test_admin_and_superadmin_registration_routes_match_their_roles(self):
         self.login_admin()
-        self.assertContains(self.client.get('/admin'), 'href="/admin-register"')
+        self.assertNotContains(self.client.get('/admin'), 'User Management')
         admin_page = self.client.get('/admin-register')
         self.assertContains(admin_page, '<h2 style="margin: 15px 0 5px;">Admin Registration</h2>')
         self.assertNotContains(admin_page, 'name="role"')

@@ -35,6 +35,6 @@ class FarmerPortalMiddleware:
         if request.farmer_only:
             from django.utils.cache import patch_vary_headers
             patch_vary_headers(response, ("User-Agent",))
-        if is_farmer_path(request.path) and not request.path.startswith("/static/"):
+        if is_farmer_path(request.path) and not request.path.startswith("/static/") and "Cache-Control" not in response:
             response["Cache-Control"] = "no-store"
         return response

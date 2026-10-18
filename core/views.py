@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count, Max, Sum, Q
+from django.db.models import Avg, Count, Sum, Q
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect as django_redirect, render
 from django.urls import reverse
@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from .language import translate_recommendations
-from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, Notification, Scan, SystemConfig, User
+from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, Notification, Scan, SystemConfig, User
 from .services import (
     DEFAULT_RECOMMENDATIONS,
     DEFAULT_SCAN_PREDICT_TOP_K,
@@ -296,9 +296,12 @@ def homepage(request):
 @farmer_login_required
 @require_GET
 def farmer_news(request):
+    user = current_user(request)
+    feedback_history = list(Feedback.objects.filter(user_id=user.id).prefetch_related("replies").order_by("-created_at")[:10])
     return render_template(request, "farmer_news.html", {
-        "user": current_user(request),
+        "user": user,
         "announcements": list(Notification.objects.order_by("-created_at")),
+        "feedback_history": feedback_history,
         "message": request.GET.get("message"),
         "error": request.GET.get("error"),
     })
@@ -824,10 +827,6 @@ def farmer_feedback(request):
 @login_required
 def admin_portal(request):
     current = current_admin(request)
-    user_search = request.GET.get("user_search", "").strip()[:100]
-    user_status = request.GET.get("user_status", "all")
-    if user_status not in {"all", "active", "inactive"}:
-        user_status = "all"
     total_users = User.objects.filter(is_archived=False, is_active=True).count()
     total_scans = Scan.objects.count()
     now = timezone.now()
@@ -840,16 +839,6 @@ def admin_portal(request):
     active_user_ids = User.objects.filter(is_archived=False, is_active=True).values_list("id", flat=True)
     active_farmers = Scan.objects.filter(created_at__gte=seven_days_ago, user_id__in=active_user_ids).values("user_id").distinct().count()
     pending_scans = Scan.objects.filter(status="pending", user_id__in=active_user_ids).count()
-    users_query = User.objects.filter(is_archived=False)
-    if user_search:
-        users_query = users_query.filter(Q(fullname__icontains=user_search) | Q(email__icontains=user_search))
-    if user_status != "all":
-        users_query = users_query.filter(is_active=user_status == "active")
-    user_filter_active = bool(user_search or user_status != "all")
-    users_query = users_query.annotate(last_scan_at=Max("scans__created_at")).order_by("-id")
-    users = list(users_query if user_filter_active else users_query[:6])
-    for user in users:
-        user.last_scan_display = timezone.localtime(user.last_scan_at).strftime("%b %d, %Y") if user.last_scan_at else None
     now = timezone.now()
     logs = list(AuditLog.objects.order_by("-timestamp", "-id")[:5])
     storage_utilization = 68
@@ -873,7 +862,7 @@ def admin_portal(request):
             relative = f"{total_hours}h ago" if total_hours < 24 else f"{total_hours // 24}d ago"
         log.relative_time = relative
         log.exact_time = timezone.localtime(log.timestamp).strftime("%b %d, %Y %I:%M %p %Z")
-    return render_template(request, "admin.html", {"total_users": total_users, "users": users, "logs": logs, "current_admin": current, "stats": stats, "metric_trends": metric_trends, "user_search": user_search, "user_status": user_status, "user_filter_active": user_filter_active})
+    return render_template(request, "admin.html", {"total_users": total_users, "logs": logs, "current_admin": current, "stats": stats, "metric_trends": metric_trends})
 
 
 @login_required
@@ -916,19 +905,26 @@ def admin_farmers(request):
                 log_audit(f"Farmer credentials reset: {user.fullname}", user_id=current.id if current else None)
                 return redirect("admin_farmers", message=f"Temporary password for {user.fullname}: {temp_password}")
             return redirect("admin_farmers", error="Unable to reset credentials.")
-        if action == "deactivate":
+        if action in {"deactivate", "hold"}:
             user = User.objects.filter(pk=request.POST.get("user_id"), is_archived=False, is_active=True).first()
             if user:
+                reason = request.POST.get("reason", "").strip()
+                if not reason:
+                    return redirect("admin_farmers", error="Enter a reason before restricting this account.")
                 user.is_active = False
-                user.save(update_fields=["is_active"])
-                log_audit(f"Farmer account deactivated: {user.fullname}", user_id=current.id if current else None)
-                return redirect("admin_farmers", message=f"{user.fullname} has been deactivated.")
+                user.restriction_type = action
+                user.restriction_reason = reason
+                user.save(update_fields=["is_active", "restriction_type", "restriction_reason"])
+                log_audit(f"Farmer account {action}: {user.fullname}; reason: {reason[:120]}", user_id=current.id if current else None)
+                return redirect("admin_farmers", message=f"{user.fullname}'s account has been {'put on hold' if action == 'hold' else 'deactivated'}.")
             return redirect("admin_farmers", error="Unable to deactivate account.")
         if action == "activate":
             user = User.objects.filter(pk=request.POST.get("user_id"), is_archived=False, is_active=False).first()
             if user:
                 user.is_active = True
-                user.save(update_fields=["is_active"])
+                user.restriction_type = ""
+                user.restriction_reason = ""
+                user.save(update_fields=["is_active", "restriction_type", "restriction_reason"])
                 log_audit(f"Farmer account activated: {user.fullname}", user_id=current.id if current else None)
                 return redirect("admin_farmers", message=f"{user.fullname} has been reactivated.")
             return redirect("admin_farmers", error="Unable to activate account.")
@@ -1096,7 +1092,7 @@ def _variety_analytics_context(request=None):
     if selected_month:
         logs = logs.filter(created_at__month=selected_month)
     maturity_order = ["Not Mature", "Mature", "Over Mature", "Not provided"]
-    groups = {"variety": {}, "maturity": {label: {} for label in maturity_order}}
+    groups = {"variety": {}, "maturity": {label: {} for label in maturity_order}, "daily": {}, "weekly": {}}
 
     def maturity_label(log):
         status = normalize_cv_maturity_status((log.scan.cv_upload.maturity_status if log.scan and log.scan.cv_upload else "") or "")
@@ -1129,6 +1125,10 @@ def _variety_analytics_context(request=None):
         maturity = maturity_label(log)
         add_metric(groups["variety"].setdefault(variety, {}), log)
         add_metric(groups["maturity"].setdefault(maturity, {}), log)
+        local_date = timezone.localtime(log.created_at).date()
+        iso_year, iso_week, _ = local_date.isocalendar()
+        add_metric(groups["daily"].setdefault(local_date.isoformat(), {}), log)
+        add_metric(groups["weekly"].setdefault(f"{iso_year}-W{iso_week:02d}", {}), log)
 
     def finalize(group):
         return {
@@ -1140,9 +1140,13 @@ def _variety_analytics_context(request=None):
 
     variety_rows = [{"label": label, **finalize(group)} for label, group in sorted(groups["variety"].items())]
     maturity_rows = [{"label": label, **finalize(groups["maturity"].get(label, {}))} for label in maturity_order if groups["maturity"].get(label, {}).get("count")]
+    daily_rows = [{"label": label, **finalize(group)} for label, group in sorted(groups["daily"].items(), reverse=True)]
+    weekly_rows = [{"label": label, **finalize(group)} for label, group in sorted(groups["weekly"].items(), reverse=True)]
     return {
         "variety_rows": variety_rows,
         "maturity_rows": maturity_rows,
+        "daily_rows": daily_rows,
+        "weekly_rows": weekly_rows,
         "variety_chart": {
             "labels": [row["label"] for row in variety_rows],
             "lkg_tc": [row["avg_lkg_tc"] for row in variety_rows],
@@ -1200,6 +1204,8 @@ def _variety_analytics_json(request):
         "maturity": context["maturity_chart"],
         "variety_rows": context["variety_rows"],
         "maturity_rows": context["maturity_rows"],
+        "daily_rows": context["daily_rows"],
+        "weekly_rows": context["weekly_rows"],
         "total_predictions": context["total_predictions"],
         "updated_at": timezone.localtime(timezone.now()).strftime("%b %d, %Y %I:%M:%S %p"),
     })
@@ -1218,6 +1224,29 @@ def superadmin_variety_analytics_data(request):
 @login_required
 def admin_reports(request):
     logs = AgronomicLog.objects.select_related("user").order_by("-created_at")
+    year_value = request.GET.get("year", "").strip()
+    month_value = request.GET.get("month", "").strip()
+    day_value = request.GET.get("day", "").strip()
+    try:
+        selected_year = int(year_value) if year_value else None
+        selected_month = int(month_value) if month_value else None
+        selected_day = int(day_value) if day_value else None
+        if selected_year is not None and not 2000 <= selected_year <= 2100:
+            raise ValueError
+        if selected_month is not None and not 1 <= selected_month <= 12:
+            raise ValueError
+        if selected_day is not None and (selected_month is None or selected_year is None):
+            raise ValueError
+        if selected_day is not None:
+            datetime(selected_year, selected_month, selected_day)
+    except ValueError:
+        return HttpResponse("Choose a valid year, month, and day.", status=400)
+    if selected_year:
+        logs = logs.filter(created_at__year=selected_year)
+    if selected_month:
+        logs = logs.filter(created_at__month=selected_month)
+    if selected_day:
+        logs = logs.filter(created_at__day=selected_day)
     farmer_summary = {}
     municipality_summary = {}
     total_predictions = 0
@@ -1280,8 +1309,8 @@ def admin_reports(request):
         "top_farm": rows[0] if rows else None,
     }
     search = request.GET.get("search", "").strip()
-    municipality_filter = request.GET.get("municipality", "").strip()
-    municipality_options = sorted({row["municipality"] for row in rows if row["municipality"] != "N/A"})
+    barangay_filter = request.GET.get("barangay", "").strip()
+    barangay_options = sorted({row["barangay"] for row in rows if row["barangay"] != "N/A"})
     filtered_rows = rows
     if search:
         lowered_search = search.lower()
@@ -1291,25 +1320,37 @@ def admin_reports(request):
             or lowered_search in row["municipality"].lower()
             or lowered_search in row["barangay"].lower()
         ]
-    if municipality_filter:
-        filtered_rows = [row for row in filtered_rows if row["municipality"] == municipality_filter]
+    if barangay_filter:
+        filtered_rows = [row for row in filtered_rows if row["barangay"] == barangay_filter]
 
     if request.GET.get("download") == "csv":
+        if not selected_year or not selected_month:
+            return HttpResponse("Select a year and month before exporting CSV data.", status=400)
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow(["Farmer", "Municipality", "Barangay", "Predictions", "Average LKG/TC", "Average LKG/HA", "Total Predicted LKG"])
+        def safe_csv_text(value):
+            value = str(value)
+            return f"'{value}" if value.lstrip().startswith(("=", "+", "-", "@")) or value.startswith(("\t", "\r", "\n")) else value
         for row in filtered_rows:
-            writer.writerow([row["name"], row["municipality"], row["barangay"], row["predictions"], row["avg_lkg_tc"], row["avg_lkg_ha"], row["total_lkg"]])
+            writer.writerow([safe_csv_text(row["name"]), safe_csv_text(row["municipality"]), safe_csv_text(row["barangay"]), row["predictions"], row["avg_lkg_tc"], row["avg_lkg_ha"], row["total_lkg"]])
         response = HttpResponse(output.getvalue(), content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="viscane-farm-performance.csv"'
+        date_suffix = f"-{selected_day:02d}" if selected_day else ""
+        response["Content-Disposition"] = f'attachment; filename="viscane-farm-performance-{selected_year}-{selected_month:02d}{date_suffix}.csv"'
         return response
 
     paginator = Paginator(filtered_rows, 10)
     page_obj = paginator.get_page(request.GET.get("page"))
     page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
-    filter_values = {"search": search, "municipality": municipality_filter}
+    filter_values = {"search": search, "barangay": barangay_filter, "year": selected_year, "month": selected_month, "day": selected_day}
     query_string = urlencode({key: value for key, value in filter_values.items() if value})
     report["filtered_farms"] = len(filtered_rows)
+    oldest_log_at = AgronomicLog.objects.order_by("created_at").values_list("created_at", flat=True).first()
+    first_report_year = min(oldest_log_at.year, timezone.localdate().year) if oldest_log_at else timezone.localdate().year
+    report_years = list(range(timezone.localdate().year, first_report_year - 1, -1))
+    if selected_year and selected_year not in report_years:
+        report_years.append(selected_year)
+        report_years.sort(reverse=True)
     return render_template(request, "admin_reports.html", {
         "rows": list(page_obj.object_list),
         "report": report,
@@ -1318,8 +1359,12 @@ def admin_reports(request):
         "page_numbers": page_numbers,
         "query_string": query_string,
         "search": search,
-        "selected_municipality": municipality_filter,
-        "municipality_options": municipality_options,
+        "selected_barangay": barangay_filter,
+        "barangay_options": barangay_options,
+        "selected_year": selected_year,
+        "selected_month": selected_month,
+        "selected_day": selected_day,
+        "report_years": report_years,
         "current_admin": current_admin(request),
     })
 
@@ -1329,6 +1374,20 @@ def admin_communications(request):
     message = request.GET.get("message")
     error = request.GET.get("error")
     if request.method == "POST":
+        if request.POST.get("action") == "reply":
+            reply_message = request.POST.get("reply_message", "").strip()
+            try:
+                feedback_id = int(request.POST.get("feedback_id", ""))
+            except (TypeError, ValueError):
+                return redirect("admin_communications", error="This farmer message is no longer available.")
+            feedback_entry = Feedback.objects.filter(pk=feedback_id).first()
+            if not feedback_entry or not feedback_entry.user_id or not User.objects.filter(pk=feedback_entry.user_id, is_archived=False).exists():
+                return redirect("admin_communications", error="This farmer message is no longer available.")
+            if not reply_message:
+                return redirect("admin_communications", error="Enter a reply before sending.")
+            FeedbackReply.objects.create(feedback=feedback_entry, admin=current_admin(request), message=reply_message)
+            log_audit(f"Admin replied to farmer feedback #{feedback_entry.pk}", user_id=current_admin(request).id)
+            return redirect("admin_communications", message="Reply sent to the farmer.")
         title = request.POST.get("title", "").strip()
         content = request.POST.get("message", "").strip()
         if title and content:
@@ -1346,11 +1405,13 @@ def admin_communications(request):
         feedback_query = feedback_query.filter(Q(message__icontains=search) | Q(user_id__in=matching_users))
     paginator = Paginator(feedback_query, 10)
     page_obj = paginator.get_page(request.GET.get("page"))
-    feedback_entries = list(page_obj.object_list)
+    feedback_entries = list(Feedback.objects.filter(pk__in=[entry.pk for entry in page_obj.object_list]).prefetch_related("replies"))
+    feedback_by_id = {entry.pk: entry for entry in feedback_entries}
     feedback = []
-    for entry in feedback_entries:
+    for page_entry in page_obj.object_list:
+        entry = feedback_by_id[page_entry.pk]
         farmer = User.objects.filter(pk=entry.user_id).first() if entry.user_id else None
-        feedback.append({"farmer_label": farmer.fullname if farmer else (f"Farmer ID {entry.user_id}" if entry.user_id else "Unknown"), "message": entry.message, "created_at": entry.created_at})
+        feedback.append({"id": entry.pk, "farmer_id": farmer.pk if farmer else None, "farmer_label": farmer.fullname if farmer else (f"Farmer ID {entry.user_id}" if entry.user_id else "Unknown"), "message": entry.message, "created_at": entry.created_at, "replies": list(entry.replies.all())})
     page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
     return render_template(request, "admin_communications.html", {
         "notifications": notifications,

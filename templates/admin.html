@@ -26,10 +26,10 @@
             </div>
             <div class="header-actions">
                 {% include 'components/admin_console_language.html' %}
-                <button class="btn light">
+                <a class="btn light" href="/admin/reports#report-export">
                     <ion-icon name="download-outline"></ion-icon>
                     Export Data
-                </button>
+                </a>
             </div>
         </div>
     </header>
@@ -87,33 +87,6 @@
             </div>
         </section>
 
-        <section class="panel admin-module-panel">
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title">Admin Modules</h3>
-                    <p class="panel-subtitle">Operations and farmer support tools</p>
-                </div>
-            </div>
-            <div class="action-grid admin-grid admin-modules-grid">
-                <a class="action-tile admin-module-tile" href="/admin/farmers">
-                    <ion-icon name="people-outline"></ion-icon>
-                    <div>Farmer Accounts</div>
-                </a>
-                <a class="action-tile admin-module-tile" href="/admin/monitoring">
-                    <ion-icon name="analytics-outline"></ion-icon>
-                    <div>Data Monitoring</div>
-                </a>
-                <a class="action-tile admin-module-tile" href="/admin/reports">
-                    <ion-icon name="bar-chart-outline"></ion-icon>
-                    <div>Scoped Reports</div>
-                </a>
-                <a class="action-tile admin-module-tile" href="/admin/communications">
-                    <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-                    <div>Comms & Support</div>
-                </a>
-            </div>
-        </section>
-
         <section class="section-grid two-col">
             <div class="panel admin-logs-panel">
                 <div class="panel-header">
@@ -156,57 +129,6 @@
                     </div>
                 </div>
             </div>
-        </section>
-
-        <section class="panel" style="margin-bottom: 24px;">
-            <div class="panel-header">
-                <div>
-                    <h3 class="panel-title">User Management</h3>
-                    <p class="panel-subtitle">Role access and monitoring</p>
-                </div>
-                <details class="admin-user-filter"{% if user_filter_active %} open{% endif %}>
-                    <summary class="btn ghost admin-table-filter"><ion-icon name="funnel-outline"></ion-icon>Filter</summary>
-                    <form method="get" action="/admin" class="admin-user-filter-form">
-                        <label for="dashboard-user-search">Search users</label>
-                        <input id="dashboard-user-search" type="search" name="user_search" value="{{ user_search }}" placeholder="Name or email">
-                        <label for="dashboard-user-status">Status</label>
-                        <select id="dashboard-user-status" name="user_status">
-                            <option value="all"{% if user_status == 'all' %} selected{% endif %}>All statuses</option>
-                            <option value="active"{% if user_status == 'active' %} selected{% endif %}>Active</option>
-                            <option value="inactive"{% if user_status == 'inactive' %} selected{% endif %}>Inactive</option>
-                        </select>
-                        <div class="admin-user-filter-actions"><button class="btn primary" type="submit">Apply</button><a class="btn ghost" href="/admin">Clear</a></div>
-                    </form>
-                </details>
-            </div>
-            <div class="ds-table-scroll" role="region" aria-label="Records table" tabindex="0"><table class="data-table admin-user-table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Last Scan</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if users %}
-                        {% for user in users %}
-                            <tr>
-                                <td>{{ user.fullname }}</td>
-                                <td>Farmer</td>
-                                <td><span class="tag {{ 'success' if user.is_active else '' }}">{{ 'Active' if user.is_active else 'Inactive' }}</span></td>
-                                <td>{{ user.last_scan_display or 'No scans yet' }}</td>
-                                <td><a class="tag" href="/admin/farmers" style="text-decoration: none;">Review</a></td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="5">{% if user_filter_active %}No users match these filters.{% else %}No users registered yet. Waiting for the first farmer account to appear.{% endif %}</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table></div>
         </section>
 
         <div class="footer-link">VISCANE Admin Console | Secure System Management</div>

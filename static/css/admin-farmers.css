@@ -314,7 +314,11 @@ body.ds-app.vis-admin-farmers .account-confirmation-modal .dashboard-modal-card 
 .account-confirmation-modal .dashboard-modal-card.is-positive { border-top-color: #168044; }
 .account-confirmation-modal #account-modal-title { padding-right: 38px; }
 .account-confirmation-modal #account-modal-description { margin: 9px 0 24px; color: var(--farmers-muted); font-size: 14px; line-height: 1.6; }
-.account-confirmation-modal .admin-reset-actions { margin: 0; padding-top: 20px; border-top: 1px solid #edf2ee; }
+.account-confirmation-modal .admin-reset-actions { flex-wrap: wrap; margin: 0; padding-top: 20px; border-top: 1px solid #edf2ee; }
+.account-reason { display: block; max-width: 240px; margin-top: 6px; color: #52665a; line-height: 1.4; overflow-wrap: anywhere; }
+.account-reason-field { display: grid; gap: 8px; width: 100%; flex-basis: 100%; color: #30483b; font-weight: 700; }
+.account-reason-field[hidden] { display: none; }
+.account-reason-field textarea { width: 100%; padding: 10px 12px; border: 1px solid #c9d9cc; border-radius: 10px; font: inherit; resize: vertical; }
 .account-confirmation-modal .btn.is-warning { background: #b87319; }
 .account-confirmation-modal .btn.is-positive { background: #168044; }
 .account-confirmation-modal .btn.is-danger { background: #ad4439; }

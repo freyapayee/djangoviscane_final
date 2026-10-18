@@ -333,6 +333,8 @@ HILIGAYNON_LABELS = {
     "Tell us your suggestions or support concerns": "Ipaabot ang imo suhestyon ukon problema sa paggamit",
     "Submit Feedback": "Ipadala ang suhestyon",
     "Your Feedback": "Imo suhestyon",
+    "Your feedback and replies": "Imo mga suhestyon kag mga sabat",
+    "Admin reply": "Sabat sang admin",
     "Write your feedback here...": "Isulat diri ang imo suhestyon...",
     "No announcements yet. New admin updates will appear here.": "Wala pa sang pahibalo. Diri makita ang bag-o nga pahibalo sang admin.",
     "Read the official news article": "Basaha ang opisyal nga balita",

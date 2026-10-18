@@ -159,6 +159,21 @@ body.ds-app.vis-admin-section .report-top-farm h2 { margin: 0 0 5px; color: #fff
 .report-updated span, .report-updated strong { display: block; }
 .report-updated strong { margin-top: 2px; color: #3c5548; font-size: 10px; }
 .report-filter-bar .admin-search-field { flex-basis: 420px; }
+.report-export-form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 16px 0 20px; padding: 16px; border: 1px solid #d9e9dd; border-radius: 14px; background: #f4faf5; }
+.report-export-form p { flex-basis: 100%; margin: 0; color: #536e5c; font-size: 12px; line-height: 1.5; }
+.report-export-form label { display: grid; gap: 6px; color: #365642; font-size: 12px; font-weight: 700; }
+.report-export-form select { min-width: 120px; min-height: 40px; padding: 8px; border: 1px solid #bfd3c3; border-radius: 8px; background: white; color: #244630; }
+.communications-menu { position: relative; }
+.communications-menu summary { list-style: none; cursor: pointer; }
+.communications-menu summary::-webkit-details-marker { display: none; }
+.communications-menu nav { position: absolute; z-index: 20; right: 0; top: calc(100% + 8px); display: grid; min-width: 210px; padding: 8px; border: 1px solid #d5e5d9; border-radius: 12px; background: white; box-shadow: 0 12px 30px rgba(19, 56, 32, .14); }
+.communications-menu nav a { padding: 10px 12px; color: #245c38; text-decoration: none; border-radius: 8px; }
+.communications-menu nav a:hover, .communications-menu nav a:focus-visible { background: #ebf6ed; }
+.admin-reply-form { display: grid; gap: 8px; margin-top: 12px; }
+.admin-reply-form label { font-size: 12px; font-weight: 700; color: #365642; }
+.admin-reply-form textarea { width: 100%; padding: 10px; border: 1px solid #c9dccd; border-radius: 8px; font: inherit; }
+.admin-reply-form .btn { justify-self: start; }
+.admin-feedback-reply { margin-top: 10px; padding: 10px; border-radius: 8px; background: #edf7ef; }
 .report-table .data-table { min-width: 900px !important; }
 .report-count { display: inline-grid; place-items: center; min-width: 30px; height: 26px; padding: 0 7px; border-radius: 8px; background: #e9f4ec; color: #176b38; font-size: 10px; font-weight: 800; }
 

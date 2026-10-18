@@ -15,6 +15,8 @@ class User(models.Model):
     barangay = models.CharField(max_length=120, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)
+    restriction_type = models.CharField(max_length=20, blank=True, default="")
+    restriction_reason = models.TextField(blank=True, default="")
 
     class Meta:
         db_table = "user"
@@ -88,6 +90,16 @@ class Feedback(models.Model):
 
     class Meta:
         db_table = "feedback"
+
+
+class FeedbackReply(models.Model):
+    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name="replies")
+    admin = models.ForeignKey(Admin, on_delete=models.SET_NULL, null=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "feedback_reply"
 
 
 class AgronomicLog(models.Model):
