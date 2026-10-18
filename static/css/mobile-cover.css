@@ -42,6 +42,7 @@ body {
     width: min(100%, 270px);
     min-height: 54px;
     padding: 13px 22px;
+    border: 2px solid #4d8957;
     border-radius: 15px;
     background: #c5e7bc;
     color: #17452a;
