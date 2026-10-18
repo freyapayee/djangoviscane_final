@@ -39,12 +39,12 @@ body {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    width: min(100%, 310px);
+    width: min(100%, 270px);
     min-height: 54px;
     padding: 13px 22px;
     border-radius: 15px;
-    background: #087a35;
-    color: #fff;
+    background: #c5e7bc;
+    color: #17452a;
     font-size: 17px;
     font-weight: 700;
     text-decoration: none;
