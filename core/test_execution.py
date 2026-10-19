@@ -658,10 +658,13 @@ class ExecutionTests(TestCase):
         self.login_admin()
         self.assertNotContains(self.client.get('/admin'), 'User Management')
         admin_page = self.client.get('/admin-register')
-        self.assertContains(admin_page, '<h2 style="margin: 15px 0 5px;">Admin Registration</h2>')
+        self.assertContains(admin_page, '<h1 class="admin-login-title" id="admin-register-title">Admin Registration</h1>')
+        self.assertContains(admin_page, 'vis-admin-registration-page')
+        self.assertNotContains(admin_page, 'class="ds-app-header"')
         self.assertNotContains(admin_page, 'name="role"')
         superadmin_page = self.client.get('/superadmin-register')
-        self.assertContains(superadmin_page, '<h2 style="margin: 15px 0 5px;">Superadmin Registration</h2>')
+        self.assertContains(superadmin_page, '<h1 class="admin-login-title" id="superadmin-register-title">Superadmin Registration</h1>')
+        self.assertContains(superadmin_page, 'vis-admin-registration-page')
 
         self.client.get('/admin-logout')
         admin = Admin.objects.create(username='regular-admin', email='regular-admin@example.invalid',

@@ -38,10 +38,11 @@
                 {% if search or selected_barangay %}<a class="btn ghost" href="/admin/reports">Clear</a>{% endif %}<button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
             </form>
             <form class="report-export-form" id="report-export" method="GET" action="/admin/reports" aria-label="Export reports by date">
+                {% set month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
                 <p>Select a year and month to export. Choose a day for a single-day CSV; search and barangay filters also apply.</p>
                 <input type="hidden" name="search" value="{{ search }}"><input type="hidden" name="barangay" value="{{ selected_barangay }}">
                 <label>Year<select name="year" required><option value="">Select year</option>{% for year in report_years %}<option value="{{ year }}"{% if year == selected_year %} selected{% endif %}>{{ year }}</option>{% endfor %}</select></label>
-                <label>Month<select name="month" required><option value="">Select month</option>{% for month in range(1, 13) %}<option value="{{ month }}"{% if month == selected_month %} selected{% endif %}>{{ '%02d'|format(month) }}</option>{% endfor %}</select></label>
+                <label>Month<select name="month" required><option value="">Select month</option>{% for month in range(1, 13) %}<option value="{{ month }}"{% if month == selected_month %} selected{% endif %}>{{ month_names[month - 1] }}</option>{% endfor %}</select></label>
                 <label>Day (optional)<select name="day"><option value="">Entire month</option>{% for day in range(1, 32) %}<option value="{{ day }}"{% if day == selected_day %} selected{% endif %}>{{ day }}</option>{% endfor %}</select></label>
                 <button class="btn primary" type="submit" name="download" value="csv"><ion-icon name="download-outline"></ion-icon>Export selected dates</button>
             </form>

@@ -1,0 +1,25 @@
+/* Registration shares the administrator login card and field styling. */
+body.ds-app.vis-admin-registration-page { align-content: center; }
+body.ds-app.vis-admin-registration-page > .card { margin: 0 auto; }
+body.ds-app.vis-admin-registration-page .registration-language { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+body.ds-app.vis-admin-registration-page .registration-language select {
+    width: 145px !important; height: 40px; min-height: 40px; padding: 0 12px !important;
+    border-color: #c9dbce; border-radius: 10px; background: rgba(255,255,255,.9);
+    color: #245234 !important; font-size: 13px;
+}
+body.ds-app.vis-admin-registration-page .admin-login-header { margin-bottom: 18px; }
+body.ds-app.vis-admin-registration-page .admin-login-icon-circle ion-icon { font-size: 30px !important; }
+body.ds-app.vis-admin-registration-page .registration-help {
+    margin: 0 0 20px; padding: 12px 14px; border-radius: 11px;
+    background: rgba(232,246,228,.76); color: #415d4b; font-size: 13px; line-height: 1.5;
+}
+body.ds-app.vis-admin-registration-page .input-wrapper > input {
+    height: 52px; min-height: 52px; border-color: #e0ebda; border-radius: 13px;
+    background: rgba(255,255,255,.97); font-size: 15px;
+}
+body.ds-app.vis-admin-registration-page .input-wrapper > ion-icon { color: #07872f; }
+body.ds-app.vis-admin-registration-page .vis-password-toggle { color: #087c2a; }
+body.ds-app.vis-admin-registration-page .admin-login-footer { margin-top: 18px; }
+@media (max-width: 600px) {
+    body.ds-app.vis-admin-registration-page { align-content: start; }
+}

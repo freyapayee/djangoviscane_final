@@ -2,21 +2,23 @@
 <html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Registration</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=registration-2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-login-premium.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-register-premium.css') }}?v=1">
 </head>
-<body class="vis-auth-simple vis-registration-page ds-app">
-    {% include 'components/app_header.html' %}
-    <div class="card fade-in">
+<body class="vis-auth-simple vis-admin-login-page vis-admin-registration-page ds-app">
+    <main class="card fade-in" aria-labelledby="admin-register-title">
+        <div class="registration-language">{% include 'farmer_language_switch.html' %}</div>
 
         <div class="admin-login-header">
             <div class="admin-login-icon-circle">
                 <ion-icon name="person-add-outline" style="font-size: 30px;"></ion-icon>
             </div>
-            <h2 style="margin: 15px 0 5px;">Admin Registration</h2>
+            <h1 class="admin-login-title" id="admin-register-title">Admin Registration</h1>
             <p class="admin-login-subtitle">Create an Admin account</p>
         </div>
 
@@ -28,7 +30,7 @@
         {% endif %}
 
         {% if authorization_required %}
-            <p class="admin-login-subtitle">Enter an existing Admin or Superadmin account below to authorize this registration.</p>
+            <p class="registration-help">Enter an existing Admin or Superadmin account below to authorize this registration.</p>
         {% endif %}
         <form class="fade-in" method="POST" action="/admin-register">
             {{ csrf_input }}
@@ -51,12 +53,12 @@
 <div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <input id="ds-admin_register-password" type="password" name="password" placeholder="Password (min 8 chars)" autocomplete="new-password" minlength="8" required>
-            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#eye-outline"></use><path class="console-eye-slash" d="m3 3 18 18"/></svg></button></div>
             <label class="ds-field-label" for="ds-admin_register-confirm_password">Confirm Password</label>
 <div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <input id="ds-admin_register-confirm_password" type="password" name="confirm_password" placeholder="Confirm Password" autocomplete="new-password" minlength="8" required>
-            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-confirm_password" aria-label="Show password" aria-pressed="false"><span>Show</span></button></div>
+            <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-confirm_password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#eye-outline"></use><path class="console-eye-slash" d="m3 3 18 18"/></svg></button></div>
 
             {% if authorization_required %}
             <label class="ds-field-label" for="ds-admin_register-authorizer_identifier">Existing Admin Username or Email</label>
@@ -68,7 +70,7 @@
             <div class="input-wrapper">
                 <ion-icon name="lock-closed-outline"></ion-icon>
                 <input id="ds-admin_register-authorizer_password" type="password" name="authorizer_password" placeholder="Authorized account password" autocomplete="current-password" required>
-                <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-authorizer_password" aria-label="Show password" aria-pressed="false"><span>Show</span></button>
+                <button type="button" class="vis-password-toggle" data-password-toggle="ds-admin_register-authorizer_password" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" class="console-icon" aria-hidden="true"><use href="{{ url_for('static', filename='images/access-icons.svg') }}#eye-outline"></use><path class="console-eye-slash" d="m3 3 18 18"/></svg></button>
             </div>
             {% endif %}
 
@@ -80,7 +82,7 @@
         <div class="admin-login-footer">
             <a href="/admin-login" class="admin-login-back-link">&larr; Back to Admin Login</a>
         </div>
-    </div>
+    </main>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=registration-2" defer></script>
 </body>
