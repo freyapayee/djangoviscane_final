@@ -31,6 +31,8 @@
     </header>
 
     <main class="dashboard-container fade-in">
+        {% if error %}<div class="form-error" role="alert">{{ error }}</div>{% endif %}
+        {% if notice %}<div class="form-success" role="status">{{ notice }}</div>{% endif %}
         <section class="panel superadmin-panel superadmin-cv-gallery-panel">
             <div class="panel-header">
                 <div>
@@ -47,7 +49,7 @@
                     {% for upload in superadmin_cv_uploads %}
                         <figure class="scan-gallery-item superadmin-scan-gallery-item">
                             <div class="superadmin-scan-media">
-                                <img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="Sugarcane scan uploaded by {{ upload.user.fullname if upload.user else ('User #' ~ upload.user_id) }}" loading="lazy">
+                                <a href="{{ url_for('cv_upload_image', upload_id=upload.id) }}" target="_blank" rel="noopener" aria-label="View full photo {{ loop.index }}"><img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="Sugarcane scan uploaded by {{ upload.user.fullname if upload.user else ('User #' ~ upload.user_id) }}" loading="lazy"></a>
                                 <span class="superadmin-scan-number">Scan {{ loop.index }}</span>
                             </div>
                             <figcaption class="superadmin-scan-content">
@@ -75,6 +77,16 @@
                                         <dd title="{{ upload.original_filename or 'image' }}">{{ upload.original_filename or 'image' }}</dd>
                                     </div>
                                 </dl>
+                                <details class="scan-delete-controls">
+                                    <summary>Delete photo</summary>
+                                    <form method="POST" action="/superadmin/scan-gallery/{{ upload.id }}/delete">
+                                        {{ csrf_input }}
+                                        <label for="reason-{{ upload.id }}">Reason for deleting</label>
+                                        <textarea id="reason-{{ upload.id }}" name="reason" rows="3" maxlength="180" required></textarea>
+                                        <p>This permanently deletes the photo.</p>
+                                        <button type="submit" class="btn danger">Delete photo</button>
+                                    </form>
+                                </details>
                             </figcaption>
                         </figure>
                     {% endfor %}

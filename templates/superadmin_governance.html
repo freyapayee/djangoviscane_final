@@ -43,6 +43,8 @@
             </tbody></table></div>
         </section>
 
+        <details class="governance-menu panel superadmin-panel">
+            <summary class="btn light"><ion-icon name="menu-outline" aria-hidden="true"></ion-icon>User Governance menu · Archived & deactivated accounts</summary>
         <section class="panel superadmin-panel">
             <div class="panel-header"><div><h3 class="panel-title">Archived Farmers</h3><p class="panel-subtitle">Stored accounts removed from the active registry</p></div><span class="badge">{{ archived_user_count }} archived</span></div>
             <div class="ds-table-scroll" role="region" aria-label="Archived farmers" tabindex="0"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Action</th></tr></thead><tbody>
@@ -56,6 +58,8 @@
                 {% if deactivated_users %}{% for user in deactivated_users %}<tr><td>{{ user.fullname }}</td><td>{{ user.email }}</td><td>{{ user.phone }}</td><td><a class="tag superadmin-tag" href="/superadmin/users/{{ user.id }}">See Details</a></td></tr>{% endfor %}{% else %}<tr><td colspan="4">No deactivated accounts found.</td></tr>{% endif %}
             </tbody></table></div>
         </section>
+
+        </details>
 
         <div class="footer-link">VISCANE Superadmin | User Governance</div>
     </main>

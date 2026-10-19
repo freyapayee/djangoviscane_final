@@ -1333,3 +1333,30 @@ body.ds-app.vis-management-dashboard.vis-superadmin-audit .data-table td:last-ch
 .admin-user-filter-form :is(input, select) { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #dce8df; border-radius: 8px; background: #fff; color: inherit; }
 .admin-user-filter-actions { display: flex; gap: 8px; margin-top: 4px; }
 .admin-logs-empty { margin: 16px 0 0; color: #66766c; }
+
+/* Compact superadmin photo review and governance controls. */
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-item { min-height: 0; flex-direction: column; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-media { height: 140px; flex-basis: 140px; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-item .superadmin-scan-content { padding: 12px; gap: 10px; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-details { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-maturity-chip { max-width: 100%; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-result { flex-direction: column; align-items: flex-start; gap: 8px; }
+.scan-delete-controls { margin-top: 12px; font-size: 12px; }
+.scan-delete-controls summary, .governance-menu summary { cursor: pointer; }
+.scan-delete-controls label { display: block; margin: 10px 0 6px; }
+.scan-delete-controls textarea { box-sizing: border-box; width: 100%; resize: vertical; border: 1px solid #becfc2; border-radius: 6px; padding: 8px; font: inherit; }
+.scan-delete-controls .btn { width: 100%; min-width: 0; padding: 8px; }
+.governance-menu > .panel { margin-top: 20px; }
+.compliance-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; }
+.compliance-filters label { display: grid; gap: 6px; }
+.compliance-filters input, .compliance-filters select { padding: 10px; border: 1px solid #becfc2; border-radius: 8px; font: inherit; }
+@media (max-width: 1100px) {
+    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: minmax(0, 1fr); }
+}

@@ -35,11 +35,16 @@
     </header>
 
     <main class="dashboard-container fade-in">
+        <form method="GET" class="compliance-filters panel">
+            <label>Period <select name="period">{% for value in ['daily', 'weekly', 'monthly', 'yearly'] %}<option value="{{ value }}"{% if period == value %} selected{% endif %}>{{ value.title() }}</option>{% endfor %}</select></label>
+            <label>Date within period <input type="date" name="date" value="{{ selected_date }}" required></label>
+            <button class="btn primary" type="submit">Apply filters</button>
+        </form>
         <section class="panel">
             <div class="panel-header">
                 <div>
                     <h3 class="panel-title">Recent Activity</h3>
-                    <p class="panel-subtitle">Last 20 actions across the platform</p>
+                    <p class="panel-subtitle">Actions within the selected calendar period (weeks start Monday)</p>
                 </div>
                 <span class="badge"><ion-icon name="time-outline"></ion-icon>Live</span>
             </div>

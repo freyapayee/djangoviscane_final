@@ -1683,7 +1683,38 @@ def superadmin_governance(request):
 @role_required("superadmin")
 def superadmin_scan_gallery(request):
     uploads = list(CvScanUpload.objects.select_related("user").order_by("-created_at", "-id"))
-    return render_template(request, "superadmin_scan_gallery.html", {"superadmin_cv_uploads": uploads, "current_admin": current_admin(request)})
+    return render_template(request, "superadmin_scan_gallery.html", {"superadmin_cv_uploads": uploads, "current_admin": current_admin(request), "error": request.GET.get("error"), "notice": request.GET.get("notice")})
+
+
+@role_required("superadmin")
+def superadmin_admins(request):
+    return render_template(request, "superadmin_admins.html", {
+        "admins": Admin.objects.filter(is_archived=False).order_by("-id"),
+        "create_error": request.GET.get("create_error"),
+        "create_success": request.GET.get("create_success"),
+        "current_admin": current_admin(request),
+    })
+
+
+@role_required("superadmin")
+@require_POST
+def superadmin_delete_photo(request, upload_id):
+    reason = request.POST.get("reason", "").strip()
+    if not reason or len(reason) > 180:
+        return redirect("superadmin_scan_gallery", error="Enter a deletion reason (1–180 characters).")
+    upload = CvScanUpload.objects.filter(pk=upload_id).first()
+    if not upload:
+        raise Http404("Photo not found")
+    path = cv_image_path(upload.image_path)
+    try:
+        with transaction.atomic():
+            log_audit(f"Scan photo #{upload.pk} (farmer #{upload.user_id}) deleted. Reason: {reason}", user_id=current_admin(request).id)
+            Scan.objects.filter(cv_upload=upload).update(hidden_from_recent=True)
+            upload.delete()
+            path.unlink(missing_ok=True)
+    except OSError:
+        return redirect("superadmin_scan_gallery", error="Unable to delete this photo. Please try again.")
+    return redirect("superadmin_scan_gallery", notice="Photo deleted and reason recorded in the audit trail.")
 
 
 @role_required("superadmin")
@@ -1695,23 +1726,23 @@ def superadmin_create_admin(request):
     password = request.POST.get("password", "")
     confirm_password = request.POST.get("confirm_password", "")
     if not username or not email or not password or not confirm_password:
-        return redirect("superadmin_portal", create_error="Please complete all registration fields.")
+        return redirect("superadmin_admins", create_error="Please complete all registration fields.")
     if not is_valid_admin_role(role):
-        return redirect("superadmin_portal", create_error="Invalid role selected.")
+        return redirect("superadmin_admins", create_error="Invalid role selected.")
     if password != confirm_password:
-        return redirect("superadmin_portal", create_error="Passwords do not match.")
+        return redirect("superadmin_admins", create_error="Passwords do not match.")
     if len(password) < 8:
-        return redirect("superadmin_portal", create_error="Password must be at least 8 characters.")
+        return redirect("superadmin_admins", create_error="Password must be at least 8 characters.")
     if Admin.objects.filter(username__iexact=username).exists():
-        return redirect("superadmin_portal", create_error="Username is already taken.")
+        return redirect("superadmin_admins", create_error="Username is already taken.")
     if Admin.objects.filter(email__iexact=email).exists():
-        return redirect("superadmin_portal", create_error="Email is already registered.")
+        return redirect("superadmin_admins", create_error="Email is already registered.")
     from django.contrib.auth.hashers import make_password
 
     new_admin = Admin.objects.create(username=username, email=email, password_hash=make_password(password), role=role, is_archived=False)
     if current:
         log_audit(f"{role.title()} account created: {username}", user_id=current.id)
-    return redirect("superadmin_portal", create_success=f"{role.title()} account created successfully.")
+    return redirect("superadmin_admins", create_success=f"{role.title()} account created successfully.")
 
 
 @role_required("superadmin")
@@ -1723,7 +1754,7 @@ def superadmin_update_role(request):
         admin.role = role
         admin.save(update_fields=["role"])
         log_audit(f"Admin role updated for {admin.username} to {role}", user_id=current.id)
-    return redirect("superadmin_portal")
+    return redirect("superadmin_admins")
 
 
 @role_required("superadmin")
@@ -1734,7 +1765,7 @@ def superadmin_archive_admin(request):
         admin.is_archived = True
         admin.save(update_fields=["is_archived"])
         log_audit(f"Admin account archived: {admin.username}", user_id=current.id)
-    return redirect("superadmin_portal")
+    return redirect("superadmin_admins")
 
 
 @role_required("superadmin")
@@ -1977,5 +2008,25 @@ def superadmin_reports_download(request):
 
 @role_required("superadmin")
 def superadmin_audit(request):
-    logs = list(AuditLog.objects.order_by("-timestamp")[:20])
-    return render_template(request, "superadmin_audit.html", {"logs": logs, "current_admin": current_admin(request)})
+    period = request.GET.get("period", "daily")
+    if period not in {"daily", "weekly", "monthly", "yearly"}:
+        period = "daily"
+    try:
+        selected_date = datetime.strptime(request.GET.get("date", ""), "%Y-%m-%d").date()
+    except ValueError:
+        selected_date = timezone.localdate()
+    start = selected_date
+    if period == "weekly":
+        start -= timedelta(days=start.weekday())
+    elif period == "monthly":
+        start = start.replace(day=1)
+    elif period == "yearly":
+        start = start.replace(month=1, day=1)
+    if period == "yearly":
+        end = start.replace(year=start.year + 1)
+    elif period == "monthly":
+        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    else:
+        end = start + timedelta(days=7 if period == "weekly" else 1)
+    logs = AuditLog.objects.filter(timestamp__date__gte=start, timestamp__date__lt=end).order_by("-timestamp")
+    return render_template(request, "superadmin_audit.html", {"logs": logs, "period": period, "selected_date": selected_date.isoformat(), "current_admin": current_admin(request)})
