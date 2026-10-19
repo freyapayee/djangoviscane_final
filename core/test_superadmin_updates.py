@@ -80,3 +80,41 @@ class SuperadminUpdatesTests(TestCase):
             self.assertEqual(data['daily_rows'][0]['label'], '2026-10-20')
             self.assertEqual(data['weekly_rows'][0]['label'], '2026-W43')
             self.assertEqual(data['weekly_rows'][0]['total_lkg'], 120)
+
+    def test_report_export_requires_valid_period(self):
+        for params in [{}, {'period': 'date', 'start': 'invalid'}, {'period': 'month', 'start': '2026-13'}, {'period': 'year', 'start': '2027', 'end': '2026'}, {'period': 'date', 'start': '2026-02-30'}]:
+            self.assertEqual(self.client.get('/superadmin/reports/download', params).status_code, 400)
+
+    def test_report_preview_and_csv_share_inclusive_ranges(self):
+        for year, month, day, variety in [(2025,12,31,'Previous'), (2026,1,1,'January'), (2026,10,20,'October'), (2027,1,1,'Next')]:
+            log = AgronomicLog.objects.create(user=self.farmer, variety=variety, predicted_lkg=100)
+            AgronomicLog.objects.filter(pk=log.pk).update(created_at=timezone.make_aware(datetime(year,month,day,0,30)))
+        cases = [
+            ({'period':'date', 'start':'2026-10-20'}, ['October']),
+            ({'period':'month', 'start':'2026-01', 'end':'2026-10'}, ['January','October']),
+            ({'period':'year', 'start':'2026'}, ['January','October']),
+            ({'period':'year', 'start':'2025','end':'2026'}, ['Previous','January','October']),
+        ]
+        for params, expected in cases:
+            response = self.client.get('/superadmin/reports/download', params)
+            self.assertEqual(response.status_code, 200)
+            import csv
+            from io import StringIO
+            rows = list(csv.DictReader(StringIO(response.content.decode())))
+            self.assertCountEqual([row['Variety'] for row in rows], expected)
+            preview = self.client.get('/superadmin/reports', params)
+            self.assertEqual(preview.status_code, 200)
+            for variety in expected:
+                self.assertContains(preview, f'<td>{variety}</td>', html=True)
+            for variety in set(['Previous','January','October','Next']) - set(expected):
+                self.assertNotContains(preview, f'<td>{variety}</td>', html=True)
+        self.assertContains(self.client.get('/superadmin/reports'), 'Filter by dates')
+
+    def test_governance_shows_saved_deactivation_reason(self):
+        self.farmer.is_active = False
+        self.farmer.restriction_reason = 'Duplicate registration; verify ownership.'
+        self.farmer.save()
+        self.assertContains(self.client.get('/superadmin/governance'), self.farmer.restriction_reason)
+        self.farmer.restriction_reason = ''
+        self.farmer.save()
+        self.assertContains(self.client.get('/superadmin/governance'), 'No reason recorded.')

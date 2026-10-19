@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=admin-refinements-2">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-overview">
     {% include 'components/superadmin_navigation.html' %}
@@ -70,6 +70,7 @@
                 </form>
                 </details>
                 {% if admins %}
+                    <div class="superadmin-accounts-grid">
                     {% for admin in admins %}
                         <div class="list-row superadmin-list-row superadmin-account-row">
                             <div class="list-badge superadmin-icon-badge">
@@ -98,6 +99,7 @@
                             </div>
                         </div>
                     {% endfor %}
+                    </div>
                 {% else %}
                     <div class="list-meta">No admin accounts found.</div>
                 {% endif %}

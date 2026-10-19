@@ -1360,3 +1360,13 @@ body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-res
 @media (max-width: 420px) {
     body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.superadmin-accounts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+body.ds-app.vis-management-dashboard .superadmin-accounts-grid .superadmin-account-row { margin: 0; min-width: 0; }
+.superadmin-accounts-grid .list-meta { overflow-wrap: anywhere; }
+.deactivation-reason { white-space: pre-wrap; overflow-wrap: anywhere; min-width: 180px; max-width: 420px; }
+.report-export-filters { display: grid; gap: 10px; margin: 20px 0; }
+.report-export-filters details { padding: 14px; border: 1px solid #dce8df; border-radius: 10px; background: #f8fbf9; }
+.report-export-filters summary { cursor: pointer; font-weight: 700; }
+.report-export-filters form { margin: 16px 0; }
+@media (max-width: 900px) { .superadmin-accounts-grid { grid-template-columns: minmax(0, 1fr); } }

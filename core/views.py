@@ -1968,9 +1968,46 @@ def superadmin_settings(request):
     return render_template(request, "superadmin_settings.html", {"config": config, "success": request.GET.get("success"), "current_admin": current_admin(request)})
 
 
+def _superadmin_report_period(request):
+    """Validate inclusive calendar ranges shared by report preview and CSV."""
+    period = request.GET.get("period", "")
+    start_value = request.GET.get("start", "").strip()
+    end_value = request.GET.get("end", "").strip() or start_value
+    try:
+        if period == "date":
+            start = datetime.strptime(start_value, "%Y-%m-%d").date()
+            end = datetime.strptime(end_value, "%Y-%m-%d").date()
+        elif period == "month":
+            start = datetime.strptime(start_value, "%Y-%m").date()
+            end = datetime.strptime(end_value, "%Y-%m").date()
+            import calendar
+            end = end.replace(day=calendar.monthrange(end.year, end.month)[1])
+        elif period == "year":
+            start = datetime(int(start_value), 1, 1).date()
+            end = datetime(int(end_value), 12, 31).date()
+        else:
+            raise ValueError
+        if start > end:
+            raise ValueError
+    except (ValueError, OverflowError):
+        raise ValueError("Select a valid date, month, or year range. The end must not precede the start.")
+    return start, end
+
+
 @role_required("superadmin")
 def superadmin_reports(request):
-    logs = list(AgronomicLog.objects.select_related("user").order_by("-created_at"))
+    queryset = AgronomicLog.objects.select_related("user").order_by("-created_at")
+    filter_error = ""
+    period_label = "All records — choose a period below before downloading."
+    if request.GET.get("period"):
+        try:
+            start, end = _superadmin_report_period(request)
+            queryset = queryset.filter(created_at__date__gte=start, created_at__date__lte=end)
+            period_label = f"{start:%b %d, %Y} – {end:%b %d, %Y}"
+        except ValueError as exc:
+            filter_error = str(exc)
+            queryset = queryset.none()
+    logs = list(queryset)
     total_predictions = len(logs)
     rows = []
     total_lkg_tc = 0.0
@@ -1989,12 +2026,16 @@ def superadmin_reports(request):
             total_lkg += float(log.predicted_lkg)
         rows.append({"farmer_name": log.user.fullname if log.user else f"User #{log.user_id}", "variety": log.variety or "N/A", "hectares": log.hectares or "N/A", "predicted_lkg_tc": round(log.predicted_lkg_tc, 2) if log.predicted_lkg_tc is not None else None, "predicted_lkg_ha": round(log.predicted_tc_ha, 2) if log.predicted_tc_ha is not None else None, "predicted_lkg": round(log.predicted_lkg, 2) if log.predicted_lkg is not None else None, "created_at": log.created_at})
     report = {"avg_lkg_tc": round(total_lkg_tc / lkg_tc_count, 2) if lkg_tc_count else 0, "avg_lkg_ha": round(total_tc_ha / tc_ha_count, 2) if tc_ha_count else 0, "total_estimated_lkg": round(total_lkg, 2) if total_predictions else 0, "total_predictions": total_predictions}
-    return render_template(request, "superadmin_reports.html", {"report": report, "rows": rows, "current_admin": current_admin(request)})
+    return render_template(request, "superadmin_reports.html", {"report": report, "rows": rows, "current_admin": current_admin(request), "filter_error": filter_error, "period_label": period_label, "filter_period": request.GET.get("period", ""), "filter_start": request.GET.get("start", ""), "filter_end": request.GET.get("end", "")})
 
 
 @role_required("superadmin")
 def superadmin_reports_download(request):
-    logs = list(AgronomicLog.objects.select_related("user").order_by("-created_at"))
+    try:
+        start, end = _superadmin_report_period(request)
+    except ValueError as exc:
+        return HttpResponse(str(exc), status=400, content_type="text/plain")
+    logs = AgronomicLog.objects.select_related("user").filter(created_at__date__gte=start, created_at__date__lte=end).order_by("-created_at")
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(["Prediction ID", "Farmer Name", "Variety", "Hectares", "Predicted LKG/TC", "Predicted LKG/HA", "Predicted Total LKG", "RSSI Infected", "Created At"])
@@ -2002,7 +2043,7 @@ def superadmin_reports_download(request):
         farmer_name = log.user.fullname if log.user else f"User #{log.user_id}"
         writer.writerow([log.id, farmer_name, log.variety or "", log.hectares or "", round(log.predicted_lkg_tc, 2) if log.predicted_lkg_tc is not None else "", round(log.predicted_tc_ha, 2) if log.predicted_tc_ha is not None else "", round(log.predicted_lkg, 2) if log.predicted_lkg is not None else "", log.rssi_infected or "", log.created_at.strftime("%Y-%m-%d %H:%M:%S")])
     response = HttpResponse(output.getvalue(), content_type="text/csv")
-    response["Content-Disposition"] = "attachment; filename=superadmin_report.csv"
+    response["Content-Disposition"] = f'attachment; filename="superadmin_report_{start}_{end}.csv"'
     return response
 
 
