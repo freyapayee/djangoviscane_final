@@ -78,6 +78,12 @@ body.ds-app.vis-farmer-dashboard #calc-form .stat-select { padding: 0 44px 0 16p
 body.ds-app.vis-farmer-dashboard #calc-form .stat-select:hover { border-color: #62aa79; background-color: #eaf6ed; }
 body.ds-app.vis-farmer-dashboard #calc-form .stat-select:focus-visible { border-color: #078735; box-shadow: 0 0 0 3px rgba(7,135,53,.17); }
 body.ds-app.vis-farmer-dashboard #calc-form .stat-select option { color: #214831; background: #f3faf5; }
+/* Assessment choices remain readable for farmers at arm's length. */
+body.ds-app.vis-farmer-dashboard #calc-form .assessment-field-label { font-size: 1.08rem; }
+body.ds-app.vis-farmer-dashboard #calc-form :is(.variety-trigger,.selector-trigger) { min-height: 76px; }
+body.ds-app.vis-farmer-dashboard #calc-form :is(.variety-trigger-kicker,.selector-trigger-title) { font-size: 1rem; font-weight: 750; }
+body.ds-app.vis-farmer-dashboard #calc-form :is(.variety-trigger-value,.selector-trigger-value) { font-size: .98rem; line-height: 1.42; }
+body.ds-app.vis-farmer-dashboard #calc-form .stat-select { min-height: 58px; font-size: 1.05rem; }
 body.ds-app.vis-farmer-dashboard select[data-themed-select].is-enhanced { position: absolute !important; width: 1px !important; min-width: 1px !important; height: 1px !important; min-height: 1px !important; padding: 0 !important; border: 0 !important; opacity: 0; pointer-events: none; }
 body.ds-app.vis-farmer-dashboard .themed-select { position: relative; width: 100%; min-width: 0; }
 body.ds-app.vis-farmer-dashboard .themed-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; padding: 10px 14px; border: 1px solid #b9d9c2; border-radius: 12px; background: #f3faf5; color: #214831; font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
@@ -164,6 +170,10 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #ea
     body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) > .stat-card { padding: 14px 10px; border-radius: 14px; }
     body.ds-app.vis-farmer-dashboard .stat-value { font-size: 23px; overflow-wrap: anywhere; }
     body.ds-app.vis-farmer-dashboard .stat-label { font-size: 12px; }
+    body.ds-app.vis-farmer-dashboard #calc-form .assessment-field-label { font-size: 1.02rem; }
+    body.ds-app.vis-farmer-dashboard #calc-form :is(.variety-trigger,.selector-trigger) { min-height: 72px; }
+    body.ds-app.vis-farmer-dashboard #calc-form :is(.variety-trigger-kicker,.selector-trigger-title) { font-size: .98rem; }
+    body.ds-app.vis-farmer-dashboard #calc-form :is(.variety-trigger-value,.selector-trigger-value) { font-size: .93rem; }
     body.ds-app.vis-farmer-dashboard .stat-meta { font-size: 11px; }
     body.ds-app.vis-farmer-dashboard .panel { padding: 16px; border-radius: 18px; }
     body.ds-app.vis-farmer-dashboard .panel-title { font-size: 18px; }
@@ -176,6 +186,12 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #ea
     body.ds-app.vis-farmer-dashboard .farmer-bottom-link ion-icon { font-size: 20px; }
     body.ds-app.vis-farmer-dashboard .sra-highlight { flex-direction: row; }
     body.ds-app.vis-farmer-dashboard .sra-highlight-image { width: 72px; height: 72px; flex-basis: 72px; }
+    /* Secondary farmer pages use a softer header while Home keeps its green app bar. */
+    body.ds-app.vis-farmer-page .dashboard-header { background: linear-gradient(135deg, #e8f6ea, #d7efdc); border-bottom: 1px solid #c3e0ca; }
+    body.ds-app.vis-farmer-page .brand-title { color: #174d2b; }
+    body.ds-app.vis-farmer-page .brand-subtitle { color: #416d50 !important; }
+    body.ds-app.vis-farmer-page .farmer-info-chip { margin-left: 12px; padding: 8px 10px; border: 1px solid #b9d9c1; border-radius: 12px; color: #1d5933; background: rgba(255,255,255,.68); font-size: 13px; font-weight: 800; }
+    body.ds-app.vis-farmer-page .header-actions { gap: 10px; }
 }
 
 /* Keep saved scan photos identifiable and readable at every viewport size. */
