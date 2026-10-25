@@ -125,20 +125,23 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #ea
 }
 @media (max-width: 600px) {
     body.ds-app.vis-farmer-dashboard {
-        padding-top: max(14px,env(safe-area-inset-top));
+        /* The top green surface blends into the status area in installed web apps. */
+        padding-top: max(20px,env(safe-area-inset-top));
         padding-right: max(12px,env(safe-area-inset-right));
         padding-bottom: 0;
         padding-left: max(12px,env(safe-area-inset-left));
+        background: linear-gradient(180deg, #0b6b38 0, #0b6b38 214px, #f3f8f6 214px, #f3f8f6 100%);
     }
     body.ds-app.vis-farmer-dashboard .dashboard-header { margin-bottom: 16px; }
     body.ds-app.vis-farmer-dashboard .header-content { gap: 10px; }
-    body.ds-app.vis-farmer-dashboard .brand-title { font-size: 22px; line-height: 1.2; }
-    body.ds-app.vis-farmer-dashboard .brand-subtitle { font-size: 12px !important; line-height: 1.35; }
+    body.ds-app.vis-farmer-dashboard .brand-title { color: #fff; font-size: 22px; line-height: 1.2; }
+    body.ds-app.vis-farmer-dashboard .brand-subtitle { color: rgba(255,255,255,.82) !important; font-size: 12px !important; line-height: 1.35; }
     body.ds-app.vis-farmer-dashboard .header-actions {
         width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 8px;
     }
-    body.ds-app.vis-farmer-dashboard .header-date-weather { order: 0; margin-right: auto; padding: 5px 0; font-size: 12px; }
-    body.ds-app.vis-farmer-dashboard .header-actions .btn { min-height: 40px; padding: 7px 10px; font-size: 12px; }
+    body.ds-app.vis-farmer-dashboard .header-date-weather { order: 0; margin-right: auto; padding: 5px 0; color: rgba(255,255,255,.9); font-size: 12px; }
+    body.ds-app.vis-farmer-dashboard .farmer-info-chip { color: rgba(255,255,255,.9); }
+    body.ds-app.vis-farmer-dashboard .header-actions .btn { min-height: 40px; padding: 7px 10px; border-color: rgba(255,255,255,.35); color: #0b6b38; background: rgba(255,255,255,.98); font-size: 12px; }
     body.ds-app.vis-farmer-dashboard .dashboard-container { padding-bottom: 96px; }
     body.ds-app.vis-farmer-dashboard .hero-panel { min-height: 0; padding: 16px; gap: 12px; border-radius: 16px; }
     body.ds-app.vis-farmer-dashboard .hero-content { width: 100%; padding-right: 48px; }
@@ -156,7 +159,7 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #ea
     body.ds-app.vis-farmer-dashboard .stat-value { font-size: 23px; overflow-wrap: anywhere; }
     body.ds-app.vis-farmer-dashboard .stat-label { font-size: 12px; }
     body.ds-app.vis-farmer-dashboard .stat-meta { font-size: 11px; }
-    body.ds-app.vis-farmer-dashboard .panel { padding: 16px; border-radius: 16px; }
+    body.ds-app.vis-farmer-dashboard .panel { padding: 16px; border-radius: 18px; }
     body.ds-app.vis-farmer-dashboard .panel-title { font-size: 18px; }
     body.ds-app.vis-farmer-dashboard #calc-form { grid-template-columns: minmax(0,1fr) !important; gap: 18px; }
     body.ds-app.vis-farmer-dashboard .farmer-bottom-nav {

@@ -17,7 +17,7 @@
       manifest.href = '/static/farmer-manifest.webmanifest';
       head.append(manifest);
     }
-    ensureMeta('theme-color', '#2e7d32');
+    ensureMeta('theme-color', '#0b6b38');
     ensureMeta('apple-mobile-web-app-capable', 'yes');
     ensureMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
     ensureMeta('apple-mobile-web-app-title', 'VISCANE');
