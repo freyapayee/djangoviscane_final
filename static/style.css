@@ -3023,7 +3023,6 @@ body.modal-open {
         grid-template-columns: 1fr;
     }
 }
-<<<<<<< HEAD
 .farmer-language-switch select {
     border: 1px solid rgba(42, 98, 52, 0.3);
     border-radius: 10px;
@@ -3049,7 +3048,7 @@ body.modal-open {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
-=======
+}
 
 /* Farmer portal: app-style touch targets and readable field text. */
 body.farmer-layout {
@@ -3142,5 +3141,4 @@ body.farmer-layout .farmer-bottom-link ion-icon { font-size: 1.5rem; }
     body.farmer-layout .action-tile { font-size: 1rem; }
 
     body.farmer-layout .farmer-bottom-link { min-height: 64px; font-size: 0.76rem; }
->>>>>>> b358a4c (Improve farmer portal mobile app experience)
 }
