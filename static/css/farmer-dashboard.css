@@ -186,11 +186,11 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #ea
     body.ds-app.vis-farmer-dashboard .farmer-bottom-link ion-icon { font-size: 20px; }
     body.ds-app.vis-farmer-dashboard .sra-highlight { flex-direction: row; }
     body.ds-app.vis-farmer-dashboard .sra-highlight-image { width: 72px; height: 72px; flex-basis: 72px; }
-    /* Secondary farmer pages use a softer header while Home keeps its green app bar. */
-    body.ds-app.vis-farmer-page .dashboard-header { background: linear-gradient(135deg, #e8f6ea, #d7efdc); border-bottom: 1px solid #c3e0ca; }
-    body.ds-app.vis-farmer-page .brand-title { color: #174d2b; }
-    body.ds-app.vis-farmer-page .brand-subtitle { color: #416d50 !important; }
-    body.ds-app.vis-farmer-page .farmer-info-chip { margin-left: 12px; padding: 8px 10px; border: 1px solid #b9d9c1; border-radius: 12px; color: #1d5933; background: rgba(255,255,255,.68); font-size: 13px; font-weight: 800; }
+    /* Use one solid app bar throughout the farmer experience. */
+    body.ds-app.vis-farmer-page .dashboard-header { background: #0b6b38; border-bottom: 0; }
+    body.ds-app.vis-farmer-page .brand-title { color: #fff; }
+    body.ds-app.vis-farmer-page .brand-subtitle { color: rgba(255,255,255,.82) !important; }
+    body.ds-app.vis-farmer-page .farmer-info-chip { margin-left: 12px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; color: #fff; background: rgba(255,255,255,.16); font-size: 13px; font-weight: 800; }
     body.ds-app.vis-farmer-page .header-actions { gap: 10px; }
 }
 
