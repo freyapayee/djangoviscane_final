@@ -511,6 +511,19 @@ body.farmer-layout {
     --accent-strong: #1B5E20;
     --header-gradient: linear-gradient(135deg, #2E7D32, #43A047);
     --header-shadow: 0 18px 35px rgba(46, 125, 50, 0.25);
+    /* Android uses Roboto and iOS resolves the system entries to San Francisco. */
+    font-family: Roboto, "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+body.farmer-layout button,
+body.farmer-layout input,
+body.farmer-layout select,
+body.farmer-layout textarea {
+    font-family: inherit;
 }
 
 body.admin-layout {
