@@ -176,7 +176,6 @@ def portal(request):
     return render_template(request, "portal.html")
 
 
-<<<<<<< HEAD
 def about_viscane(request):
     return render_template(request, "about_viscane.html", {"farmer_user": current_user(request)})
 
@@ -191,7 +190,6 @@ def favicon(request):
     return response
 
 
-=======
 def farmer_service_worker(request):
     response = FileResponse(
         (settings.BASE_DIR / "static" / "farmer-service-worker.js").open("rb"),
@@ -203,7 +201,6 @@ def farmer_service_worker(request):
 
 
 @csrf_exempt
->>>>>>> b358a4c (Improve farmer portal mobile app experience)
 def admin_access(request):
     return render_template(request, "admin_access.html")
 
