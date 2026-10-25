@@ -7,8 +7,12 @@ urlpatterns = [
     path("farmer/news", views.farmer_news, name="farmer_news"),
     path("farmer/notifications", views.farmer_notifications, name="farmer_notifications"),
     path("", views.portal, name="portal"),
+<<<<<<< HEAD
     path("about-viscane", views.about_viscane, name="about_viscane"),
     path("favicon.ico", views.favicon, name="favicon"),
+=======
+    path("service-worker.js", views.farmer_service_worker, name="farmer_service_worker"),
+>>>>>>> b358a4c (Improve farmer portal mobile app experience)
     path("admin-access", views.admin_access, name="admin_access"),
     path("homepage", views.homepage, name="homepage"),
     path("farmer/recommendations", views.farmer_recommendations, name="farmer_recommendations"),

@@ -1,4 +1,59 @@
 (() => {
+  const configureAppShell = () => {
+    const head = document.head;
+    const ensureMeta = (name, content) => {
+      let node = head.querySelector(`meta[name="${name}"]`);
+      if (!node) {
+        node = document.createElement('meta');
+        node.name = name;
+        head.append(node);
+      }
+      node.content = content;
+    };
+
+    if (!head.querySelector('link[rel="manifest"]')) {
+      const manifest = document.createElement('link');
+      manifest.rel = 'manifest';
+      manifest.href = '/static/farmer-manifest.webmanifest';
+      head.append(manifest);
+    }
+    ensureMeta('theme-color', '#2e7d32');
+    ensureMeta('apple-mobile-web-app-capable', 'yes');
+    ensureMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
+    ensureMeta('apple-mobile-web-app-title', 'VISCANE');
+
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => {
+        // The farmer portal still works when the browser cannot register a worker.
+      });
+    }
+
+    let installEvent = null;
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      installEvent = event;
+      let button = document.querySelector('.farmer-install-button');
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'farmer-install-button';
+        button.innerHTML = '<ion-icon name="download-outline"></ion-icon> Install app';
+        const actions = document.querySelector('.header-actions');
+        if (actions) actions.append(button);
+      }
+      button.classList.add('is-visible');
+      button.onclick = async () => {
+        if (!installEvent) return;
+        installEvent.prompt();
+        await installEvent.userChoice;
+        installEvent = null;
+        button.classList.remove('is-visible');
+      };
+    });
+  };
+
+  configureAppShell();
+
   const infoNodes = Array.from(document.querySelectorAll('[data-farmer-info-text]'));
   const hiligaynon = document.documentElement.lang === 'hil';
   if (!infoNodes.length) {

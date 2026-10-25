@@ -1,0 +1,18 @@
+{
+  "name": "VISCANE Farmer Portal",
+  "short_name": "VISCANE",
+  "description": "Sugarcane analysis, recommendations, and farm records.",
+  "start_url": "/homepage",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f8f5",
+  "theme_color": "#2e7d32",
+  "icons": [
+    {
+      "src": "/static/logo.jpg",
+      "sizes": "1874x1874",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
