@@ -369,7 +369,27 @@ def farmer_recommendations(request):
 @farmer_login_required
 def farmer_agronomic_logs(request):
     user = current_user(request)
-    agronomic_logs = list(AgronomicLog.objects.filter(user_id=user.id).select_related("scan__cv_upload").order_by("-created_at"))
+    filter_options = {
+        "all": "All",
+        "week": "This week",
+        "month": "This month",
+        "year": "This year",
+    }
+    selected_filter = request.GET.get("period", "all").lower()
+    if selected_filter not in filter_options:
+        selected_filter = "all"
+
+    logs_query = AgronomicLog.objects.filter(user_id=user.id)
+    total_log_count = logs_query.count()
+    today = timezone.localdate()
+    if selected_filter == "week":
+        logs_query = logs_query.filter(created_at__date__gte=today - timedelta(days=today.weekday()))
+    elif selected_filter == "month":
+        logs_query = logs_query.filter(created_at__date__gte=today.replace(day=1))
+    elif selected_filter == "year":
+        logs_query = logs_query.filter(created_at__date__gte=today.replace(month=1, day=1))
+
+    agronomic_logs = list(logs_query.select_related("scan__cv_upload").order_by("-created_at"))
     history_rows = []
     for log in agronomic_logs:
         scan = log.scan if log.scan and log.scan.user_id == user.id else None
@@ -396,7 +416,13 @@ def farmer_agronomic_logs(request):
             "scanned_at": timezone.localtime(scan.created_at) if scan and scan.created_at else None,
             "recommendation_items": recommendation_items,
         })
-    return render_template(request, "farmer_agronomic_logs.html", {"user": user, "history_rows": history_rows})
+    return render_template(request, "farmer_agronomic_logs.html", {
+        "user": user,
+        "history_rows": history_rows,
+        "total_log_count": total_log_count,
+        "selected_filter": selected_filter,
+        "filter_options": filter_options,
+    })
 
 
 @farmer_login_required

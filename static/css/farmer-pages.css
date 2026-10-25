@@ -200,6 +200,14 @@ body.ds-app.farmer_recommendations .recommendation-history-link:hover,
 body.ds-app.farmer_recommendations .recommendation-history-link:focus-visible { border-color: #25864a; background: #dcf0e2; outline: 0; }
 
 body.ds-app.farmer_agronomic_logs #recommendation-history { scroll-margin-top: 20px; }
+body.ds-app.farmer_agronomic_logs .history-filter { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 22px; padding: 14px 16px; border: 1px solid #d5e8da; border-radius: 14px; background: #f4faf5; }
+body.ds-app.farmer_agronomic_logs .history-filter-copy { display: grid; gap: 2px; flex: 0 0 auto; color: #1d5933; font-size: 15px; font-weight: 800; }
+body.ds-app.farmer_agronomic_logs .history-filter-copy small { color: #6a8171; font-size: 12px; font-weight: 600; }
+body.ds-app.farmer_agronomic_logs .history-filter-options { display: flex; align-items: center; justify-content: flex-end; gap: 7px; min-width: 0; }
+body.ds-app.farmer_agronomic_logs .history-filter-option { min-height: 40px; padding: 9px 12px; border: 1px solid #bcdac4; border-radius: 10px; color: #2c603d; background: #fff; font-size: 14px; font-weight: 750; line-height: 1.2; text-decoration: none; white-space: nowrap; }
+body.ds-app.farmer_agronomic_logs .history-filter-option:hover,
+body.ds-app.farmer_agronomic_logs .history-filter-option:focus-visible { border-color: #277946; background: #e5f4e9; outline: 0; }
+body.ds-app.farmer_agronomic_logs .history-filter-option.is-active { border-color: #247a43; color: #fff; background: #247a43; box-shadow: 0 2px 7px rgba(36, 122, 67, .2); }
 body.ds-app.farmer_agronomic_logs .history-list { display: grid; gap: 20px; }
 body.ds-app.farmer_agronomic_logs .history-card { padding: 20px; border: 2px solid #b9d9c3; border-left: 6px solid #247a43; border-radius: 18px; background: #fff; box-shadow: 0 7px 24px rgba(24, 76, 43, .07); }
 body.ds-app.farmer_agronomic_logs .history-card-header { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid #dcebe0; }
@@ -280,6 +288,10 @@ body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-
         margin-top: 0;
     }
     body.ds-app.farmer_recommendations .recommendation-history-link { padding: 12px; font-size: 13px; }
+    body.ds-app.farmer_agronomic_logs .history-filter { display: grid; gap: 12px; padding: 14px; }
+    body.ds-app.farmer_agronomic_logs .history-filter-options { justify-content: flex-start; width: calc(100% + 2px); overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    body.ds-app.farmer_agronomic_logs .history-filter-options::-webkit-scrollbar { display: none; }
+    body.ds-app.farmer_agronomic_logs .history-filter-option { min-height: 42px; font-size: 14px; }
     body.ds-app.farmer_agronomic_logs .history-card { padding: 14px; border-radius: 15px; }
     body.ds-app.farmer_agronomic_logs .history-card-header { flex-wrap: wrap; gap: 10px; }
     body.ds-app.farmer_agronomic_logs .history-card-icon { flex-basis: 42px; width: 42px; height: 42px; font-size: 22px; }

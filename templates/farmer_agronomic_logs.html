@@ -58,6 +58,19 @@
                 </div>
                 <span class="badge"><ion-icon name="time-outline"></ion-icon>{{ history_rows|length }} {{ farmer_text('log' if history_rows|length == 1 else 'logs') }}</span>
             </div>
+            <section class="history-filter" aria-label="{{ farmer_text('Filter history') }}">
+                <div class="history-filter-copy">
+                    <span>{{ farmer_text('Filter history') }}</span>
+                    <small>{{ history_rows|length }} {{ farmer_text('of') }} {{ total_log_count }} {{ farmer_text('logs') }}</small>
+                </div>
+                <nav class="history-filter-options" aria-label="{{ farmer_text('Filter history') }}">
+                    {% for value, label in filter_options.items() %}
+                        <a href="{{ url_for('farmer_agronomic_logs', period=value) }}"
+                           class="history-filter-option{% if selected_filter == value %} is-active{% endif %}"
+                           {% if selected_filter == value %}aria-current="page"{% endif %}>{{ farmer_text(label) }}</a>
+                    {% endfor %}
+                </nav>
+            </section>
             {% if history_rows %}
                 <div class="history-list">
                 {% for row in history_rows %}
@@ -149,7 +162,7 @@
                 {% endfor %}
                 </div>
             {% else %}
-                <div class="list-meta">{{ farmer_text('No agronomic logs yet. Calculate once to save your first log.') }}</div>
+                <div class="list-meta">{{ farmer_text('No logs match this period.') if total_log_count else farmer_text('No agronomic logs yet. Calculate once to save your first log.') }}</div>
             {% endif %}
         </section>
 
