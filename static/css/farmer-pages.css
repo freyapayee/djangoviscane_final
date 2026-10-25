@@ -218,6 +218,16 @@ body.ds-app.farmer_agronomic_logs .history-card-heading h4 { margin: 0; color: #
 body.ds-app.farmer_agronomic_logs .history-card-date { display: flex; align-items: center; gap: 8px; margin-left: auto; color: #355b43; font-size: 13px; font-weight: 700; white-space: nowrap; }
 body.ds-app.farmer_agronomic_logs .history-card-date ion-icon { font-size: 19px; }
 body.ds-app.farmer_agronomic_logs .history-card-date small { display: block; margin-top: 2px; color: #718375; font-size: 12px; font-weight: 500; }
+body.ds-app.farmer_agronomic_logs .history-card-photo { margin: 16px 0 0; overflow: hidden; border: 1px solid #d6e7da; border-radius: 14px; background: #eaf3ec; }
+body.ds-app.farmer_agronomic_logs .history-card-photo img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+body.ds-app.farmer_agronomic_logs .history-details { margin-top: 14px; border: 1px solid #cfe5d5; border-radius: 13px; background: #f7fbf8; }
+body.ds-app.farmer_agronomic_logs .history-details summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 13px 15px; color: #1d6138; font-size: 15px; font-weight: 800; cursor: pointer; list-style: none; }
+body.ds-app.farmer_agronomic_logs .history-details summary::-webkit-details-marker { display: none; }
+body.ds-app.farmer_agronomic_logs .history-details summary > span { display: inline-flex; align-items: center; gap: 9px; }
+body.ds-app.farmer_agronomic_logs .history-details summary ion-icon { font-size: 21px; }
+body.ds-app.farmer_agronomic_logs .history-details .history-details-chevron { transition: transform .2s ease; }
+body.ds-app.farmer_agronomic_logs .history-details[open] .history-details-chevron { transform: rotate(180deg); }
+body.ds-app.farmer_agronomic_logs .history-details-content { padding: 0 14px 14px; }
 body.ds-app.farmer_agronomic_logs .history-section { margin-top: 14px; padding: 16px; border: 1px solid #dfece3; border-radius: 14px; background: #f7fbf8; }
 body.ds-app.farmer_agronomic_logs .history-section h5 { display: flex; align-items: center; gap: 8px; margin: 0 0 13px; color: #245d39; font-size: 16px; font-weight: 800; }
 body.ds-app.farmer_agronomic_logs .history-section h5 ion-icon { font-size: 20px; }
@@ -297,6 +307,9 @@ body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-
     body.ds-app.farmer_agronomic_logs .history-card-icon { flex-basis: 42px; width: 42px; height: 42px; font-size: 22px; }
     body.ds-app.farmer_agronomic_logs .history-card-heading h4 { font-size: 18px; }
     body.ds-app.farmer_agronomic_logs .history-card-date { width: 100%; margin-left: 0; padding-left: 52px; }
+    body.ds-app.farmer_agronomic_logs .history-card-photo { margin-top: 14px; border-radius: 12px; }
+    body.ds-app.farmer_agronomic_logs .history-details summary { min-height: 52px; padding: 12px 13px; }
+    body.ds-app.farmer_agronomic_logs .history-details-content { padding: 0 10px 10px; }
     body.ds-app.farmer_agronomic_logs .history-section { padding: 12px; }
     body.ds-app.farmer_agronomic_logs .history-scan-layout.has-photo { grid-template-columns: minmax(0, 1fr); }
     body.ds-app.farmer_agronomic_logs .history-scan-photo img { max-width: 280px; }

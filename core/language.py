@@ -132,6 +132,7 @@ HILIGAYNON_LABELS = {
     "This month": "Sini nga bulan",
     "This year": "Sini nga tuig",
     "No logs match this period.": "Wala sang talaan nga nagaangay sa sini nga panahon.",
+    "View record details": "Tan-awa ang mga detalye sang talaan",
     "Calculation record": "Talaan sang kalkulasyon",
     "Scan details": "Mga detalye sang scan",
     "Scan photo": "Hulagway sang scan",

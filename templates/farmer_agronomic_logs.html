@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=2">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=6">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
     <link rel="stylesheet" href="/static/css/farmer-menu.css?v=8">
 </head>
@@ -92,72 +92,78 @@
                             {% endif %}
                         </header>
 
-                        <section class="history-section">
-                            <h5><ion-icon name="scan-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Scan details') }}</h5>
-                            {% if scan %}
-                                <div class="history-scan-layout{% if row.scan_image_url %} has-photo{% endif %}">
-                                    {% if row.scan_image_url %}
-                                        <figure class="history-scan-photo">
-                                            <img src="{{ row.scan_image_url }}" alt="{{ farmer_text('Scan photo') }}: {{ scan.plot_name }}" loading="lazy">
-                                            {% if upload.original_filename %}<figcaption>{{ upload.original_filename }}</figcaption>{% endif %}
-                                        </figure>
+                        {% if row.scan_image_url %}
+                            <figure class="history-card-photo">
+                                <img src="{{ row.scan_image_url }}" alt="{{ farmer_text('Scan photo') }}: {{ scan.plot_name }}" loading="lazy">
+                            </figure>
+                        {% endif %}
+
+                        <details class="history-details">
+                            <summary>
+                                <span><ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>{{ farmer_text('View record details') }}</span>
+                                <ion-icon class="history-details-chevron" name="chevron-down-outline" aria-hidden="true"></ion-icon>
+                            </summary>
+                            <div class="history-details-content">
+                                <section class="history-section">
+                                    <h5><ion-icon name="scan-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Scan details') }}</h5>
+                                    {% if scan %}
+                                        <dl class="history-facts">
+                                            <div><dt>{{ farmer_text('Plot') }}</dt><dd>{{ scan.plot_name }}</dd></div>
+                                            <div><dt>{{ farmer_text('Classification') }}</dt><dd>{{ upload.variety if upload and upload.variety else (log.variety or '—') }}</dd></div>
+                                            <div><dt>{{ farmer_text('Maturity') }}</dt><dd>{{ farmer_text(upload.maturity_status.replace('_', ' ').title()) if upload and upload.maturity_status else '—' }}</dd></div>
+                                            <div><dt>{{ farmer_text('Maturity estimate') }}</dt><dd>{{ scan.maturity_pct }}%</dd></div>
+                                            <div><dt>{{ farmer_text('Confidence') }}</dt><dd>{{ '%.1f%%'|format(upload.confidence * 100) if upload and upload.confidence is not none else '—' }}</dd></div>
+                                            <div><dt>{{ farmer_text('Scanned') }}</dt><dd>{{ row.scanned_at.strftime('%b %d, %Y · %I:%M %p') if row.scanned_at else '—' }}</dd></div>
+                                        </dl>
+                                    {% else %}
+                                        <p class="history-unavailable">{{ farmer_text('Scan details were not recorded for this earlier calculation.') }}</p>
                                     {% endif %}
+                                </section>
+
+                                <section class="history-section">
+                                    <h5><ion-icon name="leaf-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Agronomic inputs') }}</h5>
                                     <dl class="history-facts">
-                                        <div><dt>{{ farmer_text('Plot') }}</dt><dd>{{ scan.plot_name }}</dd></div>
-                                        <div><dt>{{ farmer_text('Classification') }}</dt><dd>{{ upload.variety if upload and upload.variety else (log.variety or '—') }}</dd></div>
-                                        <div><dt>{{ farmer_text('Maturity') }}</dt><dd>{{ farmer_text(upload.maturity_status.replace('_', ' ').title()) if upload and upload.maturity_status else '—' }}</dd></div>
-                                        <div><dt>{{ farmer_text('Maturity estimate') }}</dt><dd>{{ scan.maturity_pct }}%</dd></div>
-                                        <div><dt>{{ farmer_text('Confidence') }}</dt><dd>{{ '%.1f%%'|format(upload.confidence * 100) if upload and upload.confidence is not none else '—' }}</dd></div>
-                                        <div><dt>{{ farmer_text('Scanned') }}</dt><dd>{{ row.scanned_at.strftime('%b %d, %Y · %I:%M %p') if row.scanned_at else '—' }}</dd></div>
+                                        <div><dt>{{ farmer_text('Variety') }}</dt><dd>{{ log.variety or '—' }}</dd></div>
+                                        <div><dt>{{ farmer_text('Hectares') }}</dt><dd>{{ farmer_text(log.hectares) if log.hectares else '—' }}</dd></div>
+                                        <div><dt>{{ farmer_text('Plowing') }}</dt><dd>{{ log.plowing_count or '—' }}</dd></div>
+                                        <div><dt>{{ farmer_text('Weeding') }}</dt><dd>{{ log.weeding_count or '—' }}</dd></div>
+                                        <div><dt>{{ farmer_text('Fertilizer') }}</dt><dd>{{ log.fertilizer_count or '—' }}</dd></div>
+                                        <div><dt>{{ farmer_text('Ratoon') }}</dt><dd>{{ farmer_text(log.ratoon_stage) if log.ratoon_stage else '—' }}</dd></div>
+                                        <div><dt>RSSI</dt><dd>{{ farmer_text(log.rssi_infected) if log.rssi_infected else '—' }}</dd></div>
                                     </dl>
-                                </div>
-                            {% else %}
-                                <p class="history-unavailable">{{ farmer_text('Scan details were not recorded for this earlier calculation.') }}</p>
-                            {% endif %}
-                        </section>
+                                </section>
 
-                        <section class="history-section">
-                            <h5><ion-icon name="leaf-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Agronomic inputs') }}</h5>
-                            <dl class="history-facts">
-                                <div><dt>{{ farmer_text('Variety') }}</dt><dd>{{ log.variety or '—' }}</dd></div>
-                                <div><dt>{{ farmer_text('Hectares') }}</dt><dd>{{ farmer_text(log.hectares) if log.hectares else '—' }}</dd></div>
-                                <div><dt>{{ farmer_text('Plowing') }}</dt><dd>{{ log.plowing_count or '—' }}</dd></div>
-                                <div><dt>{{ farmer_text('Weeding') }}</dt><dd>{{ log.weeding_count or '—' }}</dd></div>
-                                <div><dt>{{ farmer_text('Fertilizer') }}</dt><dd>{{ log.fertilizer_count or '—' }}</dd></div>
-                                <div><dt>{{ farmer_text('Ratoon') }}</dt><dd>{{ farmer_text(log.ratoon_stage) if log.ratoon_stage else '—' }}</dd></div>
-                                <div><dt>RSSI</dt><dd>{{ farmer_text(log.rssi_infected) if log.rssi_infected else '—' }}</dd></div>
-                            </dl>
-                        </section>
+                                <section class="history-section">
+                                    <h5><ion-icon name="analytics-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Calculation Results') }}</h5>
+                                    <div class="history-results">
+                                        <div><span>{{ farmer_text('Estimated LKG TC') }}</span><strong>{{ '%.2f'|format(log.predicted_lkg_tc) if log.predicted_lkg_tc is not none else farmer_text('Pending') }}</strong><small>LKG/TC</small></div>
+                                        <div><span>{{ farmer_text('Estimated TC/HA') }}</span><strong>{{ '%.2f'|format(log.predicted_tc_ha) if log.predicted_tc_ha is not none else farmer_text('Pending') }}</strong><small>TC/HA</small></div>
+                                        <div><span>{{ farmer_text('Estimated LKG') }}</span><strong>{{ '%.2f'|format(log.predicted_lkg) if log.predicted_lkg is not none else farmer_text('Pending') }}</strong><small>LKG</small></div>
+                                    </div>
+                                </section>
 
-                        <section class="history-section">
-                            <h5><ion-icon name="analytics-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Calculation Results') }}</h5>
-                            <div class="history-results">
-                                <div><span>{{ farmer_text('Estimated LKG TC') }}</span><strong>{{ '%.2f'|format(log.predicted_lkg_tc) if log.predicted_lkg_tc is not none else farmer_text('Pending') }}</strong><small>LKG/TC</small></div>
-                                <div><span>{{ farmer_text('Estimated TC/HA') }}</span><strong>{{ '%.2f'|format(log.predicted_tc_ha) if log.predicted_tc_ha is not none else farmer_text('Pending') }}</strong><small>TC/HA</small></div>
-                                <div><span>{{ farmer_text('Estimated LKG') }}</span><strong>{{ '%.2f'|format(log.predicted_lkg) if log.predicted_lkg is not none else farmer_text('Pending') }}</strong><small>LKG</small></div>
+                                <section class="history-section history-recommendations">
+                                    <h5><ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Recommendations') }}</h5>
+                                    {% if row.recommendation_items %}
+                                        <ul>
+                                            {% for item in row.recommendation_items %}
+                                                <li>
+                                                    <span class="history-recommendation-icon" aria-hidden="true"><ion-icon name="{{ item.icon or 'sparkles-outline' }}"></ion-icon></span>
+                                                    <div class="history-recommendation-copy">
+                                                        <small>{{ farmer_text(item.category or 'General') }}</small>
+                                                        <strong>{{ farmer_summary(item.title) }}</strong>
+                                                        {% if item.meta %}<p>{{ farmer_summary(item.meta) }}</p>{% endif %}
+                                                    </div>
+                                                    {% if item.tag %}<span class="tag{% if item.tag_class %} {{ item.tag_class }}{% endif %}">{{ farmer_text(item.tag) }}</span>{% endif %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="history-unavailable">{{ farmer_text('No recommendation generated.') }}</p>
+                                    {% endif %}
+                                </section>
                             </div>
-                        </section>
-
-                        <section class="history-section history-recommendations">
-                            <h5><ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Recommendations') }}</h5>
-                            {% if row.recommendation_items %}
-                                <ul>
-                                    {% for item in row.recommendation_items %}
-                                        <li>
-                                            <span class="history-recommendation-icon" aria-hidden="true"><ion-icon name="{{ item.icon or 'sparkles-outline' }}"></ion-icon></span>
-                                            <div class="history-recommendation-copy">
-                                                <small>{{ farmer_text(item.category or 'General') }}</small>
-                                                <strong>{{ farmer_summary(item.title) }}</strong>
-                                                {% if item.meta %}<p>{{ farmer_summary(item.meta) }}</p>{% endif %}
-                                            </div>
-                                            {% if item.tag %}<span class="tag{% if item.tag_class %} {{ item.tag_class }}{% endif %}">{{ farmer_text(item.tag) }}</span>{% endif %}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p class="history-unavailable">{{ farmer_text('No recommendation generated.') }}</p>
-                            {% endif %}
-                        </section>
+                        </details>
                     </article>
                 {% endfor %}
                 </div>
