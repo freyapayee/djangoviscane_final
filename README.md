@@ -69,6 +69,21 @@ Hiligaynon. If adding Django gettext translations later, update `django.po` and
 compile it to `django.mo` with `python manage.py compilemessages` (GNU gettext
 utilities required).
 
+## Offline Android integration
+
+An Android Studio starter for offline manual agronomic calculations, device-local
+history, and JSON export is in [android-offline](android-offline/README.md).
+Generate a portable integration file with:
+
+```bash
+python3 scripts/export_android_offline.py
+```
+
+Extract `artifacts/android/viscane-offline.zip` and open its project folder in Android
+Studio. This is an offline foundation; photo recognition requires the separately
+trained model to be converted and integrated on Android. The Django website still
+uses its server and external classifier.
+
 ## Notes
 
 - Keep `.env.local` private
