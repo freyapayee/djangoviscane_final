@@ -190,8 +190,8 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active { background: #ea
     body.ds-app.vis-farmer-page .dashboard-header { background: #0b6b38; border-bottom: 0; }
     body.ds-app.vis-farmer-page .brand-title { color: #fff; }
     body.ds-app.vis-farmer-page .brand-subtitle { color: rgba(255,255,255,.82) !important; }
-    body.ds-app.vis-farmer-page .farmer-info-chip { margin-left: 12px; padding: 8px 4px; border: 0; border-radius: 0; color: #fff; background: transparent; font-size: 1rem; font-weight: 800; }
-    body.ds-app.vis-farmer-page .farmer-info-chip ion-icon { font-size: 1.55rem; }
+    body.ds-app.vis-farmer-page .farmer-info-chip { margin-left: 12px; padding: 8px 4px; border: 0; border-radius: 0; color: #fff; background: transparent; font-size: 1.15rem; font-weight: 800; }
+    body.ds-app.vis-farmer-page .farmer-info-chip ion-icon { font-size: 1.7rem; }
     body.ds-app.vis-farmer-page .header-actions { gap: 10px; }
 }
 
