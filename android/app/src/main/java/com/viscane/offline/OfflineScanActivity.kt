@@ -28,6 +28,7 @@ class OfflineScanActivity : ComponentActivity() {
     private var classifier: OfflineClassifier? = null
     private var cameraUri: Uri? = null
     private lateinit var status: TextView
+    private lateinit var result: TextView
     private lateinit var preview: ImageView
     private lateinit var camera: Button
     private lateinit var gallery: Button
@@ -93,11 +94,20 @@ class OfflineScanActivity : ComponentActivity() {
         gallery = Button(this).apply { text = "Upload photo"; textSize = 16f; isEnabled = false; backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE) }
         card.addView(camera, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
         card.addView(gallery, LinearLayout.LayoutParams(-1, -2))
-        status = TextView(this).apply { text = "Loading offline models…"; textSize = 17f; setTextColor(dark); setPadding(0, dp(12), 0, dp(12)) }
-        card.addView(ScrollView(this).apply { addView(status) }, LinearLayout.LayoutParams(-1, dp(150)))
-        history = TextView(this).apply { text = "Loading pending history…"; textSize = 16f; setTextColor(dark) }
+        result = TextView(this).apply {
+            visibility = android.view.View.GONE
+            textSize = 20f
+            setTextColor(dark)
+            setTypeface(null, Typeface.BOLD)
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+            background = rounded(Color.rgb(232, 247, 237), 18)
+        }
+        card.addView(result, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+        status = TextView(this).apply { text = "Loading offline models…"; textSize = 16f; setTextColor(dark); setPadding(0, dp(12), 0, dp(12)) }
+        card.addView(status)
+        history = TextView(this).apply { text = "Loading saved results…"; textSize = 16f; setTextColor(dark) }
         card.addView(history)
-        root.addView(card, LinearLayout.LayoutParams(-1, 0, 1f))
+        root.addView(ScrollView(this).apply { fillViewport = true; addView(card) }, LinearLayout.LayoutParams(-1, 0, 1f))
         val navigation = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             background = rounded(Color.WHITE, 20)
@@ -115,8 +125,8 @@ class OfflineScanActivity : ComponentActivity() {
         }
         nav("Home") { finish() }
         nav("Recommendations") { AlertDialog.Builder(this).setMessage("Reconnect to see your current recommendations.").setPositiveButton("OK", null).show() }
-        nav("Input Logs") { showPendingHistory() }
-        nav("Profile") { AlertDialog.Builder(this).setMessage("Farmer account #$farmerId · Offline scans stay on this device until synchronized.").setPositiveButton("OK", null).show() }
+        nav("Input Logs") { showSavedHistory() }
+        nav("Profile") { AlertDialog.Builder(this).setMessage("Farmer account #$farmerId · Scan results are available on this device even without a connection.").setPositiveButton("OK", null).show() }
         root.addView(navigation, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
         setContentView(root)
         refreshHistory()
@@ -154,17 +164,32 @@ class OfflineScanActivity : ComponentActivity() {
         worker.execute {
             val message = runCatching {
                 val store = OfflineScanStore(this)
-                val records = store.pending(farmerId)
-                if (records.isEmpty()) "No pending scans on this device."
-                else "Pending sync (${store.count(farmerId)})\n" + records.joinToString("\n") {
-                    "${it.label.replace("__", " · ").replace('_', ' ')} · ${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it.createdAt))}"
+                val records = store.summaries(farmerId)
+                if (records.isEmpty()) "No saved scans on this device yet."
+                else "Saved results: ${store.totalCount(farmerId)} · Server copies waiting: ${store.pendingCount(farmerId)}\n" + records.take(3).joinToString("\n") {
+                    "${displayVariety(it.label.substringBefore("__"))} · ${it.label.substringAfter("__").replace('_', ' ')} · ${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it.createdAt))}"
                 }
             }.getOrElse { "Could not read local history: ${it.localizedMessage}" }
             runOnUiThread { if (!isDestroyed) history.text = message }
         }
     }
 
-    private fun showPendingHistory() {
+    private fun displayVariety(value: String) = when (value) {
+        "524" -> "VMC 84-524"
+        "847" -> "VMC 84-947"
+        "Mauritio" -> "MAURITIO RC888"
+        else -> value
+    }
+
+    private fun showResult(label: String, confidence: Float, saveState: String, topMatches: String = "") {
+        val variety = displayVariety(label.substringBefore("__"))
+        val maturity = label.substringAfter("__").replace('_', ' ')
+        result.text = "RESULT READY ON THIS DEVICE\n\nVariety: $variety\nMaturity: $maturity\nConfidence: ${"%.1f".format(confidence * 100)}%"
+        result.visibility = android.view.View.VISIBLE
+        status.text = saveState + if (topMatches.isBlank()) "" else "\n\nOther model matches:\n$topMatches"
+    }
+
+    private fun showSavedHistory() {
         val periods = arrayOf("All", "This week", "This month", "This year")
         AlertDialog.Builder(this).setTitle("Filter input logs").setItems(periods) { _, index ->
             worker.execute {
@@ -186,9 +211,11 @@ class OfflineScanActivity : ComponentActivity() {
                     if (isDestroyed) return@runOnUiThread
                     result.onSuccess { scans ->
                         if (scans.isEmpty()) {
-                            AlertDialog.Builder(this).setMessage("No pending scans for this period.").setPositiveButton("OK", null).show()
+                            AlertDialog.Builder(this).setMessage("No saved scans for this period.").setPositiveButton("OK", null).show()
                         } else {
-                            val items = scans.map { "${it.label.replace("__", " · ").replace('_', ' ')} · Pending sync" }.toTypedArray()
+                            val items = scans.map {
+                                "${displayVariety(it.label.substringBefore("__"))} · ${it.label.substringAfter("__").replace('_', ' ')} · ${if (it.synced) "Server copy saved" else "Server copy waiting"}"
+                            }.toTypedArray()
                             AlertDialog.Builder(this).setTitle("Input Logs · ${periods[index]}").setItems(items) { _, position ->
                                 val selected = scans[position]
                                 worker.execute {
@@ -196,7 +223,9 @@ class OfflineScanActivity : ComponentActivity() {
                                     runOnUiThread {
                                         photo.onSuccess {
                                             preview.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
-                                            status.text = "${selected.label.replace("__", " · ").replace('_', ' ')}\nConfidence: ${"%.1f".format(selected.confidence * 100)}%\nPending sync"
+                                            showResult(selected.label, selected.confidence,
+                                                if (selected.synced) "Saved on this phone · Also synchronized to the server."
+                                                else "Saved on this phone · Server copy waiting for connection.")
                                         }.onFailure { status.text = "Could not open saved photo: ${it.localizedMessage}" }
                                     }
                                 }
@@ -248,6 +277,7 @@ class OfflineScanActivity : ComponentActivity() {
     private fun classify(uri: Uri) {
         controls(false)
         preview.setImageDrawable(null)
+        result.visibility = android.view.View.GONE
         status.text = "Analyzing photo on this device…"
         worker.execute {
             try {
@@ -258,8 +288,12 @@ class OfflineScanActivity : ComponentActivity() {
                 runOnUiThread {
                     if (isDestroyed) { bitmap.recycle(); return@runOnUiThread }
                     preview.setImageBitmap(bitmap)
-                    status.text = "Variety: ${top.variety}\nMaturity: ${top.maturity}\nConfidence: ${"%.1f".format(top.confidence * 100)}%\n${if (saved.isSuccess) "Saved on device · Pending sync" else "Could not save: ${saved.exceptionOrNull()?.localizedMessage}"}\n\nTop matches:\n" +
-                        predictions.take(3).joinToString("\n") { "${it.variety} · ${it.maturity}: ${"%.1f".format(it.confidence * 100)}%" }
+                    showResult(top.label, top.confidence,
+                        if (saved.isSuccess) "Saved on this phone. You can use this result now. A server copy will sync when connected."
+                        else "Result ready, but it could not be saved on this phone: ${saved.exceptionOrNull()?.localizedMessage}",
+                        predictions.drop(1).take(2).joinToString("\n") {
+                            "${displayVariety(it.variety)} · ${it.maturity}: ${"%.1f".format(it.confidence * 100)}%"
+                        })
                     controls(true)
                     if (saved.isSuccess) refreshHistory()
                 }

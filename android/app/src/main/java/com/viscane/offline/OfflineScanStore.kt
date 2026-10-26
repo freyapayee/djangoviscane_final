@@ -25,9 +25,15 @@ data class PendingScan(
     val jpeg: ByteArray,
 )
 
-data class PendingScanSummary(val id: String, val label: String, val confidence: Float, val createdAt: Long)
+data class PendingScanSummary(
+    val id: String,
+    val label: String,
+    val confidence: Float,
+    val createdAt: Long,
+    val synced: Boolean,
+)
 
-/** Private, encrypted pending scans. A record is removed only after server acknowledgement. */
+/** Encrypted on-device results. Sync changes the state; it does not remove a result. */
 class OfflineScanStore(private val context: Context) {
     private val alias = "viscane-offline-scans-v1"
     private val root get() = File(context.filesDir, "offline-pending")
@@ -81,22 +87,35 @@ class OfflineScanStore(private val context: Context) {
         return scan
     }
 
-    fun count(farmerId: Long): Int = if (farmerId <= 0) 0 else
-        File(root, farmerId.toString()).listFiles { file -> file.extension == "bin" }?.size ?: 0
+    fun pendingCount(farmerId: Long): Int = pendingFiles(farmerId).size
+
+    fun totalCount(farmerId: Long): Int = files(farmerId).size
+
+    private fun pendingFiles(farmerId: Long): List<File> =
+        files(farmerId).filter { it.extension == "bin" }
 
     private fun files(farmerId: Long): List<File> = if (farmerId <= 0) emptyList() else
-        File(root, farmerId.toString()).listFiles { file -> file.extension == "bin" }
+        File(root, farmerId.toString()).listFiles { file -> file.extension in setOf("bin", "synced") }
             .orEmpty().sortedByDescending { it.lastModified() }
 
-    fun summaries(farmerId: Long): List<PendingScanSummary> = files(farmerId).map { file ->
-        val scan = readFile(farmerId, file)
-        PendingScanSummary(scan.id, scan.label, scan.confidence, scan.createdAt)
+    fun summaries(farmerId: Long): List<PendingScanSummary> = files(farmerId).mapNotNull { file ->
+        try {
+            val scan = readFile(farmerId, file)
+            PendingScanSummary(scan.id, scan.label, scan.confidence, scan.createdAt, file.extension == "synced")
+        } catch (_: java.io.FileNotFoundException) {
+            // A successful sync can rename this file while the list is being read.
+            null
+        }
     }
 
-    fun read(farmerId: Long, id: String): PendingScan = readFile(farmerId, recordFile(farmerId, id))
+    fun read(farmerId: Long, id: String): PendingScan {
+        val pending = recordFile(farmerId, id)
+        val file = if (pending.exists()) pending else File(pending.parentFile, "$id.synced")
+        return readFile(farmerId, file)
+    }
 
     fun pending(farmerId: Long, limit: Int = 5): List<PendingScan> =
-        files(farmerId).take(limit).map { readFile(farmerId, it) }
+        pendingFiles(farmerId).take(limit).map { readFile(farmerId, it) }
 
     private fun readFile(farmerId: Long, file: File): PendingScan {
         require(farmerId > 0)
@@ -120,6 +139,12 @@ class OfflineScanStore(private val context: Context) {
     }
 
     fun markSynced(scan: PendingScan) {
-        require(recordFile(scan.farmerId, scan.id).delete()) { "Server saved scan, but local cleanup failed." }
+        val pending = recordFile(scan.farmerId, scan.id)
+        val synced = File(pending.parentFile, "${scan.id}.synced")
+        if (synced.exists()) {
+            require(!pending.exists() || pending.delete()) { "Server saved scan, but local status could not be updated." }
+            return
+        }
+        require(pending.renameTo(synced)) { "Server saved scan, but local status could not be updated." }
     }
 }
