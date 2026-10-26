@@ -4,27 +4,27 @@
 
 Build **one Android APK** that opens the existing online VISCANE portal and gives authenticated farmers an on-device scan and assessment screen when offline. Keep the existing Django computer-vision API, its separate classifier service, accounts, farmer history, admin, and superadmin routes working.
 
-**Current state:** The GitHub repository now contains `android/`, a WebView APK with an embedded Django copy and a basic offline assessment Activity. It starts the **local** Django server at `127.0.0.1` on every launch (`android/app/src/main/java/com/viscane/app/MainActivity.kt`), with a separate app-local SQLite database (`OfflineDjangoServer.kt`). That explains why a farmer's existing server credentials can fail in the APK while Chrome login works: the local user database is different. Local farmer records do **not** currently sync to the production database, so admin and superadmin cannot see them. The fallback assessment screen in the screenshot has no bundled recognition model. These instructions describe the required corrections; a working synchronized APK is **not yet verified**.
+**Implementation in source:** The `android/` project now starts with the production farmer site when connected, bundles the nine-class ResNet18 and YOLOv8 ONNX models, opens a farmer-only offline scan screen, and stores pending scans encrypted per farmer. Django has a separate authenticated, UUID-based offline upload route and an additive migration. The old local Django fallback remains in source but is no longer the startup/login path. **This is source code, not a verified or deployed APK.** Do not expect sync to work until Faye applies the migration and deploys the new server route.
 
-Faye's local `/Users/fayecuevas/Documents/deployment/android-offline` folder contains a separate Kotlin ONNX classifier with both nine-class models. GitHub's `android-offline/` is an older Java manual-assessment starter. The Android developer needs Faye's Kotlin source/model files in addition to GitHub's `android/` project.
+GitHub's `android-offline/` is the older Java manual-assessment starter shown in the screenshot. Open `android/` for the combined APK. The ONNX source and model files are already copied into `android/app/`; the separate local Kotlin project remains the reference for preprocessing and parity checks.
 
 **Ownership:** The Windows Android developer builds and tests the APK. The server owner (Faye) alone checks the live server, takes backups, and deploys any approved backend work. The Android developer does not need server or database credentials.
 
 ## Before changing Android code
 
 1. Faye confirms farmer, admin, and superadmin sign-in; online scan; farmer history; and admin views in the **phone's Chrome browser**. Record the exact working HTTPS origin and route; share the URL, never passwords or server secrets. An HTTP 500 in the APK while Chrome works requires checking the APK URL and a fresh request log before changing Django.
-2. The Android developer opens GitHub's **`android/`** project and obtains Faye's separate Kotlin classifier source/assets. Confirm its current application ID and release signing key match the already installed APK. Preserve both for an in-place update. The Kotlin models are currently local to Faye's deployment folder; they are **not** supplied by GitHub's Java starter. Do not send signing secrets through GitHub.
+2. The Android developer opens GitHub's **`android/`** project. Confirm its current application ID and release signing key match the already installed APK. Preserve both for an in-place update. Do not send signing secrets through GitHub.
 3. Create a branch in this repository:
 
    ```powershell
    git checkout -b feature/offline-farmer-classifier
    ```
 
-4. Faye takes a production backup through the normal server process before any **separately approved** server change. This Android-only phase needs no `git pull`, `collectstatic`, Apache restart, database migration, `flush`, or changes to prediction API URLs.
+4. Faye takes a production backup through the normal server process before deploying the **additive** `core/migrations/0010_offline_scan_receipt.py` migration and new API routes. Do not run `flush`, delete tables, replace the prediction API, or point the APK at a different user database. Faye alone performs server deployment.
 
 ## Files to copy into the existing WebView app
 
-Copy these files **from Faye's local Kotlin classifier project** into GitHub's `android/app/` module; adapt package declarations/imports to `com.viscane.app` as needed. Do not replace `android/app/src/main/java/com/viscane/app/MainActivity.kt` with the older Java starter's `MainActivity.java` or use its separate `applicationId`:
+These files are already in GitHub's `android/app/` module. Keep their package names and exact model hashes. Do not replace `android/app/src/main/java/com/viscane/app/MainActivity.kt` with the older Java starter's `MainActivity.java` or use its separate `applicationId`:
 
 ```text
 app/src/main/java/com/viscane/offline/OfflineClassifier.kt
@@ -35,7 +35,7 @@ app/src/main/assets/labels.txt
 app/src/main/assets/model_config.json
 ```
 
-Add only missing dependencies to the WebView app module’s Gradle file (Kotlin DSL shown; translate to Groovy syntax if its file is `build.gradle`):
+These dependencies are already added to the Groovy `android/app/build.gradle`. Verify them after opening Android Studio; do not add duplicates:
 
 ```kotlin
 implementation("androidx.activity:activity-ktx:1.10.1")
@@ -62,7 +62,7 @@ android {
 }
 ```
 
-The WebView project also needs a Kotlin Android plugin compatible with its existing Android Gradle plugin before `.kt` files compile. Let Android Studio propose a compatible version; do not paste a second conflicting plugin declaration.
+The `android/` project already declares the Kotlin Android plugin. Preserve its existing version unless Gradle reports a compatibility issue.
 
 Use the exact nine-label order in `labels.txt`. Do not rename, reorder, quantize, or substitute model files without repeating model-export and parity checks.
 
@@ -72,9 +72,9 @@ The ONNX files total about 49 MB. Confirm they are present in the **final APK** 
 
 ### Fix the current APK's starting route first
 
-In GitHub's `android/app/src/main/java/com/viscane/app/MainActivity.kt`, `onCreate()` currently calls `loadOfflineDjango()` unconditionally. The embedded Django server then serves `/auth` from its own SQLite database. Change startup to load the configured **production HTTPS origin** when reachable, preserving WebView cookies and the server's existing login. Fall back to the bundled farmer UI only when the site is unreachable and a farmer previously authenticated online on this device. Do not interpret an HTTP 500 as proof of no network: show the error and log the exact request, rather than silently switching to a different user database. Set `-PfarmerBaseUrl=https://YOUR-ACTUAL-FARMER-HOST/` for the release build; the current Gradle file requires it but the current startup path does not use it first.
+The combined app's `MainActivity.kt` now opens the configured **production HTTPS origin** when connected and retains the existing WebView login and cookies. A server HTTP 500 remains an error, rather than triggering the local Django copy with a separate user database. Set `-PfarmerBaseUrl=https://YOUR-ACTUAL-FARMER-HOST/` for the release build. On a phone, verify that Chrome and the APK reach the same host and that the APK accepts the same farmer account.
 
-The bundled Django copy is useful for visual consistency, but its local SQLite database is **not** the server's database. A farmer must never be asked to create a second “offline” account or be told local records are on the server. The developer must define how the app securely recognizes a previously authenticated farmer offline, and keep the local farmer data separated by account. Admin and superadmin continue using their unchanged production web routes; the Android app's `FarmerNavigation.kt` intentionally limits this APK to farmer routes.
+The embedded Django copy still has its own SQLite database, so the new offline scan Activity does **not** use it for login or history. Offline scan unlocks only after the app obtains a farmer ID from the authenticated production `/api/mobile/session` route. Each encrypted pending record is kept under that farmer ID. Admin and superadmin continue using their unchanged production web routes; `FarmerNavigation.kt` limits this APK to farmer routes.
 
 | User and connection state | Prediction path | Data source |
 | --- | --- | --- |
@@ -89,41 +89,45 @@ The bundled Django copy is useful for visual consistency, but its local SQLite d
 2. Do not write directly to the Django database from Android. Server data must continue through authenticated HTTPS API requests.
 3. Never run offline classification for admin or superadmin accounts. Their WebView routes stay online-only.
 4. Bind each offline record to the locally remembered **server farmer ID** from a prior authenticated online session. On sign-out, lock that farmer's pending records; never expose or upload them from another account. Do not discard unsent records silently.
-5. Show `Pending sync`, `Synced`, or `Needs attention` on each offline record. Preserve drafts across app restart and network failures. Explain clearly that pending data is on the device and is not yet visible to admin or superadmin.
+5. Show `Pending sync` on each unsent offline record. Preserve records across app restart and network failures. Explain clearly that pending data is on the device and is not yet visible to admin or superadmin. After confirmation, the server record appears in online history.
 6. Use a stable record UUID and server-side deduplication. Mark sent only after the server confirms persistence for the same farmer. Retry without creating a duplicate; do not put a client supplied farmer ID in place of the authenticated server identity.
 7. Encrypt sensitive local records and photos. Remove a local copy only after confirmed sync and according to a deliberate retention policy. Do not queue records for someone who has never authenticated online.
 
 ### Synchronization is a separate required integration
 
-The current Django `POST /api/scan/predict` sends a photo to the existing classifier and saves its **server** prediction context. It is not an offline-result upload endpoint. The calculation route creates agronomic logs but currently has no demonstrated client UUID deduplication contract. Posting a local model result to either route as though it were a server scan can produce inconsistent history or duplicate entries. **Do not claim sync works by calling either route without a reviewed contract.**
+The existing Django `POST /api/scan/predict` still sends photos to the separate classifier. The combined app **never** posts offline model results there. A new authenticated `POST /api/mobile/offline-scan` route accepts a photo and local result with a stable record UUID. It creates a linked photo and agronomic history row once and labels the model `on_device_ensemble_unverified`, since the server cannot prove what ran on the phone. Farmer history, admin monitoring, and superadmin history can read those rows. `GET /api/mobile/session` identifies the signed-in farmer to the app. Both routes reject the embedded offline Django server.
 
-Faye and the Android developer must agree on a small, authenticated server sync contract before enabling uploads. It must verify the logged-in farmer on the server, validate the nine-class label/model version and fields, accept a stable UUID idempotently, return the canonical server record ID, and make that record appear in existing farmer history and admin/superadmin read views. The server owner implements and deploys that additive endpoint only after backup, review, and staging tests; leave existing online prediction and calculation routes intact. Until then, keep offline records locally with an honest `Pending sync` label and disable automatic upload. The app must never say `Synced` merely because connectivity returned.
+The app retries pending uploads only against the configured HTTPS production origin with its existing farmer session and CSRF cookie. It removes an encrypted local record only after the server confirms the same UUID and a saved log ID. If the server lacks this route, rejects the session, or fails, the record remains **Pending sync**. Faye must deploy the additive migration and API code before accepting a release that promises farmer-to-admin synchronization; first verify idempotent retries and all three views in staging. The online prediction and calculation routes remain intact.
 
-## WebView bridge rules
+### Existing offline data from the older APK
 
-If the combined app uses a JavaScript bridge, expose the native classifier only on trusted farmer scan pages. This is **illustrative**, not drop-in secure code:
+The old Java fallback stored local assessments in `assessments.db` without a verified production farmer ID. The new app leaves that database file in place during an in-place update, but **does not automatically upload or display those legacy records** because associating them with an account would be unsafe. Export them from the old screen before updating if they are needed, and reconcile them with Faye before any manual import. Do not uninstall or clear app data to troubleshoot login.
 
-```kotlin
-webView.addJavascriptInterface(FarmerOfflineBridge(this), "ViscaneOffline")
+### Server owner deployment sequence (Faye only)
+
+After a production backup and staging verification, merge the reviewed integration branch. On the server, Faye runs:
+
+```bash
+cd /opt/bitnami/projects/djangoviscane_final
+git pull origin main
+python manage.py check
+python manage.py migrate --plan
+python manage.py migrate
+python manage.py collectstatic --noinput
+sudo /opt/bitnami/ctlscript.sh restart apache
 ```
 
-The bridge must reject a call unless all are true:
+Then verify the existing online scan API, farmer login/history, admin monitoring, and superadmin history before the updated APK is distributed. The groupmate needs only the Android repository, test host, and test farmer account; no server login.
 
-```text
-- the logged-in role is farmer
-- the current page is a farmer scan route
-- the WebView URL belongs to the approved VISCANE HTTPS domain
-```
+## Farmer-only boundary
 
-Do not expose the bridge on `/admin`, `/superadmin`, admin-login, superadmin-login, or external URLs. Verify origin and farmer authorization for **each bridge call**, not just when the WebView first loads. `addJavascriptInterface` exposes its object to frames and cannot by itself prove the caller's origin; a separate native farmer screen avoids that bridge risk. Online scans keep using the existing server API. Offline scans use the bundled models and local queue.
-
-The developer must inspect the actual WebView source before choosing a bridge or native screen. Do not invent a production endpoint inside the APK or change database tables during this Android-only phase.
+The combined app uses a separate native offline Activity, with no JavaScript bridge into the WebView. It opens only after `/api/mobile/session` has returned a real farmer ID during a prior online session. The app sends pending scans only with the current HTTPS WebView session and only when its authenticated server farmer ID matches the record owner. Admin and superadmin accounts stay on their existing online routes; the native offline Activity is not exported.
 
 ## Offline screen must match the farmer portal
 
-The screenshot's plain “VISCANE Offline” form is the basic Java fallback Activity already copied into `android/`; it is not the intended final UI. Present offline mode as a **farmer screen within the same app**. Use the existing farmer portal as the visual reference: solid green header, the same font and readable sizes, white rounded panels, matching green buttons, picture-first scan card, compact detail dropdown, weather/date placement, and the same Home / Recommendations / Input Logs / Profile bottom navigation. Keep system status and navigation bars coordinated with the header and Android safe areas. Give offline mode a small visible indicator and show `Pending sync` beside local history items.
+The screenshot's plain “VISCANE Offline” form is the older Java fallback Activity. The new `OfflineScanActivity.kt` uses a green header, large text, photo-first white card, camera/gallery controls, and Home / Recommendations / Input Logs / Profile navigation. Its Input Logs dialog filters pending history by All / week / month / year and opens saved photos. Keep refining spacing and font against the **actual phone** screenshots; the offline screen is similar to the portal but is not a pixel-perfect copy. It labels unsynced results `Pending sync`.
 
-Recommended approach: reuse the farmer templates/styles that `android/app/build.gradle` already packages into `django-server` assets, while routing offline scan/classification and local history through dedicated local code. Do not rely on server-only template data or the local Django user table as if it were synchronized with production. The offline page must contain **no remote CSS, JavaScript, font, or image dependencies** and must not display a fake live weather value; use device date and an explicit offline weather state. Keep online WebView cookies, login, and portal navigation intact. The offline page calls native model inference through a narrowly scoped interface or opens a native classifier Activity. Test it with airplane mode before launch and after a previously authenticated session.
+The current offline screen is native and needs no remote CSS, font, or image download. It does not display fake live weather. It uses `OfflineClassifier.kt` directly, avoiding a JavaScript bridge. The WebView continues to serve online pages; the offline Activity stores local records until authenticated sync confirms them. Test both with airplane mode before launch and after a previously authenticated session.
 
 Match these flows, not just colors: camera/gallery, image preview, scan result, assessment parameters, saved local history with All / week / month / year filters, expandable result details, return to online screen, and accessible back navigation. Use the current `static/style.css` and farmer templates as design reference; avoid copying server templates with Django tags as raw Android assets. Admin and superadmin see their existing online screens or an offline-unavailable message, never farmer offline data.
 
@@ -137,16 +141,16 @@ Match these flows, not just colors: camera/gallery, image preview, scan result, 
    git switch feature/offline-farmer-classifier
    ```
 
-4. Fix online-first startup, then add the Kotlin classifier, exact assets, farmer-only offline screen, and pending queue. Keep `com.viscane.app` if that is the installed app's real application ID, the portal URL, online API route, cookie/session handling, and release signing setup. Do not add another farmer credential store.
-5. Apply the status-bar setup below and match the offline UI checklist above. Use Android's camera/gallery contracts already implemented in the Kotlin project, adapting them to the WebView app.
+4. Review the online-first startup, Kotlin classifier, exact assets, farmer-only offline screen, encrypted pending queue, and `OfflineSync.kt` already in source. Keep `com.viscane.app` if that is the installed app's real application ID, plus the portal URL, online API route, cookie/session handling, and release signing setup. Do not add another farmer credential store.
+5. Check the green status bar and offline UI on the real phone. The camera/gallery flow and photo orientation code are in `OfflineScanActivity.kt`.
 6. In Android Studio, let Gradle sync, then choose **Build > Rebuild Project** and **Run** on a physical phone. Exercise login and online scan before testing airplane mode.
 7. Build a debug APK with **Build > Build APK(s)**, or run in PowerShell if the WebView repository includes a Gradle wrapper:
 
    ```powershell
-   .\gradlew.bat :app:assembleDebug
+   .\gradlew.bat :app:assembleDebug -PfarmerBaseUrl=https://YOUR-ACTUAL-FARMER-HOST/
    ```
 
-   For a **release** build, provide the real HTTPS origin through `-PfarmerBaseUrl=...`, use the existing private signing setup, and increase `versionCode`. Debug builds in this project add `.debug` to the application ID, so they install beside the production app and do not test an in-place update.
+   Replace the placeholder with the exact HTTPS origin that works in Chrome, including the final `/`. Pass it for **debug and release** builds; otherwise the debug app defaults to `http://10.0.2.2:5000/` and will not use production credentials. For a release, use the existing private signing setup and increase `versionCode`. Debug builds add `.debug` to the application ID, so they install beside the production app and do not test an in-place update. Faye deploys the server migration and route **before** releasing an APK expected to sync.
 
 8. Commit after validation:
 
@@ -167,30 +171,27 @@ Match these flows, not just colors: camera/gallery, image preview, scan result, 
 
 ## Native mobile status-bar UI
 
-The black strip containing the phone clock, signal, and battery is controlled by Android. GitHub's `android/app/src/main/res/values/themes.xml` currently sets the bars to black, while `MainActivity.kt` already opts into edge-to-edge and applies system-bar insets. Change those **existing** settings in `android/`, then verify on the target phone; do not add a second inset handler.
+The black strip containing the phone clock, signal, and battery is controlled by Android. The source now sets `Theme.Viscane` bars to green and requests white status icons; `MainActivity.kt` already applies system-bar insets. Verify on the target phone, especially Android edge-to-edge versions, and do not add a second inset handler.
 
-Add these imports:
+The current Activity includes these imports:
 
 ```kotlin
 import android.graphics.Color
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 ```
 
-Then add this inside `onCreate()` after `super.onCreate(...)`:
+The current `onCreate()` draws green behind the system inset and requests white status icons:
 
 ```kotlin
-window.statusBarColor = Color.rgb(11, 107, 56) // #0B6B38
-window.navigationBarColor = Color.rgb(11, 107, 56)
-
-WindowInsetsControllerCompat(window, window.decorView).apply {
-    isAppearanceLightStatusBars = false
-    isAppearanceLightNavigationBars = false
-}
+window.decorView.setBackgroundColor(Color.rgb(11, 107, 56))
+WindowCompat.setDecorFitsSystemWindows(window, false)
+WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
 ```
 
 On supported Android versions this sets white system icons against green bars. Android 15/16 edge-to-edge behavior can make the status bar transparent; then draw the same green behind the inset area rather than relying on `statusBarColor` alone. Verify the title and bottom navigation are not hidden by system bars. Put this in the combined app's Activity/theme, not Django or a separate starter APK.
 
-Replace the existing black values inside `Theme.Viscane` in `android/app/src/main/res/values/themes.xml`:
+Check the green values inside `Theme.Viscane` in `android/app/src/main/res/values/themes.xml`:
 
 ```xml
 <item name="android:statusBarColor">#0B6B38</item>
@@ -204,67 +205,51 @@ Replace the existing black values inside `Theme.Viscane` in `android/app/src/mai
 - [ ] Existing farmer login and online scan still work.
 - [ ] Existing farmer history and agronomic logs still appear after installing the updated APK.
 - [ ] Admin login/dashboard and superadmin login/dashboard work unchanged.
-- [ ] Admin and superadmin cannot access the native classifier bridge.
-- [ ] No migrations, database resets, model replacements, or API endpoint removals are included.
+- [ ] Admin and superadmin cannot access the farmer offline Activity or upload route.
+- [ ] Only additive migration `0010` is applied; no database resets, online model replacements, or existing API endpoint removals occur.
 - [ ] One installed APK and launcher icon open online farmer pages and the visually matched offline farmer screen; no separate “VISCANE Offline” app is required.
 - [ ] The final APK contains both ONNX models and nine labels, and camera/gallery classification works in airplane mode on real photos.
-- [ ] The offline screen matches the online green header, font, scan card, bottom navigation, log filters, and expandable details on the actual phone.
+- [ ] The offline screen's green header, readable font, photo card, bottom navigation, and log filters are checked against the online UI on the actual phone. Refine remaining visual differences before release.
 - [ ] A previously authenticated farmer can save an offline result, reopen the app, and still see `Pending sync`; a fresh device with no prior login cannot impersonate a farmer.
 - [ ] Logging out and signing in as another farmer does not expose or submit the prior farmer’s pending data.
-- [ ] **Release gate for sync:** a reviewed server endpoint exists, server ownership and UUID deduplication are tested, and one reconnected record appears exactly once in farmer history plus admin and superadmin views. If this gate is unmet, keep sync disabled and label records `Pending sync`.
+- [ ] **Release gate for sync:** Faye has deployed migration `0010` and the new routes after backup; the authenticated farmer and UUID deduplication are tested, and one reconnected record appears exactly once in farmer history, admin monitoring, and superadmin history. Until then, records remain `Pending sync`.
 - [ ] Installing as an update preserves the app's online session/local pending records and does not require wiping app data.
 
 ## Copy/paste prompt for the Android developer
 
 ```text
-Work in GitHub's android/ WebView project and produce ONE update APK with the
-SAME production applicationId and release signing key. Faye must also share
-the separate local Kotlin classifier project; it is not in GitHub's older
-android-offline Java starter. The basic Java fallback screen has no bundled
-model. The separate Kotlin classifier project contains resnet18.onnx,
-yolov8.onnx, labels.txt (nine exact classes), model_config.json,
-OfflineClassifier.kt, and Preprocessing.kt. Port these into the existing APK;
-do not replace the WebView Activity or online login with the starter Activity.
+Open GitHub's android/ project in Android Studio on Windows. Build ONE update APK
+with the SAME production applicationId and release signing key. The nine-class
+ONNX files and classifier code are already under android/app; do not use the
+older android-offline Java project as the final app.
 
-The current WebView Activity always starts an embedded local Django server with
-its own SQLite users. Make it open the configured production HTTPS farmer site
-first when reachable, and use the bundled farmer UI only as an offline fallback
-for a farmer previously authenticated online. Do not switch to local Django
-because of an HTTP 500. Fix the URL/login issue before doing classifier work.
+Check the new online-first MainActivity: existing farmer credentials must work
+against the same HTTPS host as Chrome. A server HTTP 500 must stay visible as
+a server error. Check the native OfflineScanActivity in airplane mode: camera,
+gallery, EXIF orientation, green header, picture-first result, Input Logs
+filters, and per-farmer Pending sync data must work after app restart.
 
-For logged-in farmers, retain the existing online Django pages and online scan
-API. When unreachable, show a bundled farmer offline screen with the same solid
-green header, large readable font, scan card, bottom navigation, filtered logs,
-and expandable details as the online portal. Bundle every needed CSS/icon/font
-asset so it works in airplane mode. Add camera/gallery and local ONNX inference.
-Save results per authenticated farmer as encrypted pending records and clearly
-mark them Pending sync until the server confirms persistence. Keep admin and
-superadmin routes online-only and protect them from any farmer offline bridge.
+After Faye deploys additive Django migration 0010 and the new /api/mobile/
+routes, reconnect and verify exactly one record per UUID in farmer history,
+admin monitoring, and superadmin history. The existing /api/scan/predict
+classifier route must still work for online scans. If the server route is not
+ready or login fails, pending records must remain on the phone.
 
-Do not alter the computer-vision API, separate classifier service, Django user
-records, or existing history. The current /api/scan/predict route is NOT an
-offline-result sync endpoint. Before implementing sync, coordinate with Faye on
-an authenticated, farmer-owned, UUID-idempotent server contract that makes one
-record visible to farmer, admin, and superadmin. Faye alone handles server
-backup/deployment. Without that contract, leave auto-sync disabled and report
-the blocker honestly; do not fabricate server success or duplicate records.
-
-On Windows, build and test the combined APK on a physical phone. Verify Chrome
-and APK use the same production HTTPS URL; test online login and scan, airplane
-mode, app restart, reconnect, no duplicate history, both admin roles, and an
-in-place update retaining data. Document changed files, exact test results,
-remaining sync dependency, and APK applicationId/versionCode/signature.
+Test a second farmer and both admin roles. Confirm the offline Activity never
+shows another farmer's pending scans. Verify an in-place release update keeps
+the existing session and pending data. Report build output, device screenshots,
+remaining UI differences, and the APK applicationId/versionCode/signature.
 ```
 
 ## Copy/paste prompt for Faye (server owner)
 
 ```text
-Please review the Android developer's proposed offline sync payload and UUID.
-Check that the server authenticates the farmer from its existing session/token,
-validates the model/version/labels, stores an offline scan once per UUID and
-farmer, and returns the canonical record ID. Confirm the resulting history is
-visible in existing farmer, admin, and superadmin views. Preserve the online
-prediction API and current data. Back up production first, test in staging,
-then deploy any additive backend change yourself. Give the Android developer
-the endpoint contract and test account, not SSH/database credentials.
+Back up production. Review and test the additive core migration 0010 and the
+new /api/mobile/session and /api/mobile/offline-scan routes on staging. Confirm
+farmer session ownership, CSRF, nine-class label validation, model hashes,
+duplicate UUID retry, and visibility in farmer/admin/superadmin history.
+Verify the existing online /api/scan/predict still uses the classifier service.
+Deploy the migration and server code yourself before an APK is released with
+sync expectations. Give the Android developer a test account and HTTPS host,
+not SSH/database credentials.
 ```

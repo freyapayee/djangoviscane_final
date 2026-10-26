@@ -1,0 +1,70 @@
+{
+  "format": "ONNX",
+  "classes": [
+    "524__Mature",
+    "524__Not_Mature",
+    "524__Over_Mature",
+    "847__Mature",
+    "847__Not_Mature",
+    "847__Over_Mature",
+    "Mauritio__Mature",
+    "Mauritio__Not_Mature",
+    "Mauritio__Over_Mature"
+  ],
+  "fusion": {
+    "resnet18_weight": 0.65,
+    "yolov8_weight": 0.35,
+    "calibration_source": "validation_split",
+    "calibrated_resnet18_weight": 0.65,
+    "calibrated_yolov8_weight": 0.35
+  },
+  "export_versions": {
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "ultralytics": "8.4.182",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.31.0",
+    "Pillow": "13.0.0"
+  },
+  "models": {
+    "resnet18": {
+      "model_type": "resnet18",
+      "checkpoint_path": "content/data/sugarcane_artifacts/resnet18/best_model.pt",
+      "image_size": 320,
+      "input_format": "RGB",
+      "normalization_mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "normalization_std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "file": "resnet18.onnx",
+      "sha256": "37be5dd4ccf618a94d86d0e3a26e040e0617c6827cdb00ec74548aa426f66823",
+      "checkpoint_sha256": "a9246990f9dc9a0a4f7badec58aecf0875254b65d7f6a9c8a63116500ad4ed78",
+      "layout": "NCHW",
+      "dtype": "float32",
+      "output": "logits"
+    },
+    "yolov8": {
+      "model_type": "yolov8",
+      "checkpoint_path": "content/data/sugarcane_artifacts/yolov8/yolov8/weights/best.pt",
+      "image_size": 320,
+      "input_format": "RGB",
+      "file": "yolov8.onnx",
+      "sha256": "cdf5b713b21bf9fa83924857b10ff3c923d91c1e5457a3f68221700b99b7ca48",
+      "checkpoint_sha256": "3a49e82eb0820b387625359a287af5324aced926f6b7ab1e2b448dff9f5a5dab",
+      "layout": "NCHW",
+      "dtype": "float32",
+      "output": "probabilities"
+    }
+  },
+  "preprocessing": {
+    "resnet18": "RGB / 255; full-image bilinear resize, align_corners=False, no antialias; ImageNet normalization",
+    "yolov8": "Compose(\n    Resize(size=320, interpolation=bilinear, max_size=None, antialias=True)\n    CenterCrop(size=(320, 320))\n    ToTensor()\n    Normalize(mean=tensor([0., 0., 0.]), std=tensor([1., 1., 1.]))\n)",
+    "orientation": "Android applies EXIF orientation before preprocessing; API currently ignores EXIF"
+  }
+}

@@ -22,12 +22,15 @@ import android.webkit.WebViewClient
 import android.webkit.WebResourceResponse
 import android.webkit.WebResourceError
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.widget.Toast
+import com.viscane.offline.OfflineScanActivity
 import androidx.appcompat.app.AlertDialog
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import java.io.ByteArrayInputStream
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -35,10 +38,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.preference.PreferenceManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.button.MaterialButton
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -48,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private var loadFailed = false
     private var isOfflineServer = false
     private var offlineServerStarting = false
+    private val syncRunning = AtomicBoolean(false)
 
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private var pendingCameraImageUri: Uri? = null
@@ -108,9 +114,12 @@ class MainActivity : AppCompatActivity() {
 
         swipeRefresh = findViewById(R.id.swipeRefresh)
         webView = findViewById(R.id.webView)
+        findViewById<MaterialButton>(R.id.offlineScanButton).setOnClickListener { openOfflineScanner() }
         activeBaseUrl = getBaseUrl()
         navigation = FarmerNavigation(activeBaseUrl)
+        window.decorView.setBackgroundColor(Color.rgb(11, 107, 56))
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
         ViewCompat.setOnApplyWindowInsetsListener(swipeRefresh) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             val keyboard = insets.getInsets(WindowInsetsCompat.Type.ime())
@@ -210,6 +219,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 loadFailed = false
+                if (FarmerNavigation(getBaseUrl()).sameOrigin(url) && Uri.parse(url).path == "/logout") {
+                    getSharedPreferences("farmer_offline_access", MODE_PRIVATE).edit().remove("farmer_id").apply()
+                }
                 if (!navigation.allows(url)) {
                     view.stopLoading()
                     view.loadUrl(activeBaseUrl)
@@ -218,6 +230,13 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView, url: String) {
                 swipeRefresh.isRefreshing = false
+                if (FarmerNavigation(getBaseUrl()).sameOrigin(url)) {
+                    when (Uri.parse(url).path) {
+                        "/homepage" -> refreshMobileSessionAndSync()
+                        "/auth", "/logout" -> getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
+                            .edit().remove("farmer_id").apply()
+                    }
+                }
                 if (navigation.allows(url)) {
                     view.evaluateJavascript("""
                         if ('serviceWorker' in navigator) {
@@ -235,22 +254,15 @@ class MainActivity : AppCompatActivity() {
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                 if (request.isForMainFrame) {
-                    if (!isOfflineServer && !hasNetworkConnection()) loadOfflineDjango() else showLoadError()
+                    if (!hasNetworkConnection()) showLoadError("Offline", "Connect to use the online portal, or scan a photo on this device.")
+                    else showLoadError()
                 }
             }
 
             override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
                 if (request.isForMainFrame) {
-                    // The live site can fail after the app has loaded its cover page. Keep
-                    // the user's current route (for example /auth?mode=login) and serve it
-                    // from the Django copy bundled in the APK instead of trapping them in
-                    // the Android HTTP error dialog.
-                    if (!isOfflineServer && response.statusCode >= 500) {
-                        val path = request.url.encodedPath.orEmpty().ifBlank { "/" }
-                        val query = request.url.encodedQuery?.let { "?$it" }.orEmpty()
-                        loadOfflineDjango(path + query)
-                        return
-                    }
+                    // A server error is not an offline state. The embedded Django copy
+                    // has a different user database and must not replace a live login.
                     val message = if (BuildConfig.DEBUG && response.statusCode == 400) {
                         "The server rejected the request (HTTP 400). Check Django's DJANGO_ALLOWED_HOSTS includes ${request.url.host}, then restart the server."
                     } else {
@@ -264,10 +276,9 @@ class MainActivity : AppCompatActivity() {
         swipeRefresh.setOnRefreshListener { webView.reload() }
         swipeRefresh.setOnChildScrollUpCallback { _, _ -> webView.canScrollVertically(-1) }
 
-        // The farmer app is served from the Django project bundled in this APK. Starting
-        // the local server every time makes first launch and subsequent use independent of
-        // connectivity, remote availability, and whether the website was opened before.
-        loadOfflineDjango()
+        // Existing server accounts and history are authoritative whenever online.
+        if (hasNetworkConnection()) webView.loadUrl(activeBaseUrl)
+        else showLoadError("Offline", "Connect once to sign in, or scan a photo on this device if you previously signed in.")
     }
 
     override fun onResume() {
@@ -280,6 +291,7 @@ class MainActivity : AppCompatActivity() {
             webView.clearHistory()
             webView.loadUrl(baseUrl)
         }
+        if (::webView.isInitialized && hasNetworkConnection()) refreshMobileSessionAndSync()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -330,9 +342,7 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this).setTitle(title)
             .setMessage(message)
             .setPositiveButton("Retry") { _, _ -> webView.reload() }
-            .setNeutralButton("Open offline VISCANE") { _, _ ->
-                loadOfflineDjango()
-            }
+            .setNeutralButton("Scan offline") { _, _ -> openOfflineScanner() }
             .setNegativeButton("Close", null).show()
     }
 
@@ -355,6 +365,36 @@ class MainActivity : AppCompatActivity() {
         val capabilities = connectivity.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    private fun openOfflineScanner() {
+        val farmerId = getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
+            .getLong("farmer_id", 0)
+        if (farmerId > 0) startActivity(Intent(this, OfflineScanActivity::class.java).putExtra("farmer_id", farmerId))
+        else AlertDialog.Builder(this)
+            .setTitle("Sign in first")
+            .setMessage("Connect to the internet and sign in to your farmer account before using offline scan.")
+            .setPositiveButton("OK", null).show()
+    }
+
+    private fun refreshMobileSessionAndSync() {
+        val base = getBaseUrl()
+        if (!hasNetworkConnection() || !base.startsWith("https://") || !syncRunning.compareAndSet(false, true)) return
+        CookieManager.getInstance().flush()
+        Thread {
+            try {
+                val farmerId = OfflineSync.authenticatedFarmerId(base)
+                if (farmerId != null) {
+                    getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
+                        .edit().putLong("farmer_id", farmerId).apply()
+                    OfflineSync.sync(applicationContext, base, farmerId)
+                }
+            } catch (_: Exception) {
+                // Network and server failures leave encrypted pending records intact.
+            } finally {
+                syncRunning.set(false)
+            }
+        }.start()
     }
 
     private fun loadOfflineDjango(pathAndQuery: String = "/") {

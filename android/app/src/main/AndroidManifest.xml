@@ -38,6 +38,10 @@
             android:exported="false" />
 
         <activity
+            android:name="com.viscane.offline.OfflineScanActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.Viscane.FullScreen"
             android:windowSoftInputMode="adjustResize"

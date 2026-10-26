@@ -8,7 +8,7 @@ class FarmerNavigation(baseUrl: String) {
     private val paths = setOf("/", "/auth", "/auth/register-success", "/logout", "/homepage", "/service-worker.js",
         "/farmer/recommendations", "/farmer/agronomic-logs", "/farmer/settings",
         "/farmer/news", "/farmer/notifications", "/farmer/feedback", "/about-viscane", "/favicon.ico",
-        "/scan/new", "/calculate", "/api/scan/predict", "/i18n/setlang/")
+        "/scan/new", "/calculate", "/api/scan/predict", "/api/mobile/session", "/api/mobile/offline-scan", "/i18n/setlang/")
 
     fun sameOrigin(url: String): Boolean = runCatching {
         val uri = URI(url)

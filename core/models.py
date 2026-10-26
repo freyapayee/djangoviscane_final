@@ -105,6 +105,7 @@ class FeedbackReply(models.Model):
 class AgronomicLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="agronomic_logs")
     scan = models.ForeignKey(Scan, on_delete=models.SET_NULL, related_name="agronomic_logs", null=True, blank=True)
+    offline_cv_upload = models.ForeignKey("CvScanUpload", on_delete=models.SET_NULL, related_name="offline_agronomic_logs", null=True, blank=True)
     variety = models.CharField(max_length=120, blank=True, null=True)
     hectares = models.CharField(max_length=50, blank=True, null=True)
     plowing_count = models.CharField(max_length=20, blank=True, null=True)
@@ -135,3 +136,13 @@ class CvScanUpload(models.Model):
 
     class Meta:
         db_table = "cv_scan_upload"
+
+
+class OfflineScanReceipt(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="offline_scan_receipts")
+    log = models.OneToOneField(AgronomicLog, on_delete=models.CASCADE, related_name="offline_receipt")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "offline_scan_receipt"
