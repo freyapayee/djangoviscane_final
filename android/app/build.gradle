@@ -1,0 +1,94 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "com.chaquo.python"
+}
+
+def djangoAssetsDir = layout.buildDirectory.dir("generated/viscaneDjangoAssets")
+def externalBuildDir = providers.gradleProperty("viscaneBuildDir").orNull
+if (externalBuildDir) layout.buildDirectory.set(file(externalBuildDir))
+def packageDjangoServer = tasks.register("packageDjangoServer", Sync) {
+    into djangoAssetsDir
+    from(rootProject.file("../core")) { into "django-server/core"; exclude "**/__pycache__/**", "*.pyc", "test_*.py" }
+    from(rootProject.file("../viscane")) { into "django-server/viscane"; exclude "**/__pycache__/**", "*.pyc" }
+    from(rootProject.file("../templates")) { into "django-server/templates" }
+    from(rootProject.file("../static")) { into "django-server/static"; exclude "uploads/**" }
+    from(rootProject.file("../locale")) { into "django-server/locale" }
+}
+
+def farmerBaseUrl = providers.gradleProperty("farmerBaseUrl").getOrElse("").trim()
+if (farmerBaseUrl) {
+    def server = new URI(farmerBaseUrl)
+    if (server.scheme != "https" || !server.host || server.userInfo || server.query || server.fragment || !(server.path in ["", "/"])) {
+        throw new GradleException("farmerBaseUrl must be an HTTPS origin, for example https://farmers.example.org/")
+    }
+}
+
+android {
+    namespace "com.viscane.app"
+    compileSdk 36
+    buildFeatures { buildConfig true }
+
+    defaultConfig {
+        applicationId "com.viscane.app"
+        minSdk 24
+        targetSdk 36
+        buildConfigField "String", "FARMER_BASE_URL", '"' + farmerBaseUrl + '"'
+        versionCode 6
+        versionName "1.5"
+        ndk { abiFilters "arm64-v8a", "armeabi-v7a" }
+    }
+
+    sourceSets.main.assets.srcDir(djangoAssetsDir)
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            manifestPlaceholders = [allowCleartext: "true"]
+        }
+        release {
+            manifestPlaceholders = [allowCleartext: "false"]
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+chaquopy {
+    defaultConfig {
+        version = "3.11"
+        pip {
+            install("Django==5.2.9")
+            install("Jinja2==3.1.6")
+        }
+    }
+}
+
+tasks.named("preBuild").configure { dependsOn(packageDjangoServer) }
+
+tasks.configureEach {
+    if (name == "preReleaseBuild") {
+        doFirst {
+            if (!farmerBaseUrl) throw new GradleException("Release requires -PfarmerBaseUrl=https://YOUR-FARMER-HOST/")
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "com.google.android.material:material:1.12.0"
+    implementation "androidx.preference:preference-ktx:1.2.1"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation "androidx.activity:activity-ktx:1.10.1"
+    testImplementation "junit:junit:4.13.2"
+}
+

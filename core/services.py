@@ -807,6 +807,11 @@ def summarize_prediction_service_error(exc, endpoint, timeout_seconds=None):
 
 
 def request_prediction_service(uploaded_filename, file_bytes, content_type, top_k, endpoint=None, timeout_seconds=None):
+    if settings.VISCANE_OFFLINE or os.getenv("VISCANE_OFFLINE", "false").strip().lower() in {"1", "true", "yes", "on"}:
+        return None, {
+            "error": "Offline image recognition is unavailable because no recognition model is bundled.",
+            "details": "Enter variety and maturity manually, then calculate with the on-device agronomic rules.",
+        }, 503
     configured_endpoint = (endpoint or os.getenv("SCAN_PREDICT_ENDPOINT", DEFAULT_SCAN_PREDICT_ENDPOINT)).strip() or DEFAULT_SCAN_PREDICT_ENDPOINT
     timeout_raw = timeout_seconds if timeout_seconds is not None else os.getenv("SCAN_PREDICT_TIMEOUT_SECONDS", str(DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS))
     try:

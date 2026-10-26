@@ -9,6 +9,7 @@ import os
 import re
 from copy import deepcopy
 
+from django.conf import settings
 from django.core.cache import cache
 from django.utils.translation import get_language
 
@@ -816,7 +817,7 @@ def translate_recommendations(recommendations):
                 if field in ("title", "meta"):
                     item[f"original_{field}"] = item[field]
                 item[field] = translated
-    if not os.getenv("DEEPSEEK_API_KEY"):
+    if settings.VISCANE_OFFLINE or not os.getenv("DEEPSEEK_API_KEY"):
         return original
 
     pending = []

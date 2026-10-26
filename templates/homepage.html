@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}" data-offline="{{ 'true' if offline_mode else 'false' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ url_for('static', filename='farmer-manifest.webmanifest') }}">
     <title>VISCANE | Farmer Dashboard</title>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    {% if not offline_mode %}<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>{% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         .stats-grid.stats-grid-inputs {

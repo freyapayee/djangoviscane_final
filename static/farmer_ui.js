@@ -97,6 +97,9 @@
   const dateOnly = fmtDate();
   setInfo(dateOnly);
 
+  // The Android APK runs against bundled data and must not depend on a weather API.
+  if (document.documentElement.dataset.offline === 'true') return;
+
   if (!navigator.geolocation) {
     return;
   }

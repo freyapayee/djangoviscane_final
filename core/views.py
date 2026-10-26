@@ -16,8 +16,10 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, Sum, Q
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.middleware.csrf import get_token
 from django.shortcuts import redirect as django_redirect, render
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -57,7 +59,17 @@ from .services import (
 
 
 def render_template(request, template_name, context=None, status=200):
-    payload = {"request": request, "session": request.session}
+    # The project uses Django's Jinja backend. Expose the hidden CSRF field used
+    # throughout its Jinja forms; otherwise login/register POSTs fail with 403.
+    payload = {
+        "request": request,
+        "session": request.session,
+        "offline_mode": settings.VISCANE_OFFLINE,
+        "csrf_input": format_html(
+            '<input type="hidden" name="csrfmiddlewaretoken" value="{}">',
+            get_token(request),
+        ),
+    }
     if context:
         payload.update(context)
     return render(request, template_name, payload, status=status)
@@ -484,6 +496,11 @@ def cv_upload_image(request, upload_id):
 @farmer_login_required
 @require_POST
 def api_scan_predict(request):
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({
+            "error": "Offline image recognition is unavailable because no recognition model is bundled.",
+            "details": "Enter variety and maturity manually, then calculate with the on-device agronomic rules.",
+        }, status=503)
     uploaded_file = request.FILES.get("file") or request.FILES.get("image")
     if not uploaded_file or not uploaded_file.name:
         return JsonResponse({"error": "Missing image file. Use form field `file`."}, status=400)

@@ -144,6 +144,53 @@ class FarmerMobileTests(TestCase):
         client.get("/logout")
         self.assertNotIn("user_id", client.session)
 
+    @override_settings(VISCANE_OFFLINE=True, FARMER_ONLY=True)
+    def test_mobile_registration_and_login_render_csrf_and_work(self):
+        client = Client(
+            enforce_csrf_checks=True,
+            HTTP_USER_AGENT="Android ViscaneFarmer/1.0",
+        )
+        registration = client.get("/auth?mode=register&cover=done")
+        self.assertEqual(registration.status_code, 200)
+        self.assertContains(registration, 'name="csrfmiddlewaretoken"')
+        csrf_token = client.cookies["csrftoken"].value
+
+        created = client.post("/auth?mode=register", {
+            "csrfmiddlewaretoken": csrf_token,
+            "fullname": "Offline Farmer",
+            "email": "offline-farmer@example.invalid",
+            "phone": "09123456780",
+            "password": "Offline-test-123!",
+            "confirm_password": "Offline-test-123!",
+            "province": "Negros Occidental",
+            "municipality": "Isabela",
+            "barangay": "Amin",
+        })
+        self.assertEqual(created.status_code, 302)
+        self.assertEqual(created["Location"], "/auth/register-success")
+        self.assertEqual(client.session["user_id"], User.objects.get(email="offline-farmer@example.invalid").pk)
+        self.assertEqual(client.get(created["Location"]).status_code, 200)
+        home_after_registration = client.get("/homepage")
+        self.assertEqual(home_after_registration.status_code, 200)
+        self.assertContains(home_after_registration, "Farmer Dashboard")
+
+        client.get("/logout")
+        login_form = client.get("/auth?mode=login&cover=done")
+        self.assertEqual(login_form.status_code, 200)
+        self.assertNotContains(login_form, "unpkg.com")
+        login_token = client.cookies["csrftoken"].value
+        logged_in = client.post("/auth?mode=login", {
+            "csrfmiddlewaretoken": login_token,
+            "email": "offline-farmer@example.invalid",
+            "password": "Offline-test-123!",
+        })
+        self.assertEqual(logged_in.status_code, 302)
+        self.assertEqual(logged_in["Location"], "/homepage")
+        self.assertIn("user_id", client.session)
+        home_after_login = client.get(logged_in["Location"])
+        self.assertEqual(home_after_login.status_code, 200)
+        self.assertContains(home_after_login, "Farmer Dashboard")
+
     def test_invalid_uploads_never_reach_predictor(self):
         self.client.post("/auth", {"email": self.farmer.email, "password": "Mobile-test-123!"})
         with patch("core.views.request_prediction_service") as predictor:

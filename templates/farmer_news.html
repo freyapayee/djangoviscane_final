@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ url_for('static', filename='farmer-manifest.webmanifest') }}">
     <title>VISCANE | News & Announcements</title>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    {% if not offline_mode %}<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>{% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=15">
@@ -63,31 +63,31 @@
                 </div>
                 <div>
                     <article class="sra-highlight">
-                        <a class="sra-highlight-image" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer" aria-label="Open SRA official news article">
+                        {% if offline_mode %}<div class="sra-highlight-image" aria-label="SRA official news article">{% else %}<a class="sra-highlight-image" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer" aria-label="Open SRA official news article">{% endif %}
                             <img
                                 src="{{ url_for('static', filename='images/sra-equipment-upgrades.jpg') }}"
                                 alt="SRA equipment turnover in Negros Occidental"
                                 loading="lazy"
                             >
-                        </a>
+                        {% if offline_mode %}</div>{% else %}</a>{% endif %}
                         <div class="sra-highlight-content">
                             <h4 class="sra-highlight-title">{{ farmer_text('SRA Official Update: Negros Occidental equipment upgrades') }}</h4>
                             <div class="sra-highlight-source">
                                 Sugar Regulatory Administration
                             </div>
                             <div class="sra-links">
-                                <a class="sra-link" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer">
+                                {% if offline_mode %}<span class="sra-link" aria-disabled="true">{% else %}<a class="sra-link" href="https://www.sra.gov.ph/adminActivities/negros-occidental-mill-districts-block-farms-receive-p101-million-in-equipment-upgrades/cu2DKZ8xSSFH7Rq" target="_blank" rel="noopener noreferrer">{% endif %}
                                     <ion-icon name="newspaper-outline"></ion-icon>
                                     <span>{{ farmer_text('Read the official news article') }}</span>
-                                </a>
-                                <a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_supply_demand/9e7zeeuxA9vK6zL" target="_blank" rel="noopener noreferrer">
+                                {% if offline_mode %}</span>{% else %}</a>{% endif %}
+                                {% if offline_mode %}<span class="sra-link" aria-disabled="true">{% else %}<a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_supply_demand/9e7zeeuxA9vK6zL" target="_blank" rel="noopener noreferrer">{% endif %}
                                     <ion-icon name="bar-chart-outline"></ion-icon>
                                     <span>{{ farmer_text('Sugar supply and demand file') }}</span>
-                                </a>
-                                <a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_statistics/rfVxohuYIc6DiBs" target="_blank" rel="noopener noreferrer">
+                                {% if offline_mode %}</span>{% else %}</a>{% endif %}
+                                {% if offline_mode %}<span class="sra-link" aria-disabled="true">{% else %}<a class="sra-link" href="https://www.sra.gov.ph/view_file/sugar_statistics/rfVxohuYIc6DiBs" target="_blank" rel="noopener noreferrer">{% endif %}
                                     <ion-icon name="stats-chart-outline"></ion-icon>
                                     <span>{{ farmer_text('Sugar statistics file') }}</span>
-                                </a>
+                                {% if offline_mode %}</span>{% else %}</a>{% endif %}
                             </div>
                         </div>
                     </article>
