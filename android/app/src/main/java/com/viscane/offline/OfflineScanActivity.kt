@@ -107,7 +107,7 @@ class OfflineScanActivity : ComponentActivity() {
         card.addView(status)
         history = TextView(this).apply { text = "Loading saved results…"; textSize = 16f; setTextColor(dark) }
         card.addView(history)
-        root.addView(ScrollView(this).apply { fillViewport = true; addView(card) }, LinearLayout.LayoutParams(-1, 0, 1f))
+        root.addView(ScrollView(this).apply { setFillViewport(true); addView(card) }, LinearLayout.LayoutParams(-1, 0, 1f))
         val navigation = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             background = rounded(Color.WHITE, 20)
