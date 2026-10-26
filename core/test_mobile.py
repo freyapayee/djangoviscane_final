@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 
-from .models import User, CvScanUpload
+from .models import User, CvScanUpload, AgronomicLog, OfflineScanReceipt
 
 
 class FarmerMobileTests(TestCase):
@@ -16,6 +16,57 @@ class FarmerMobileTests(TestCase):
     def setUpTestData(cls):
         cls.farmer = User.objects.create(fullname="Mobile Farmer", email="mobile@example.invalid",
             phone="09123456789", password=make_password("Mobile-test-123!"))
+
+    def test_offline_scan_sync_is_farmer_owned_and_idempotent(self):
+        import uuid
+        record_id = str(uuid.uuid4())
+        photo = BytesIO()
+        Image.new("RGB", (8, 8), "green").save(photo, format="JPEG")
+        payload = {
+            "record_id": record_id,
+            "farmer_id": str(self.farmer.pk),
+            "label": "524__Mature",
+            "confidence": "0.94",
+            "resnet18_sha256": "37be5dd4ccf618a94d86d0e3a26e040e0617c6827cdb00ec74548aa426f66823",
+            "yolov8_sha256": "cdf5b713b21bf9fa83924857b10ff3c923d91c1e5457a3f68221700b99b7ca48",
+        }
+        with tempfile.TemporaryDirectory() as folder, override_settings(PRIVATE_UPLOAD_ROOT=Path(folder), VISCANE_OFFLINE=False):
+            self.assertEqual(self.client.get("/api/mobile/session").status_code, 401)
+            self.assertEqual(self.client.post("/api/mobile/offline-scan", payload).status_code, 401)
+            session = self.client.session
+            session["user_id"] = self.farmer.pk
+            session.save()
+            self.assertEqual(self.client.get("/api/mobile/session").json()["farmer_id"], self.farmer.pk)
+            self.assertEqual(self.client.post("/api/mobile/offline-scan", {**payload, "label": "unknown"}).status_code, 400)
+            self.assertEqual(self.client.post("/api/mobile/offline-scan", {**payload, "resnet18_sha256": "wrong"}).status_code, 400)
+            strict = Client(enforce_csrf_checks=True)
+            strict_session = strict.session
+            strict_session["user_id"] = self.farmer.pk
+            strict_session.save()
+            self.assertEqual(strict.post("/api/mobile/offline-scan", payload).status_code, 403)
+            first = self.client.post("/api/mobile/offline-scan", {
+                **payload,
+                "file": SimpleUploadedFile("cane.jpg", photo.getvalue(), content_type="image/jpeg"),
+            })
+            self.assertEqual(first.status_code, 201, first.content)
+            self.assertEqual(first.json()["record_id"], record_id)
+            self.assertEqual(self.client.post("/api/mobile/offline-scan", payload).status_code, 200)
+            self.assertEqual(OfflineScanReceipt.objects.count(), 1)
+            self.assertEqual(AgronomicLog.objects.filter(user=self.farmer, offline_cv_upload__isnull=False).count(), 1)
+            self.assertEqual(CvScanUpload.objects.filter(user=self.farmer).count(), 1)
+            other = User.objects.create(fullname="Other Farmer", email="other@example.invalid", phone="09123456788", password="unused")
+            session = self.client.session
+            session["user_id"] = other.pk
+            session.save()
+            self.assertEqual(self.client.post("/api/mobile/offline-scan", payload).status_code, 403)
+
+    @override_settings(VISCANE_OFFLINE=True)
+    def test_embedded_django_cannot_acknowledge_production_sync(self):
+        session = self.client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        self.assertEqual(self.client.get("/api/mobile/session").status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-scan", {}).status_code, 403)
 
     @override_settings(FARMER_ONLY=True)
     def test_farmer_deployment_blocks_admin_without_client_marker(self):

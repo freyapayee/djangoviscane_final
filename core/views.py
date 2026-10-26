@@ -5,6 +5,7 @@ import json
 import math
 import os
 import secrets
+import uuid
 from datetime import datetime, timedelta
 from functools import wraps
 from io import BytesIO, StringIO
@@ -25,7 +26,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .language import translate_recommendations
-from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, Notification, Scan, SystemConfig, User
+from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, Notification, OfflineScanReceipt, Scan, SystemConfig, User
 from .services import (
     DEFAULT_RECOMMENDATIONS,
     DEFAULT_SCAN_PREDICT_TOP_K,
@@ -53,6 +54,7 @@ from .services import (
     predict_variety_metrics,
     request_prediction_service,
     save_prediction_context,
+    _persist_cv_upload,
     summarize_prediction_service_error,
     verify_and_upgrade_password,
 )
@@ -401,11 +403,11 @@ def farmer_agronomic_logs(request):
     elif selected_filter == "year":
         logs_query = logs_query.filter(created_at__date__gte=today.replace(month=1, day=1))
 
-    agronomic_logs = list(logs_query.select_related("scan__cv_upload").order_by("-created_at"))
+    agronomic_logs = list(logs_query.select_related("scan__cv_upload", "offline_cv_upload").order_by("-created_at"))
     history_rows = []
     for log in agronomic_logs:
         scan = log.scan if log.scan and log.scan.user_id == user.id else None
-        scan_upload = scan.cv_upload if scan else None
+        scan_upload = (scan.cv_upload if scan else None) or log.offline_cv_upload
         recommendation_items = log.recommendations_snapshot or []
         if not recommendation_items:
             recommendation_items = []
@@ -491,6 +493,97 @@ def cv_upload_image(request, upload_id):
     response["Cache-Control"] = "private, no-store"
     response["X-Content-Type-Options"] = "nosniff"
     return response
+
+
+OFFLINE_MODEL_HASHES = {
+    "resnet18": "37be5dd4ccf618a94d86d0e3a26e040e0617c6827cdb00ec74548aa426f66823",
+    "yolov8": "cdf5b713b21bf9fa83924857b10ff3c923d91c1e5457a3f68221700b99b7ca48",
+}
+OFFLINE_LABELS = {
+    f"{variety}__{maturity}": (display, maturity.upper())
+    for variety, display in (("524", "VMC 84-524"), ("847", "VMC 84-947"), ("Mauritio", "MAURITIO RC888"))
+    for maturity in ("Mature", "Not_Mature", "Over_Mature")
+}
+
+
+@require_GET
+def api_mobile_session(request):
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Local server has no production session."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    get_token(request)
+    response = JsonResponse({"farmer_id": user.pk, "name": user.fullname})
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@require_POST
+def api_mobile_offline_scan(request):
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Offline results must sync to the production server."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    if request.POST.get("farmer_id") != str(user.pk):
+        return JsonResponse({"error": "Offline record owner does not match the signed-in farmer."}, status=403)
+    try:
+        record_id = uuid.UUID(request.POST.get("record_id", ""))
+    except (ValueError, AttributeError):
+        return JsonResponse({"error": "Invalid record ID."}, status=400)
+    existing = OfflineScanReceipt.objects.select_related("log").filter(pk=record_id).first()
+    if existing:
+        if existing.user_id != user.pk:
+            return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+        return JsonResponse({"record_id": str(record_id), "log_id": existing.log_id, "synced": True})
+    label = request.POST.get("label", "")
+    if label not in OFFLINE_LABELS:
+        return JsonResponse({"error": "Unknown model label."}, status=400)
+    if any(request.POST.get(f"{name}_sha256") != digest for name, digest in OFFLINE_MODEL_HASHES.items()):
+        return JsonResponse({"error": "Unsupported on-device model version."}, status=400)
+    try:
+        confidence = float(request.POST.get("confidence", ""))
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid confidence."}, status=400)
+    if not math.isfinite(confidence) or not 0 <= confidence <= 1:
+        return JsonResponse({"error": "Invalid confidence."}, status=400)
+    uploaded_file = request.FILES.get("file")
+    if not uploaded_file or uploaded_file.size > settings.SCAN_MAX_IMAGE_BYTES:
+        return JsonResponse({"error": "A photo under the upload limit is required."}, status=400)
+    file_bytes = uploaded_file.read()
+    from PIL import Image, UnidentifiedImageError
+    try:
+        with Image.open(BytesIO(file_bytes)) as image:
+            if image.format not in {"JPEG", "PNG", "WEBP"} or image.width * image.height > 40_000_000:
+                return JsonResponse({"error": "Use a JPEG, PNG, or WebP photo under 40 megapixels."}, status=400)
+            image.verify()
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        return JsonResponse({"error": "Invalid photo."}, status=400)
+    variety, maturity = OFFLINE_LABELS[label]
+    with transaction.atomic():
+        # Serialized by the receipt's primary key; a retry returns the original log.
+        existing = OfflineScanReceipt.objects.select_related("log").filter(pk=record_id).first()
+        if existing:
+            if existing.user_id != user.pk:
+                return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+            return JsonResponse({"record_id": str(record_id), "log_id": existing.log_id, "synced": True})
+        upload = _persist_cv_upload(user.pk, uploaded_file.name, file_bytes, {
+            "normalized_variety": variety,
+            "maturity_status": maturity,
+            "model_name": "on_device_ensemble_unverified",
+            "confidence": confidence,
+        })
+        if not upload:
+            return JsonResponse({"error": "Photo could not be stored."}, status=500)
+        log = AgronomicLog.objects.create(
+            user=user,
+            offline_cv_upload=upload,
+            variety=variety,
+            recommendations_summary="On-device photo classification; agronomic estimate not calculated.",
+        )
+        OfflineScanReceipt.objects.create(id=record_id, user=user, log=log)
+    return JsonResponse({"record_id": str(record_id), "log_id": log.pk, "synced": True}, status=201)
 
 
 @farmer_login_required

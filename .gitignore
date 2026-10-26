@@ -18,6 +18,7 @@ static/uploads/
 
 # Android local build and IDE state
 **/.gradle-user/
+**/.gradle/
 **/.idea/workspace.xml
 **/build/
 artifacts/android/*.apk

@@ -9,6 +9,7 @@ FARMER_PATHS = {
     "/", "/auth", "/auth/register-success", "/logout", "/homepage",
     "/farmer/recommendations", "/farmer/agronomic-logs", "/farmer/settings",
     "/farmer/news", "/about-viscane", "/farmer/notifications", "/farmer/feedback", "/scan/new", "/calculate", "/api/scan/predict",
+    "/api/mobile/session", "/api/mobile/offline-scan",
     "/i18n/setlang", "/favicon.ico",
 }
 
