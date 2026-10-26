@@ -14,10 +14,11 @@ GitHub's `android-offline/` is the older Java manual-assessment starter shown in
 
 1. Faye confirms farmer, admin, and superadmin sign-in; online scan; farmer history; and admin views in the **phone's Chrome browser**. Record the exact working HTTPS origin and route; share the URL, never passwords or server secrets. An HTTP 500 in the APK while Chrome works requires checking the APK URL and a fresh request log before changing Django.
 2. The Android developer opens GitHub's **`android/`** project. Confirm its current application ID and release signing key match the already installed APK. Preserve both for an in-place update. Do not send signing secrets through GitHub.
-3. Create a branch in this repository:
+3. Fetch and switch to the already published integration branch:
 
    ```powershell
-   git checkout -b feature/offline-farmer-classifier
+   git fetch origin
+   git switch feature/offline-farmer-classifier
    ```
 
 4. Faye takes a production backup through the normal server process before deploying the **additive** `core/migrations/0010_offline_scan_receipt.py` migration and new API routes. Do not run `flush`, delete tables, replace the prediction API, or point the APK at a different user database. Faye alone performs server deployment.
@@ -105,7 +106,16 @@ The old Java fallback stored local assessments in `assessments.db` without a ver
 
 ### Server owner deployment sequence (Faye only)
 
-After a production backup and staging verification, merge the reviewed integration branch. On the server, Faye runs:
+On **staging**, Faye first runs the migration check and the two offline sync tests:
+
+```bash
+python manage.py makemigrations core --check --dry-run
+python manage.py test core.test_mobile.FarmerMobileTests.test_offline_scan_sync_is_farmer_owned_and_idempotent core.test_mobile.FarmerMobileTests.test_embedded_django_cannot_acknowledge_production_sync
+```
+
+Run the commands above in the **staging checkout**, not against a production database. Proceed only when both pass.
+
+After those tests, device verification, review, and a production backup, merge the integration branch. Faye then runs these commands on production:
 
 ```bash
 cd /opt/bitnami/projects/djangoviscane_final
