@@ -6,8 +6,7 @@
         <a href="/homepage#recent-scans"><ion-icon name="time-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Recent Scans') }}</span></a>
         <a href="/homepage#scan-gallery"><ion-icon name="images-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Scan Gallery') }}</span></a>
         <a href="/homepage#calc-form"><ion-icon name="calculator-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Calculate') }}</span></a>
-        <a href="/farmer/recommendations"><ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Recommendations') }}</span></a>
-        <a href="/farmer/agronomic-logs"><ion-icon name="document-text-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Input Logs') }}</span></a>
+        <a href="/farmer/notification-center"><ion-icon name="notifications-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('See Notifications') }}</span></a>
         <a href="{{ '/homepage?view=news' if request.farmer_only else '/farmer/news' }}"><ion-icon name="newspaper-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('News & Announcements') }}</span></a>
         <a href="/farmer/settings"><ion-icon name="person-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('Settings') }}</span></a>
         <a href="{{ '/homepage?view=about' if request.farmer_only else '/about-viscane' }}"><ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon><span>{{ farmer_text('About VISCANE') }}</span></a>

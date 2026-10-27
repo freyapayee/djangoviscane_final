@@ -11,7 +11,7 @@
         camera: '<path d="M4 7h4l2-3h4l2 3h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/>',
         image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
         menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
-        weather: '<circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5 13 13M16 19a4 4 0 0 0 0-8 5 5 0 0 0-9.7 1.5A3.5 3.5 0 0 0 7 19z"/>',
+        weather: '<path d="M7.5 15a4.5 4.5 0 1 1 4.3-5.8 5.2 5.2 0 0 1 2.1-.4"/><path d="M7.5 3.5v1.2M2.8 5.5l.9.9M1.5 10.2h1.3M14.7 5.5l-.9.9M13.7 10.2h-1.2"/><path d="M8 18.5h9a3.5 3.5 0 0 0 .2-7 4.7 4.7 0 0 0-9.1 1.2A3 3 0 0 0 8 18.5Z"/>',
         notifications: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
         newspaper: '<path d="M4 4h15v17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 1-2z"/><path d="M7 8h9M7 12h9M7 16h5M19 8h2v10a3 3 0 0 1-3 3"/>',
         arrow: '<path d="M4 12h15M13 5l7 7-7 7"/>',

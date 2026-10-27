@@ -394,3 +394,34 @@ body.ds-app.vis-farmer-page .farmer-bottom-nav {
 body.ds-app.vis-farmer-page .list-row {
     background-image: linear-gradient(135deg, #f0f3f0, #fafbfa);
 }
+
+/* Keep the farmer profile card visibly distinct with a soft neutral highlight. */
+body.ds-app.farmer_settings .profile-hero-card {
+    background: linear-gradient(145deg, #f1f3f2, #e9edeb);
+    border-color: #cbd3ce;
+    box-shadow: 0 8px 22px rgba(35, 49, 40, .10);
+}
+body.ds-app.farmer_settings .settings-profile {
+    background: #f4f6f5;
+    border-color: #d2d9d5;
+}
+body.ds-app.farmer_settings .profile-detail-input {
+    background-color: #f7f8f7;
+}
+body.ds-app.vis-farmer-page .farmer-notification-section-title {
+    margin: 22px 0 12px;
+    color: #245d39;
+    font-size: 17px;
+}
+body.ds-app.vis-farmer-page .farmer-notification-section-title:first-of-type { margin-top: 8px; }
+body.ds-app.vis-farmer-page .farmer-notification-recommendations { margin: 8px 0; padding-left: 20px; }
+body.ds-app.vis-farmer-page .farmer-notification-unread {
+    flex: none;
+    align-self: flex-start;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #e3f2e6;
+    color: #176a36;
+    font-size: 12px;
+    font-weight: 750;
+}

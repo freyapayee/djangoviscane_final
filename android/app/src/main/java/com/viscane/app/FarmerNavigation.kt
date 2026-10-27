@@ -7,7 +7,7 @@ class FarmerNavigation(baseUrl: String) {
     private val base = URI(baseUrl)
     private val paths = setOf("/", "/auth", "/auth/register-success", "/logout", "/homepage", "/service-worker.js",
         "/farmer/recommendations", "/farmer/agronomic-logs", "/farmer/settings",
-        "/farmer/news", "/farmer/notifications", "/farmer/feedback", "/about-viscane", "/favicon.ico",
+        "/farmer/news", "/farmer/notifications", "/farmer/notification-center", "/farmer/feedback", "/about-viscane", "/favicon.ico",
         "/scan/new", "/calculate", "/api/scan/predict", "/api/mobile/session", "/api/mobile/offline-scan",
         "/api/mobile/offline-assessment", "/api/mobile/offline-content", "/api/mobile/offline-feedback",
         "/api/mobile/offline-profile", "/i18n/setlang/")
