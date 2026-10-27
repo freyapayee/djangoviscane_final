@@ -365,6 +365,22 @@ def farmer_notifications(request):
 
 
 @farmer_login_required
+@require_GET
+def farmer_notification_center(request):
+    user = current_user(request)
+    announcements = list(Notification.objects.order_by("-id"))
+    suggestions_query = AgronomicLog.objects.filter(user=user).exclude(recommendations_snapshot=[])
+    suggestions = list(suggestions_query.order_by("-id")[:50])
+    return render_template(request, "farmer_notification_center.html", {
+        "user": user,
+        "announcements": announcements,
+        "suggestions": suggestions,
+        "unread_announcements": sum(item.id > user.seen_announcement_id for item in announcements),
+        "unread_suggestions": suggestions_query.filter(id__gt=user.seen_suggestion_id).count(),
+    })
+
+
+@farmer_login_required
 def farmer_recommendations(request):
     user = current_user(request)
     recommendations = translate_recommendations(request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS)

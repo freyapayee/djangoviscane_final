@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="{{ 'hil' if is_hiligaynon() else 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b6b38">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="{{ url_for('static', filename='farmer-manifest.webmanifest') }}">
+    <title>VISCANE | Notifications</title>
+    {% if not offline_mode %}<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>{% endif %}
+    <script src="{{ url_for('static', filename='farmer-icons.js') }}?v=3" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=16">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=13">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=8">
+</head>
+<body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_notification_center">
+    <div class="dashboard-bg"></div>
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon"><img src="{{ url_for('static', filename='logo.jpg') }}" alt="VISCANE Logo" style="width:100%;height:100%;object-fit:cover;border-radius:12px"></div>
+                <div class="brand-copy">
+                    <p class="brand-system">VISCANE</p>
+                    <p class="brand-title">{{ farmer_text('Notifications') }}</p>
+                    <p class="brand-subtitle">{{ farmer_text('Updates and recommendations for') }} {{ user.fullname }}</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="farmer-info-chip" aria-live="polite"><ion-icon name="partly-sunny-outline"></ion-icon><span data-farmer-info-text>Loading date...</span></div>
+                <div class="farmer-header-navigation">
+                    <a class="btn light" href="/homepage"><ion-icon name="home-outline"></ion-icon>{{ farmer_text('Home') }}</a>
+                    {% include 'components/farmer_menu_button.html' %}
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="dashboard-container farmer-mobile-shell farmer-notification-page">
+        <section class="panel">
+            <div class="panel-header">
+                <div><h2 class="panel-title">{{ farmer_text('Notifications') }}</h2><p class="panel-subtitle">{{ farmer_text('Announcements and agronomic recommendations') }}</p></div>
+                <span class="badge"><ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>{{ unread_announcements + unread_suggestions }} {{ farmer_text('unread') }}</span>
+            </div>
+            <h3 class="farmer-notification-section-title">{{ farmer_text('Announcements') }}</h3>
+            {% if announcements %}
+                {% for announcement in announcements %}
+                <article class="list-row">
+                    <div class="list-badge" aria-hidden="true"><ion-icon name="notifications-outline"></ion-icon></div>
+                    <div class="farmer-announcement-copy">
+                        <h4>{{ announcement.title }}</h4>
+                        <p class="list-meta">{{ announcement.message }}</p>
+                        <time datetime="{{ announcement.created_at.isoformat() if announcement.created_at else '' }}">{{ announcement.created_at.strftime('%b %d, %Y · %I:%M %p') if announcement.created_at else farmer_text('Date unavailable') }}</time>
+                    </div>
+                    {% if announcement.id > user.seen_announcement_id %}<span class="farmer-notification-unread">{{ farmer_text('New') }}</span>{% endif %}
+                </article>
+                {% endfor %}
+            {% else %}<p class="list-meta">{{ farmer_text('No announcements yet.') }}</p>{% endif %}
+
+            <h3 class="farmer-notification-section-title">{{ farmer_text('Agronomic Recommendations') }}</h3>
+            {% if suggestions %}
+                {% for entry in suggestions %}
+                <article class="list-row">
+                    <div class="list-badge" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></div>
+                    <div class="farmer-announcement-copy">
+                        <h4>{{ farmer_text('Assessment recommendation') }}{% if entry.variety %} · {{ entry.variety }}{% endif %}</h4>
+                        <ul class="farmer-notification-recommendations">
+                            {% for recommendation in entry.recommendations_snapshot[:3] %}
+                            <li>{{ recommendation.title if recommendation.title is defined else recommendation }}</li>
+                            {% endfor %}
+                        </ul>
+                        <time datetime="{{ entry.created_at.isoformat() if entry.created_at else '' }}">{{ entry.created_at.strftime('%b %d, %Y · %I:%M %p') if entry.created_at else farmer_text('Date unavailable') }}</time>
+                    </div>
+                    {% if entry.id > user.seen_suggestion_id %}<span class="farmer-notification-unread">{{ farmer_text('New') }}</span>{% endif %}
+                </article>
+                {% endfor %}
+            {% else %}<p class="list-meta">{{ farmer_text('Your recommendations will appear here after an assessment.') }}</p>{% endif %}
+        </section>
+    </main>
+    {% include 'components/farmer_menu.html' %}
+    <script>window.farmerMenuLabels = {{ farmer_catalog() | tojson }};</script>
+    <script src="/static/farmer-menu.js?v=5" defer></script>
+    <script src="/static/farmer_ui.js"></script>
+    {% include 'hiligaynon_runtime.html' %}
+</body>
+</html>
