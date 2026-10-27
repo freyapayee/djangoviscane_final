@@ -162,11 +162,15 @@ class OfflineScanActivity : ComponentActivity() {
         card.addView(recommendationsView)
         history = TextView(this).apply { text = "Loading saved results…"; textSize = 16f; setTextColor(dark) }
         card.addView(history)
-        contentScroll = ScrollView(this).apply { fillViewport = true; addView(card) }
-        root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
-        val navigation = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            background = rounded(Color.WHITE, 20)
+  contentScroll = ScrollView(this).apply {
+    setFillViewport(true)
+    isSmoothScrollingEnabled = true
+    isNestedScrollingEnabled = true
+    overScrollMode = android.view.View.OVER_SCROLL_IF_CONTENT_SCROLLS
+    descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
+    addView(card)
+}
+root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
         }
         fun nav(label: String, action: () -> Unit) {
             navigation.addView(TextView(this).apply {
