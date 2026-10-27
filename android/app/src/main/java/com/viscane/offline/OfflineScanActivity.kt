@@ -484,25 +484,23 @@ class OfflineScanActivity : ComponentActivity() {
     }
 
     private fun showFarmerMenu() {
-        val items = arrayOf("Home", "Scan and assessment", "Recommendations", "Input Logs",
-            "Profile", "News and announcements", "See Notifications", "Feedback", "About VISCANE", "Tutorial",
+        val items = arrayOf("Home", "Scan and assessment", "See Notifications",
+            "Profile", "News and announcements", "Feedback", "About VISCANE", "Tutorial",
             "Sign out on this phone")
         AlertDialog.Builder(this).setTitle("Offline farmer menu").setItems(items) { _, selected ->
             when (selected) {
                 0, 1 -> showHomePage()
-                2 -> showRecommendations()
-                3 -> showSavedHistory()
-                4 -> showProfile()
-                5 -> showAnnouncements("News and announcements")
-                6 -> showNotificationsPage()
-                7 -> showFeedback()
-                8 -> AlertDialog.Builder(this).setTitle("About VISCANE")
+                2 -> showNotificationsPage()
+                3 -> showProfile()
+                4 -> showAnnouncements("News and announcements")
+                5 -> showFeedback()
+                6 -> AlertDialog.Builder(this).setTitle("About VISCANE")
                     .setMessage("VISCANE supports sugarcane farmers with on-device variety and maturity recognition, agronomic estimates, and guidance. Saved scans and assessments synchronize with the farmer portal when connected.")
                     .setPositiveButton("OK", null).show()
-                9 -> AlertDialog.Builder(this).setTitle("Offline tutorial")
+                7 -> AlertDialog.Builder(this).setTitle("Offline tutorial")
                     .setMessage("1. Sign in online once.\n2. Open Offline Farmer Workspace.\n3. Capture or choose a sugarcane photo.\n4. Check the variety and maturity.\n5. Enter area and agronomic inputs, then calculate.\n6. Read recommendations and Input Logs.\n7. Reconnect using the same account to sync server copies.")
                     .setPositiveButton("OK", null).show()
-                10 -> AlertDialog.Builder(this).setTitle("Sign out on this phone")
+                8 -> AlertDialog.Builder(this).setTitle("Sign out on this phone")
                     .setMessage("Offline work stays encrypted and linked to your online farmer account. Signing in online again with the same account will unlock it. Continue?")
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("Sign out") { _, _ ->

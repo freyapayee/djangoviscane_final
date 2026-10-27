@@ -233,6 +233,8 @@ def homepage(request):
         return about_viscane(request)
     if request.GET.get("view") == "notifications":
         return farmer_notifications(request)
+    if request.GET.get("view") == "notification-center":
+        return farmer_notification_center(request)
     if request.GET.get("view") == "profile-photo":
         return farmer_profile_photo(request, user.id)
     show_farmer_tutorial = request.session.pop("show_farmer_tutorial", False)
