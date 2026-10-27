@@ -125,6 +125,19 @@ class OfflineFarmerCache(private val context: Context) {
             JSONObject().put("farmer_id", farmerId).put("announcement_id", announcementId))
     }
 
+    fun clearAnnouncements(farmerId: Long, announcementId: Int) {
+        require(announcementId >= 0)
+        write(File(directory(farmerId), "announcement-clear.bin"),
+            JSONObject().put("farmer_id", farmerId).put("announcement_id", announcementId))
+        markAnnouncementsRead(farmerId, announcementId)
+    }
+
+    fun clearedAnnouncementId(farmerId: Long): Int {
+        val file = File(directory(farmerId), "announcement-clear.bin")
+        if (!file.exists()) return 0
+        return read(file).also { require(it.getLong("farmer_id") == farmerId) }.optInt("announcement_id")
+    }
+
     fun pendingReadReceipt(farmerId: Long): JSONObject? {
         val file = File(directory(farmerId), "notification-read.pending")
         if (!file.exists()) return null
