@@ -30,7 +30,7 @@ body.ds-app.vis-auth-page .vis-auth-intro {
     padding: 44px 46px 60px; margin-right: -16px;
     border-radius: 48px 0 110px 120px;
     background: linear-gradient(140deg, rgba(255,255,248,.95), rgba(251,249,230,.91));
-    border: 1px solid rgba(255,255,255,.7);
+    border: 2px solid rgba(255,255,255,.78);
     box-shadow: 0 16px 48px rgba(21,49,24,.1);
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     opacity: 1; transform: translateX(0); visibility: visible;
@@ -64,10 +64,22 @@ body.ds-app.vis-auth-page .vis-auth-intro > p {
 }
 body.ds-app.vis-auth-page .vis-auth-benefits { gap: 12px; }
 body.ds-app.vis-auth-page .vis-auth-benefit { gap: 16px; font-size: 18px; }
-body.ds-app.vis-auth-page .vis-auth-benefit ion-icon {
-    flex: 0 0 auto; box-sizing: content-box; width: 24px; height: 24px;
-    padding: 12px; border-radius: 50%; background: #e0ecd6;
+body.ds-app.vis-auth-page .vis-auth-benefit :is(ion-icon, .farmer-local-icon) {
+    display: inline-block; flex: 0 0 48px; box-sizing: border-box;
+    width: 48px !important; min-width: 48px; max-width: 48px;
+    height: 48px !important; padding: 12px; border-radius: 50%;
+    color: var(--ds-green); background: #e0ecd6;
     box-shadow: 0 3px 8px rgba(45,84,42,.05);
+}
+body.ds-app.vis-auth-page .input-wrapper > .farmer-local-icon {
+    position: absolute; left: 16px; top: 16px;
+    width: 20px !important; min-width: 20px; max-width: 20px;
+    height: 20px !important; padding: 0; color: var(--ds-green);
+    opacity: 1; pointer-events: none;
+}
+body.ds-app.vis-auth-page .vis-password-toggle > .farmer-local-icon {
+    position: static; width: 18px !important; min-width: 18px; max-width: 18px;
+    height: 18px !important; padding: 0; flex: 0 0 18px;
 }
 body.ds-app.vis-auth-page .vis-auth-panel {
     position: relative; z-index: 1; min-width: 0;
@@ -86,7 +98,7 @@ body.ds-app.vis-auth-page .vis-auth-shell.is-register .vis-auth-intro {
 body.ds-app.vis-auth-page .vis-auth-card {
     padding: 28px 34px 30px; border-radius: 28px;
     background: linear-gradient(145deg, rgba(255,255,255,.97), rgba(253,254,250,.95) 65%, rgba(244,247,226,.92));
-    border: 1px solid rgba(255,255,255,.8);
+    border: 2px solid rgba(255,255,255,.88);
     box-shadow: 0 20px 50px rgba(21,49,24,.19), inset 0 1px 0 white;
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
