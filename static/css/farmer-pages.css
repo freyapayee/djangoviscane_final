@@ -378,3 +378,19 @@ body.ds-app.vis-farmer-page .footer-link { margin: 20px 0; color: #75857c; font-
 .farmer-feedback-entry p { margin: 8px 0; }
 .farmer-admin-reply { margin: 10px 0 0; padding: 12px; border-left: 3px solid #71a77a; border-radius: 8px; background: #edf7ef; }
 .farmer-admin-reply p { margin-bottom: 0; }
+
+
+/* Farmer cards: add a soft neutral surface and native-style elevation. */
+body.ds-app.vis-farmer-page .panel,
+body.ds-app.vis-farmer-page .list-row,
+body.ds-app.vis-farmer-page .profile-detail-row,
+body.ds-app.vis-farmer-page .settings-action-row,
+body.ds-app.vis-farmer-page .settings-action-card,
+body.ds-app.vis-farmer-page .farmer-bottom-nav {
+    background-color: #f3f5f3;
+    border-color: #aeb9b1;
+    box-shadow: 0 4px 14px rgba(35, 49, 40, .12);
+}
+body.ds-app.vis-farmer-page .list-row {
+    background-image: linear-gradient(135deg, #f0f3f0, #fafbfa);
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'viscane-farmer-shell-v4';
+const CACHE_NAME = 'viscane-farmer-shell-v5';
 const APP_SHELL = [
   '/static/style.css',
   '/static/css/design-system.css',
