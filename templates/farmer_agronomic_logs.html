@@ -110,13 +110,17 @@
                                         <dl class="history-facts">
                                             <div><dt>{{ farmer_text('Plot') }}</dt><dd>{{ scan.plot_name }}</dd></div>
                                             <div><dt>{{ farmer_text('Classification') }}</dt><dd>{{ upload.variety if upload and upload.variety else (log.variety or '—') }}</dd></div>
-                                            <div><dt>{{ farmer_text('Maturity') }}</dt><dd>{{ farmer_text(upload.maturity_status.replace('_', ' ').title()) if upload and upload.maturity_status else '—' }}</dd></div>
+                                            <div><dt>{{ farmer_text('Maturity') }}</dt><dd>{{ farmer_text((upload.maturity_status or log.offline_maturity_status).replace('_', ' ').title()) if (upload and upload.maturity_status) or log.offline_maturity_status else '—' }}</dd></div>
                                             <div><dt>{{ farmer_text('Maturity estimate') }}</dt><dd>{{ scan.maturity_pct }}%</dd></div>
                                             <div><dt>{{ farmer_text('Confidence') }}</dt><dd>{{ '%.1f%%'|format(upload.confidence * 100) if upload and upload.confidence is not none else '—' }}</dd></div>
                                             <div><dt>{{ farmer_text('Scanned') }}</dt><dd>{{ row.scanned_at.strftime('%b %d, %Y · %I:%M %p') if row.scanned_at else '—' }}</dd></div>
                                         </dl>
                                     {% else %}
-                                        <p class="history-unavailable">{{ farmer_text('Scan details were not recorded for this earlier calculation.') }}</p>
+                                        {% if log.offline_maturity_status %}
+                                            <p class="history-unavailable">{{ farmer_text('Manual maturity') }}: {{ farmer_text(log.offline_maturity_status.replace('_', ' ').title()) }}</p>
+                                        {% else %}
+                                            <p class="history-unavailable">{{ farmer_text('Scan details were not recorded for this earlier calculation.') }}</p>
+                                        {% endif %}
                                     {% endif %}
                                 </section>
 

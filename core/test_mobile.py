@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 
-from .models import User, CvScanUpload, AgronomicLog, OfflineScanReceipt
+from .models import User, CvScanUpload, AgronomicLog, Feedback, Notification, OfflineAssessmentReceipt, OfflineProfileReceipt, OfflineScanReceipt
 
 
 class FarmerMobileTests(TestCase):
@@ -60,6 +60,90 @@ class FarmerMobileTests(TestCase):
             session.save()
             self.assertEqual(self.client.post("/api/mobile/offline-scan", payload).status_code, 403)
 
+    def test_offline_assessment_sync_recomputes_and_is_farmer_owned(self):
+        import uuid
+        record_id = str(uuid.uuid4())
+        payload = {
+            "record_id": record_id, "farmer_id": str(self.farmer.pk),
+            "variety": "0", "hectares": "1.5", "plowing": "1", "weeding": "1",
+            "fertilizer": "1", "stage": "1", "infected": "false", "maturity": "2",
+        }
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", payload).status_code, 401)
+        session = self.client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        strict = Client(enforce_csrf_checks=True)
+        strict_session = strict.session
+        strict_session["user_id"] = self.farmer.pk
+        strict_session.save()
+        self.assertEqual(strict.post("/api/mobile/offline-assessment", payload).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", {**payload, "farmer_id": "999"}).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", {**payload, "plowing": "4"}).status_code, 400)
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", {**payload, "scan_id": str(uuid.uuid4())}).status_code, 409)
+        first = self.client.post("/api/mobile/offline-assessment", payload)
+        self.assertEqual(first.status_code, 201, first.content)
+        self.assertEqual(first.json()["record_id"], record_id)
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", payload).status_code, 200)
+        self.assertEqual(OfflineAssessmentReceipt.objects.count(), 1)
+        log = OfflineAssessmentReceipt.objects.get(pk=record_id).log
+        self.assertEqual(log.user_id, self.farmer.pk)
+        self.assertAlmostEqual(log.predicted_lkg_tc, 1.836)
+        self.assertAlmostEqual(log.predicted_tc_ha, 322.65)
+        self.assertTrue(log.recommendations_snapshot)
+        self.assertEqual(AgronomicLog.objects.filter(user=self.farmer).count(), 1)
+        other = User.objects.create(fullname="Other Farmer", email="second@example.invalid", phone="09123456788", password="unused")
+        session = self.client.session
+        session["user_id"] = other.pk
+        session.save()
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", payload).status_code, 403)
+
+    def test_offline_content_feedback_and_profile_are_farmer_owned(self):
+        import uuid
+        Notification.objects.create(title="Harvest bulletin", message="Saved when connected")
+        AgronomicLog.objects.create(user=self.farmer, variety="VMC 84-524", predicted_lkg=123.0)
+        self.assertEqual(self.client.get("/api/mobile/offline-content").status_code, 401)
+        session = self.client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        snapshot = self.client.get("/api/mobile/offline-content")
+        self.assertEqual(snapshot.status_code, 200)
+        self.assertEqual(snapshot.json()["farmer_id"], self.farmer.pk)
+        self.assertEqual(snapshot.json()["announcements"][0]["title"], "Harvest bulletin")
+        self.assertEqual(snapshot.json()["history"][0]["predicted_lkg"], 123.0)
+        feedback_id = str(uuid.uuid4())
+        feedback = {"record_id": feedback_id, "farmer_id": str(self.farmer.pk), "message": "Field feedback"}
+        strict = Client(enforce_csrf_checks=True)
+        strict_session = strict.session
+        strict_session["user_id"] = self.farmer.pk
+        strict_session.save()
+        self.assertEqual(strict.post("/api/mobile/offline-feedback", feedback).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-feedback", feedback).status_code, 201)
+        self.assertEqual(self.client.post("/api/mobile/offline-feedback", feedback).status_code, 200)
+        self.assertEqual(Feedback.objects.filter(offline_id=feedback_id, user_id=self.farmer.pk).count(), 1)
+        self.assertEqual(self.client.get("/api/mobile/offline-content").json()["feedback"][0]["offline_id"], feedback_id)
+        profile_id = str(uuid.uuid4())
+        profile = {"record_id": profile_id, "farmer_id": str(self.farmer.pk),
+                   "original_email": self.farmer.email,
+                   "original_version": snapshot.json()["profile"]["version"],
+                   "email": "updated@example.invalid",
+                   "phone": "09123456780", "province": "Negros Occidental",
+                   "municipality": "Isabela", "barangay": "Barangay 1"}
+        self.assertEqual(strict.post("/api/mobile/offline-profile", profile).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-profile", profile).status_code, 201)
+        self.assertEqual(self.client.post("/api/mobile/offline-profile", profile).status_code, 200)
+        self.assertEqual(OfflineProfileReceipt.objects.filter(pk=profile_id).count(), 1)
+        self.farmer.refresh_from_db()
+        self.assertEqual(self.farmer.email, "updated@example.invalid")
+        self.assertEqual(self.client.post("/api/mobile/offline-profile",
+            {**profile, "record_id": str(uuid.uuid4())}).status_code, 409)
+        other = User.objects.create(fullname="Other Farmer", email="other-farmer@example.invalid",
+            phone="09123456781", password="unused")
+        session = self.client.session
+        session["user_id"] = other.pk
+        session.save()
+        self.assertEqual(self.client.post("/api/mobile/offline-feedback", feedback).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-profile", profile).status_code, 403)
+
     @override_settings(VISCANE_OFFLINE=True)
     def test_embedded_django_cannot_acknowledge_production_sync(self):
         session = self.client.session
@@ -67,6 +151,10 @@ class FarmerMobileTests(TestCase):
         session.save()
         self.assertEqual(self.client.get("/api/mobile/session").status_code, 403)
         self.assertEqual(self.client.post("/api/mobile/offline-scan", {}).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", {}).status_code, 403)
+        self.assertEqual(self.client.get("/api/mobile/offline-content").status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-feedback", {}).status_code, 403)
+        self.assertEqual(self.client.post("/api/mobile/offline-profile", {}).status_code, 403)
 
     @override_settings(FARMER_ONLY=True)
     def test_farmer_deployment_blocks_admin_without_client_marker(self):

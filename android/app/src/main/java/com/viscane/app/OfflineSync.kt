@@ -3,11 +3,14 @@ package com.viscane.app
 import android.content.Context
 import android.webkit.CookieManager
 import com.viscane.offline.OfflineScanStore
+import com.viscane.offline.OfflineAssessmentStore
+import com.viscane.offline.OfflineFarmerCache
 import com.viscane.offline.PendingScan
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.util.UUID
 
 /** Uses only the existing production WebView farmer session; failures retain local records. */
@@ -39,16 +42,55 @@ object OfflineSync {
         if (!baseUrl.startsWith("https://") || farmerId <= 0) return 0
         val queue = OfflineScanStore(context)
         var count = 0
+        var scansReady = true
         while (true) {
             val batch = queue.pending(farmerId)
             if (batch.isEmpty()) break
             for (scan in batch) {
-                if (!send(baseUrl, scan)) return count
+                if (!send(baseUrl, scan)) { scansReady = false; break }
                 queue.markSynced(scan)
                 count++
             }
+            if (!scansReady) break
+        }
+        if (scansReady) {
+            val assessments = OfflineAssessmentStore(context)
+            for (record in assessments.records(farmerId, pendingOnly = true)) {
+                if (!sendAssessment(baseUrl, farmerId, record)) break
+                assessments.markSynced(farmerId, record.getString("id"))
+                count++
+            }
+        }
+        val cache = OfflineFarmerCache(context)
+        cache.profileDraft(farmerId)?.let { draft ->
+            val profileResult = sendProfile(baseUrl, farmerId, draft)
+            if (profileResult.first) {
+                cache.markProfileSynced(farmerId, draft.getString("id"))
+                count++
+            } else profileResult.second?.let { cache.setProfileSyncError(farmerId, draft.getString("id"), it) }
+        }
+        for (record in cache.feedback(farmerId, pendingOnly = true)) {
+            if (!sendFeedback(baseUrl, farmerId, record)) break
+            cache.markFeedbackSynced(farmerId, record.getString("id"))
+            count++
+        }
+        cache.pendingReadReceipt(farmerId)?.let { receipt ->
+            val id = receipt.getInt("announcement_id")
+            if (sendReadReceipt(baseUrl, id)) cache.markReadSynced(farmerId, id)
         }
         return count
+    }
+
+    fun refreshContent(context: Context, baseUrl: String, farmerId: Long): Boolean {
+        if (!baseUrl.startsWith("https://") || farmerId <= 0) return false
+        val connection = connection(baseUrl, "api/mobile/offline-content", "GET")
+        return try {
+            if (connection.responseCode != 200) false else {
+                val snapshot = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                if (snapshot.getLong("farmer_id") != farmerId) false
+                else { OfflineFarmerCache(context).saveSnapshot(farmerId, snapshot); true }
+            }
+        } finally { connection.disconnect() }
     }
 
     private fun connection(baseUrl: String, path: String, method: String): HttpURLConnection {
@@ -100,4 +142,107 @@ object OfflineSync {
             connection.disconnect()
         }
     }
+
+    private fun sendAssessment(baseUrl: String, farmerId: Long, record: JSONObject): Boolean {
+        val cookies = CookieManager.getInstance().getCookie(baseUrl).orEmpty()
+        val csrf = cookies.split(';').map { it.trim() }
+            .firstOrNull { it.startsWith("csrftoken=") }?.substringAfter('=') ?: return false
+        val fields = mapOf(
+            "record_id" to record.getString("id"), "farmer_id" to farmerId.toString(),
+            "variety" to record.getInt("variety").toString(),
+            "hectares" to record.getDouble("hectares").toString(),
+            "plowing" to record.getInt("plowing").toString(),
+            "weeding" to record.getInt("weeding").toString(),
+            "fertilizer" to record.getInt("fertilizer").toString(),
+            "stage" to record.getInt("stage").toString(),
+            "infected" to record.getBoolean("infected").toString(),
+            "maturity" to record.getInt("maturity").toString(),
+            "scan_id" to record.optString("scan_id"),
+        )
+        val body = formBody(fields)
+        val connection = connection(baseUrl, "api/mobile/offline-assessment", "POST")
+        return try {
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            connection.setRequestProperty("X-CSRFToken", csrf)
+            connection.setRequestProperty("Referer", baseUrl)
+            connection.outputStream.use { it.write(body) }
+            if (connection.responseCode !in listOf(200, 201)) false
+            else {
+                val response = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                response.optBoolean("synced") && response.optString("record_id") == record.getString("id") && response.optLong("log_id") > 0
+            }
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun sendFeedback(baseUrl: String, farmerId: Long, record: JSONObject): Boolean {
+        val cookies = CookieManager.getInstance().getCookie(baseUrl).orEmpty()
+        val csrf = cookies.split(';').map { it.trim() }
+            .firstOrNull { it.startsWith("csrftoken=") }?.substringAfter('=') ?: return false
+        val connection = connection(baseUrl, "api/mobile/offline-feedback", "POST")
+        return try {
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            connection.setRequestProperty("X-CSRFToken", csrf)
+            connection.setRequestProperty("Referer", baseUrl)
+            connection.outputStream.use { it.write(formBody(mapOf(
+                "record_id" to record.getString("id"), "farmer_id" to farmerId.toString(),
+                "message" to record.getString("message")))) }
+            if (connection.responseCode !in listOf(200, 201)) false else {
+                val response = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                response.optBoolean("synced") && response.optString("record_id") == record.getString("id") && response.optLong("feedback_id") > 0
+            }
+        } finally { connection.disconnect() }
+    }
+
+    private fun sendProfile(baseUrl: String, farmerId: Long, record: JSONObject): Pair<Boolean, String?> {
+        val cookies = CookieManager.getInstance().getCookie(baseUrl).orEmpty()
+        val csrf = cookies.split(';').map { it.trim() }
+            .firstOrNull { it.startsWith("csrftoken=") }?.substringAfter('=') ?: return (false to null)
+        val connection = connection(baseUrl, "api/mobile/offline-profile", "POST")
+        return try {
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            connection.setRequestProperty("X-CSRFToken", csrf)
+            connection.setRequestProperty("Referer", baseUrl)
+            connection.outputStream.use { it.write(formBody(mapOf(
+                "record_id" to record.getString("id"), "farmer_id" to farmerId.toString(),
+                "original_email" to record.getString("original_email"),
+                "original_version" to record.getString("original_version"),
+                "email" to record.getString("email"), "phone" to record.getString("phone"),
+                "province" to record.getString("province"),
+                "municipality" to record.getString("municipality"),
+                "barangay" to record.getString("barangay")))) }
+            if (connection.responseCode !in listOf(200, 201)) {
+                val message = runCatching { JSONObject(connection.errorStream.bufferedReader().use { it.readText() })
+                    .optString("error") }.getOrNull()
+                false to message
+            } else {
+                val response = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                (response.optBoolean("synced") && response.optString("record_id") == record.getString("id")) to null
+            }
+        } finally { connection.disconnect() }
+    }
+
+    private fun sendReadReceipt(baseUrl: String, announcementId: Int): Boolean {
+        val cookies = CookieManager.getInstance().getCookie(baseUrl).orEmpty()
+        val csrf = cookies.split(';').map { it.trim() }
+            .firstOrNull { it.startsWith("csrftoken=") }?.substringAfter('=') ?: return false
+        val connection = connection(baseUrl, "farmer/notifications", "POST")
+        return try {
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            connection.setRequestProperty("X-CSRFToken", csrf)
+            connection.setRequestProperty("Referer", baseUrl)
+            connection.outputStream.use { it.write(formBody(mapOf(
+                "announcement_id" to announcementId.toString(), "suggestion_id" to "0"))) }
+            connection.responseCode == 200
+        } finally { connection.disconnect() }
+    }
+
+    private fun formBody(fields: Map<String, String>) = fields.entries.joinToString("&") {
+        URLEncoder.encode(it.key, "UTF-8") + "=" + URLEncoder.encode(it.value, "UTF-8")
+    }.toByteArray(Charsets.UTF_8)
 }

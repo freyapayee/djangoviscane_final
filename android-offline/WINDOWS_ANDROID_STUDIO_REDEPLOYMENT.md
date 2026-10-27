@@ -4,7 +4,7 @@
 
 Build **one Android APK** that opens the existing online VISCANE portal and gives authenticated farmers an on-device scan and assessment screen when offline. Keep the existing Django computer-vision API, its separate classifier service, accounts, farmer history, admin, and superadmin routes working.
 
-**Implementation in source:** The `android/` project now starts with the production farmer site when connected, bundles the nine-class ResNet18 and YOLOv8 ONNX models, opens a farmer-only offline scan screen, and stores pending scans encrypted per farmer. Django has a separate authenticated, UUID-based offline upload route and an additive migration. The old local Django fallback remains in source but is no longer the startup/login path. **This is source code, not a verified or deployed APK.** Do not expect sync to work until Faye applies the migration and deploys the new server route.
+**Implementation in source:** The `android/` project starts with the production farmer site when connected and gives previously authenticated farmers an offline workspace with scanning, agronomic calculations, recommendations, encrypted local history, saved profile details, announcements, notifications, feedback, About, and Tutorial. Offline feedback and profile text edits are queued. Scan, assessment, feedback, and profile changes have authenticated sync routes. The old local Django fallback remains in source but is no longer the startup/login path. **This is source code, not a verified or deployed APK.** Do not expect sync to work until Faye applies migrations `0010` through `0013` and deploys the new routes.
 
 GitHub's `android-offline/` is the older Java manual-assessment starter shown in the screenshot. Open `android/` for the combined APK. The ONNX source and model files are already copied into `android/app/`; the separate local Kotlin project remains the reference for preprocessing and parity checks.
 
@@ -21,7 +21,7 @@ GitHub's `android-offline/` is the older Java manual-assessment starter shown in
    git switch feature/offline-farmer-classifier
    ```
 
-4. Faye takes a production backup through the normal server process before deploying the **additive** `core/migrations/0010_offline_scan_receipt.py` migration and new API routes. Do not run `flush`, delete tables, replace the prediction API, or point the APK at a different user database. Faye alone performs server deployment.
+4. Faye takes a production backup through the normal server process before deploying the **additive** migrations `0010` through `0013` and new API routes. Do not run `flush`, delete tables, replace the prediction API, or point the APK at a different user database. Faye alone performs server deployment.
 
 ## Files to copy into the existing WebView app
 
@@ -80,7 +80,7 @@ The embedded Django copy still has its own SQLite database, so the new offline s
 | User and connection state | Prediction path | Data source |
 | --- | --- | --- |
 | Farmer online | Existing Django/API prediction flow | Existing server database |
-| Farmer offline | Bundled ONNX classifier; variety and maturity result appears immediately | Farmer-owned encrypted local result and sync queue |
+| Farmer offline | Bundled ONNX classifier and agronomic rules; scan, calculation, and recommendations appear immediately | Farmer-owned encrypted local results and sync queue |
 | Farmer reconnects | Authenticated sync contract, after server support is verified | Existing server database |
 | Admin or superadmin | Existing online WebView/API flow only | Existing server database |
 
@@ -90,15 +90,21 @@ The embedded Django copy still has its own SQLite database, so the new offline s
 2. Do not write directly to the Django database from Android. Server data must continue through authenticated HTTPS API requests.
 3. Never run offline classification for admin or superadmin accounts. Their WebView routes stay online-only.
 4. Bind each offline record to the locally remembered **server farmer ID** from a prior authenticated online session. On sign-out, lock that farmer's pending records; never expose or upload them from another account. Do not discard unsent records silently.
-5. Show the completed variety, maturity, and model confidence immediately after on-device inference. Show sync state separately: the server copy is waiting until upload succeeds. Preserve local results across app restart, sync, and network failures. Before sync, the result is visible on the phone but not yet to admin or superadmin. After confirmation, the server record appears in online history.
+5. Show the completed variety, maturity, and model confidence immediately after on-device inference. Allow manual or scan-filled agronomic inputs to produce an immediate estimate and recommendations. Show sync state separately: the server copy is waiting until upload succeeds. Preserve local results across app restart, sync, and network failures. Before sync, the result is visible on the phone but not yet to admin or superadmin. After confirmation, the server record appears in online history.
 6. Use a stable record UUID and server-side deduplication. Mark sent only after the server confirms persistence for the same farmer. Retry without creating a duplicate; do not put a client supplied farmer ID in place of the authenticated server identity.
 7. Encrypt sensitive local records and photos. Keep the local result after confirmed sync so offline Input Logs still work, and change only its sync state. Do not queue records for someone who has never authenticated online.
 
 ### Synchronization is a separate required integration
 
-The existing Django `POST /api/scan/predict` still sends photos to the separate classifier. The combined app **never** posts offline model results there. A new authenticated `POST /api/mobile/offline-scan` route accepts a photo and local result with a stable record UUID. It creates a linked photo and agronomic history row once and labels the model `on_device_ensemble_unverified`, since the server cannot prove what ran on the phone. Farmer history, admin monitoring, and superadmin history can read those rows. `GET /api/mobile/session` identifies the signed-in farmer to the app. Both routes reject the embedded offline Django server.
+The existing Django `POST /api/scan/predict` still sends photos to the separate classifier. The combined app **never** posts offline model results there. The authenticated `POST /api/mobile/offline-scan` route accepts a photo and local result with a stable UUID. It creates a linked photo and history row once and labels the model `on_device_ensemble_unverified`, since the server cannot prove what ran on the phone. The new `POST /api/mobile/offline-assessment` route accepts a separate assessment UUID and inputs, **recalculates the estimate and recommendations on the server**, and adds an agronomic history row once. If an assessment cites a scan, the scan must sync first. Farmer history, admin monitoring, and superadmin history can read those rows. `GET /api/mobile/session` identifies the signed-in farmer to the app. These routes reject the embedded offline Django server.
 
-The app retries pending uploads only against the configured HTTPS production origin with its existing farmer session and CSRF cookie. It marks an encrypted local result as synchronized only after the server confirms the same UUID and a saved log ID. The result remains available on the phone in either state. If the server lacks this route, rejects the session, or fails, only the **server copy** remains waiting; the on-device result is already complete. Faye must deploy the additive migration and API code before accepting a release that promises farmer-to-admin synchronization; first verify idempotent retries and all three views in staging. The online prediction and calculation routes remain intact.
+The app retries pending scan uploads first, then pending assessments, only against the configured HTTPS production origin with its existing farmer session and CSRF cookie. It marks an encrypted local result as synchronized only after the server confirms the same UUID and a saved log ID. Results and recommendations remain available on the phone in either state. If a route is unavailable or a session fails, only the **server copy** waits; the on-device result is already complete. Faye must deploy the additive migrations and API routes before accepting a release that promises farmer-to-admin synchronization; first verify idempotent retries and all three views in staging. The online prediction and calculation routes remain intact.
+
+The same authenticated session downloads `/api/mobile/offline-content` into encrypted farmer-owned storage when connected: profile text and a small saved profile photo, announcements, recent feedback and replies, latest online recommendations, and the most recent 100 online agronomic history rows. The native farmer menu shows the saved copy offline; Input Logs combines locally completed work with the cached online history. Feedback and profile text edits get local UUIDs and sync through `/api/mobile/offline-feedback` and `/api/mobile/offline-profile`; notification read state reuses `/farmer/notifications`. Profile changes are only authoritative after server validation. If a profile edit conflicts with a newer online change, it stays on the phone for review. New announcements and feedback replies cannot appear until reconnecting. Password changes require live verification of the current password; do not store account passwords for an offline retry. Profile photo changes also require an authenticated online upload. External news links and live weather require connectivity.
+
+The offline menu can sign out on the phone: it clears local farmer access and WebView cookies while retaining encrypted work under that farmer ID. Signing in online again as the same farmer unlocks and synchronizes it. This local sign-out cannot revoke a server session while disconnected, so the server handles normal session expiry separately.
+
+The WebView now removes the older shared-origin `viscane-pages-*` page cache when online pages load. Those saved HTML pages were not separated by farmer account. The native encrypted cache above is the offline source of farmer data; do not restore the old page snapshot behavior without an account-isolation design.
 
 ### Existing offline data from the older APK
 
@@ -106,14 +112,14 @@ The old Java fallback stored local assessments in `assessments.db` without a ver
 
 ### Server owner deployment sequence (Faye only)
 
-On **staging**, Faye first runs the migration check and the two offline sync tests:
+On **staging**, Faye first runs the migration check and the offline sync tests:
 
 ```bash
 python manage.py makemigrations core --check --dry-run
-python manage.py test core.test_mobile.FarmerMobileTests.test_offline_scan_sync_is_farmer_owned_and_idempotent core.test_mobile.FarmerMobileTests.test_embedded_django_cannot_acknowledge_production_sync
+python manage.py test core.test_mobile.FarmerMobileTests.test_offline_scan_sync_is_farmer_owned_and_idempotent core.test_mobile.FarmerMobileTests.test_offline_assessment_sync_recomputes_and_is_farmer_owned core.test_mobile.FarmerMobileTests.test_offline_content_feedback_and_profile_are_farmer_owned core.test_mobile.FarmerMobileTests.test_embedded_django_cannot_acknowledge_production_sync
 ```
 
-Run the commands above in the **staging checkout**, not against a production database. Proceed only when both pass.
+Run the commands above in the **staging checkout**, not against a production database. Proceed only when all pass.
 
 After those tests, device verification, review, and a production backup, merge the integration branch. Faye then runs these commands on production:
 
@@ -131,11 +137,11 @@ Then verify the existing online scan API, farmer login/history, admin monitoring
 
 ## Farmer-only boundary
 
-The combined app uses a separate native offline Activity, with no JavaScript bridge into the WebView. It opens only after `/api/mobile/session` has returned a real farmer ID during a prior online session. The app sends pending scans only with the current HTTPS WebView session and only when its authenticated server farmer ID matches the record owner. Admin and superadmin accounts stay on their existing online routes; the native offline Activity is not exported.
+The combined app uses a separate native offline Activity, with no JavaScript bridge into the WebView. It opens only after `/api/mobile/session` has returned a real farmer ID during a prior online session. The app sends pending scans and assessments only with the current HTTPS WebView session and only when its authenticated server farmer ID matches the record owner. Admin and superadmin accounts stay on their existing online routes; the native offline Activity is not exported.
 
 ## Offline screen must match the farmer portal
 
-The screenshot's plain “VISCANE Offline” form is the older Java fallback Activity. The new `OfflineScanActivity.kt` uses a green header, large text, photo-first white card, camera/gallery controls, and Home / Recommendations / Input Logs / Profile navigation. It shows the completed variety, maturity, and confidence as soon as the bundled models finish, without waiting for any server response. Its Input Logs dialog filters saved history by All / week / month / year, opens saved photos, and keeps results available after sync. Keep refining spacing and font against the **actual phone** screenshots; the offline screen is similar to the portal but is not a pixel-perfect copy. Unsynced results say their **server copy** is waiting.
+The screenshot's plain “VISCANE Offline” form is the older Java fallback Activity. The new `OfflineScanActivity.kt` uses a green header, large text, photo-first white card, camera/gallery controls, an assessment form, Home / Recommendations / Input Logs / Profile navigation, and a farmer menu for the remaining screens. It shows the completed variety, maturity, and confidence as soon as the bundled models finish, without waiting for any server response. A scan fills the variety and maturity inputs; the farmer can also enter them manually. `OfflineCalculator.java` computes estimates and `OfflineRecommendations.kt` creates guidance from bundled rules. Input Logs filters saved scans **and assessments** by All / week / month / year, opens saved photos and recommendation details, and keeps results available after sync. The menu shows saved news, notifications, profile, feedback, About, and Tutorial. Keep refining spacing and font against the **actual phone** screenshots; the offline screen is similar to the portal but is not a pixel-perfect copy. Unsynced results say their **server copy** is waiting.
 
 The current offline screen is native and needs no remote CSS, font, or image download. It does not display fake live weather. It uses `OfflineClassifier.kt` directly, avoiding a JavaScript bridge. The WebView continues to serve online pages; the offline Activity stores local records until authenticated sync confirms them. Test both with airplane mode before launch and after a previously authenticated session.
 
@@ -152,6 +158,7 @@ Match these flows, not just colors: camera/gallery, image preview, scan result, 
    ```
 
 4. Review the online-first startup, Kotlin classifier, exact assets, farmer-only offline screen, encrypted pending queue, and `OfflineSync.kt` already in source. Keep `com.viscane.app` if that is the installed app's real application ID, plus the portal URL, online API route, cookie/session handling, and release signing setup. Do not add another farmer credential store.
+   The source now uses `versionCode 7` / `versionName 1.6`; confirm this code is higher than the APK already installed on the test phone before signing an update.
 5. Check the green status bar and offline UI on the real phone. The camera/gallery flow and photo orientation code are in `OfflineScanActivity.kt`.
 6. In Android Studio, let Gradle sync, then choose **Build > Rebuild Project** and **Run** on a physical phone. Exercise login and online scan before testing airplane mode.
 7. Build a debug APK with **Build > Build APK(s)**, or run in PowerShell if the WebView repository includes a Gradle wrapper:
@@ -216,13 +223,17 @@ Check the green values inside `Theme.Viscane` in `android/app/src/main/res/value
 - [ ] Existing farmer history and agronomic logs still appear after installing the updated APK.
 - [ ] Admin login/dashboard and superadmin login/dashboard work unchanged.
 - [ ] Admin and superadmin cannot access the farmer offline Activity or upload route.
-- [ ] Only additive migration `0010` is applied; no database resets, online model replacements, or existing API endpoint removals occur.
+- [ ] Only additive migrations `0010` through `0013` are applied; no database resets, online model replacements, or existing API endpoint removals occur.
 - [ ] One installed APK and launcher icon open online farmer pages and the visually matched offline farmer screen; no separate “VISCANE Offline” app is required.
 - [ ] The final APK contains both ONNX models and nine labels, and camera/gallery classification works in airplane mode on real photos.
 - [ ] The offline screen's green header, readable font, photo card, bottom navigation, and log filters are checked against the online UI on the actual phone. Refine remaining visual differences before release.
 - [ ] In airplane mode, a previously authenticated farmer sees a completed variety, maturity, and confidence after scanning, can reopen that result after app restart, and can still view it after server sync. Only the server copy waits for connection; a fresh device with no prior login cannot impersonate a farmer.
+- [ ] In airplane mode, scan-filled and manual agronomic inputs calculate LKG/TC, cane tons, and total LKG; recommendations appear immediately. Both assessment and recommendations reopen from Input Logs after app restart and after sync.
+- [ ] Offline menu opens saved profile, announcements, notifications, feedback, About, and Tutorial. New feedback and profile text edits remain farmer-owned and synchronize only under the same authenticated account.
+- [ ] Profile edits that conflict with newer server data stay pending for review; the APK does not claim that an offline password or photo change succeeded. Cached announcements and replies show when they were last fetched.
 - [ ] Logging out and signing in as another farmer does not expose or submit the prior farmer’s pending data.
-- [ ] **Release gate for sync:** Faye has deployed migration `0010` and the new routes after backup; the authenticated farmer and UUID deduplication are tested, and one reconnected record appears exactly once in farmer history, admin monitoring, and superadmin history. Until then, the on-device result is complete while its server copy waits to sync.
+- [ ] Signing out in airplane mode locks the farmer's offline workspace immediately; signing in online again as that farmer restores saved work without deleting it.
+- [ ] **Release gate for sync:** Faye has deployed migrations `0010` through `0013` and the new routes after backup; authenticated ownership and UUID deduplication are tested, and one reconnected scan and assessment each appear exactly once in farmer history, admin monitoring, and superadmin history. Queued feedback and profile changes appear under the same farmer after server confirmation. Until then, on-device results are complete while server copies wait.
 - [ ] Installing as an update preserves the app's online session/local pending records and does not require wiping app data.
 
 ## Copy/paste prompt for the Android developer
@@ -241,8 +252,20 @@ filters, immediate on-device variety/maturity result, and per-farmer saved
 results must work after app restart and after server sync. The server-copy
 status must never make a completed classification appear pending.
 
-After Faye deploys additive Django migration 0010 and the new /api/mobile/
-routes, reconnect and verify exactly one record per UUID in farmer history,
+Enter manual agronomic inputs and calculate in airplane mode. Repeat with a
+scan-filled variety and maturity. Verify numeric estimates, generated
+recommendations, and saved history after app restart. A completed result must
+remain usable even when the production server is unavailable.
+
+Check all offline farmer menu entries using an account that opened the online
+portal once. Verify cached news, notifications, profile, feedback history,
+recommendations, About, and Tutorial in airplane mode. Save feedback and a
+profile text edit, reconnect, and verify each belongs to the same farmer.
+Password and profile photo updates need an online authenticated operation;
+do not present a queued password as already changed.
+
+After Faye deploys additive Django migrations 0010 through 0013 and the new /api/mobile/
+routes, reconnect and verify exactly one scan and assessment per UUID in farmer history,
 admin monitoring, and superadmin history. The existing /api/scan/predict
 classifier route must still work for online scans. If the server route is not
 ready or login fails, pending records must remain on the phone.
