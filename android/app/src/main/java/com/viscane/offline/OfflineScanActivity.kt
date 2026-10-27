@@ -218,6 +218,9 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
     private fun rounded(color: Int, radiusDp: Int) = GradientDrawable().apply {
         setColor(color)
         cornerRadius = dp(radiusDp).toFloat()
+        val border = if (Color.red(color) < 40 && Color.green(color) > 70)
+            Color.rgb(111, 184, 134) else Color.rgb(164, 205, 174)
+        setStroke(dp(2), border)
     }
 
     private fun choice(card: LinearLayout, label: String, options: Array<String>): Spinner {

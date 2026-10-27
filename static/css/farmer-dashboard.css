@@ -288,3 +288,15 @@ body.ds-app.vis-farmer-dashboard .scan-page-count { color: #4f6355; font-size: 1
     body.ds-app.vis-farmer-dashboard .scan-gallery-grid { grid-template-columns: minmax(0, 1fr); }
     body.ds-app.vis-farmer-dashboard .scan-gallery-item img { height: 240px; max-height: 240px; }
 }
+
+/* Farmer dashboard boxes: emphasize outlines while preserving icon dimensions. */
+body.ds-app.vis-farmer-dashboard .hero-panel,
+body.ds-app.vis-farmer-dashboard .stat-card,
+body.ds-app.vis-farmer-dashboard .assessment-panel,
+body.ds-app.vis-farmer-dashboard .hero-actions .btn,
+body.ds-app.vis-farmer-dashboard .farmer-bottom-nav {
+    border: 2px solid #8ab99a;
+}
+body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active {
+    box-shadow: inset 0 0 0 2px rgba(24, 112, 61, 0.22);
+}
