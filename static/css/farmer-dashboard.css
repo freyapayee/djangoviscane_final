@@ -300,3 +300,19 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-nav {
 body.ds-app.vis-farmer-dashboard .farmer-bottom-link.is-active {
     box-shadow: inset 0 0 0 2px rgba(24, 112, 61, 0.22);
 }
+
+
+/* Farmer dashboard: subtle gray surfaces distinguish cards from the page background. */
+body.ds-app.vis-farmer-dashboard .assessment-panel,
+body.ds-app.vis-farmer-dashboard .farmer-bottom-nav {
+    background-color: #f3f5f3;
+    border-color: #aeb9b1;
+    box-shadow: 0 4px 14px rgba(35, 49, 40, .12);
+}
+body.ds-app.vis-farmer-dashboard .stat-card {
+    border-color: #aeb9b1;
+    box-shadow: 0 4px 14px rgba(35, 49, 40, .12);
+}
+body.ds-app.vis-farmer-dashboard .hero-panel {
+    box-shadow: 0 5px 16px rgba(35, 49, 40, .14);
+}

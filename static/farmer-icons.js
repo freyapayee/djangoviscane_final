@@ -71,8 +71,8 @@
         if (style) svg.setAttribute('style', style);
         // Ionicons sizing rules target the custom element. Preserve those resolved
         // dimensions and layout values on the local SVG replacement.
-        const inheritedSize = computed.fontSize || '1em';
-        const dimension = value => (!value || value === 'auto' || value === 'normal') ? inheritedSize : value;
+        const inheritedSize = computed.fontSize && computed.fontSize !== '0px' ? computed.fontSize : '1em';
+        const dimension = value => (!value || value === 'auto' || value === 'normal' || value === '0' || value === '0px') ? inheritedSize : value;
         ['display', 'position', 'box-sizing', 'vertical-align', 'font-size', 'color',
             'opacity', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
             'padding-top', 'padding-right', 'padding-bottom', 'padding-left',

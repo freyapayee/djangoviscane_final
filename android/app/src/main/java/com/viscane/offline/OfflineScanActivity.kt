@@ -216,10 +216,18 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
 
     private fun rounded(color: Int, radiusDp: Int) = GradientDrawable().apply {
-        setColor(color)
+        // Keep the deep green header, while tinting card surfaces slightly gray for contrast.
+        val greenSurface = Color.green(color) > Color.red(color) * 1.5 &&
+            Color.green(color) > Color.blue(color) * 1.25
+        val neutral = Color.rgb(235, 238, 235)
+        val surfaceColor = if (greenSurface) color else Color.rgb(
+            (Color.red(color) * 0.92 + Color.red(neutral) * 0.08).toInt(),
+            (Color.green(color) * 0.92 + Color.green(neutral) * 0.08).toInt(),
+            (Color.blue(color) * 0.92 + Color.blue(neutral) * 0.08).toInt()
+        )
+        setColor(surfaceColor)
         cornerRadius = dp(radiusDp).toFloat()
-        val border = if (Color.red(color) < 40 && Color.green(color) > 70)
-            Color.rgb(111, 184, 134) else Color.rgb(164, 205, 174)
+        val border = if (greenSurface) Color.rgb(111, 184, 134) else Color.rgb(164, 174, 167)
         setStroke(dp(2), border)
     }
 
