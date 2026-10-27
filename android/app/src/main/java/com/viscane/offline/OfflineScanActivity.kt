@@ -52,6 +52,7 @@ class OfflineScanActivity : ComponentActivity() {
     private lateinit var assessment: TextView
     private lateinit var recommendationsView: TextView
     private lateinit var contentScroll: ScrollView
+    private lateinit var homeCard: LinearLayout
     private lateinit var reviewActions: LinearLayout
     private lateinit var detailsPanel: LinearLayout
     private lateinit var agronomicInputs: LinearLayout
@@ -131,6 +132,7 @@ class OfflineScanActivity : ComponentActivity() {
             background = rounded(Color.WHITE, 20)
             elevation = dp(3).toFloat()
         }
+        homeCard = card
         card.addView(TextView(this).apply { text = "Sugarcane assessment"; textSize = 22f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
         card.addView(TextView(this).apply { text = "Choose a clear photo. Variety and maturity are estimated on your phone."; textSize = 16f; setTextColor(dark) })
         val scanStepper = LinearLayout(this).apply {
@@ -318,7 +320,7 @@ class OfflineScanActivity : ComponentActivity() {
             })
             navigation.addView(item, LinearLayout.LayoutParams(0, -2, 1f))
         }
-        nav("Home", R.drawable.ic_home) { contentScroll.smoothScrollTo(0, 0) }
+        nav("Home", R.drawable.ic_home) { showHomePage() }
         nav("Recommendations", R.drawable.ic_sparkles) { showRecommendations() }
         nav("Input Logs", R.drawable.ic_document) { showSavedHistory() }
         nav("Profile", R.drawable.ic_person) { showProfile() }
@@ -483,16 +485,16 @@ class OfflineScanActivity : ComponentActivity() {
 
     private fun showFarmerMenu() {
         val items = arrayOf("Home", "Scan and assessment", "Recommendations", "Input Logs",
-            "Profile", "News and announcements", "Notifications", "Feedback", "About VISCANE", "Tutorial",
+            "Profile", "News and announcements", "See Notifications", "Feedback", "About VISCANE", "Tutorial",
             "Sign out on this phone")
         AlertDialog.Builder(this).setTitle("Offline farmer menu").setItems(items) { _, selected ->
             when (selected) {
-                0, 1 -> contentScroll.smoothScrollTo(0, 0)
+                0, 1 -> showHomePage()
                 2 -> showRecommendations()
                 3 -> showSavedHistory()
                 4 -> showProfile()
                 5 -> showAnnouncements("News and announcements")
-                6 -> showAnnouncements("Notifications")
+                6 -> showNotificationsPage()
                 7 -> showFeedback()
                 8 -> AlertDialog.Builder(this).setTitle("About VISCANE")
                     .setMessage("VISCANE supports sugarcane farmers with on-device variety and maturity recognition, agronomic estimates, and guidance. Saved scans and assessments synchronize with the farmer portal when connected.")
@@ -514,6 +516,178 @@ class OfflineScanActivity : ComponentActivity() {
             }
         }.show()
     }
+
+    private fun showHomePage() {
+        contentScroll.removeAllViews()
+        contentScroll.addView(homeCard, ScrollView.LayoutParams(-1, -2))
+        contentScroll.post { contentScroll.scrollTo(0, 0) }
+    }
+
+    private fun showNotificationsPage() {
+        val green = Color.rgb(36, 112, 61)
+        val dark = Color.rgb(31, 41, 51)
+        val page = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(18), dp(18), dp(18), dp(22))
+            background = rounded(Color.WHITE, 20)
+            elevation = dp(3).toFloat()
+        }
+        page.addView(TextView(this).apply {
+            text = "See Notifications"
+            textSize = 23f
+            setTextColor(dark)
+            setTypeface(null, Typeface.BOLD)
+        })
+        page.addView(TextView(this).apply {
+            text = "Saved announcements and assessment recommendations are available here offline."
+            textSize = 15f
+            setTextColor(Color.rgb(90, 104, 96))
+            setPadding(0, dp(5), 0, dp(12))
+        })
+        page.addView(Button(this).apply {
+            text = "Back to Home"
+            backgroundTintList = ColorStateList.valueOf(Color.rgb(232, 242, 232))
+            setTextColor(green)
+            setOnClickListener { showHomePage() }
+        }, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        val loading = TextView(this).apply {
+            text = "Loading saved notifications…"
+            textSize = 16f
+            setTextColor(dark)
+            setPadding(0, dp(8), 0, dp(8))
+        }
+        page.addView(loading)
+        contentScroll.removeAllViews()
+        contentScroll.addView(page, ScrollView.LayoutParams(-1, -2))
+        contentScroll.post { contentScroll.scrollTo(0, 0) }
+
+        worker.execute {
+            val saved = runCatching {
+                val cache = OfflineFarmerCache(this)
+                Triple(cache.snapshot(farmerId), OfflineAssessmentStore(this).records(farmerId), cache)
+            }
+            runOnUiThread {
+                if (isDestroyed) return@runOnUiThread
+                saved.onSuccess { (snapshot, assessments, cache) ->
+                    page.removeView(loading)
+                    val announcements = snapshot?.optJSONArray("announcements")
+                    page.addView(TextView(this).apply {
+                        text = "Announcements"
+                        textSize = 18f
+                        setTextColor(green)
+                        setTypeface(null, Typeface.BOLD)
+                        setPadding(0, dp(8), 0, dp(8))
+                    })
+                    if (announcements == null) {
+                        page.addView(notificationMessage("Connect once while signed in to save announcements for offline viewing."))
+                    } else if (announcements.length() == 0) {
+                        page.addView(notificationMessage("No saved announcements yet."))
+                    } else {
+                        for (index in 0 until announcements.length()) {
+                            val item = announcements.getJSONObject(index)
+                            page.addView(notificationCard(item.optString("title", "Announcement"),
+                                item.optString("message"), item.optString("created_at")))
+                        }
+                        page.addView(Button(this).apply {
+                            text = "Mark announcements as read"
+                            backgroundTintList = ColorStateList.valueOf(Color.rgb(232, 242, 232))
+                            setTextColor(green)
+                            setOnClickListener {
+                                val latestId = (0 until announcements.length()).maxOfOrNull {
+                                    announcements.getJSONObject(it).optInt("id")
+                                } ?: 0
+                                worker.execute {
+                                    val marked = runCatching { cache.markAnnouncementsRead(farmerId, latestId) }
+                                    runOnUiThread {
+                                        if (!isDestroyed) Toast.makeText(this,
+                                            if (marked.isSuccess) "Marked read on this phone; it will sync when you reconnect."
+                                            else "Could not update notification status.", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
+                    }
+
+                    page.addView(TextView(this).apply {
+                        text = "Assessment Recommendations"
+                        textSize = 18f
+                        setTextColor(green)
+                        setTypeface(null, Typeface.BOLD)
+                        setPadding(0, dp(20), 0, dp(8))
+                    })
+                    val savedHistory = snapshot?.optJSONArray("history")
+                    val hasOnlineRecommendations = savedHistory != null && (0 until savedHistory.length()).any {
+                        val recommendations = savedHistory.optJSONObject(it)?.optJSONArray("recommendations")
+                        recommendations != null && recommendations.length() > 0
+                    }
+                    if (assessments.isEmpty() && !hasOnlineRecommendations) {
+                        page.addView(notificationMessage("Recommendations from your saved offline assessments will appear here."))
+                    }
+                    if (savedHistory != null) {
+                        for (index in 0 until savedHistory.length()) {
+                            val record = savedHistory.optJSONObject(index) ?: continue
+                            val items = record.optJSONArray("recommendations") ?: continue
+                            if (items.length() == 0) continue
+                            val text = (0 until items.length()).joinToString("\n\n") { itemIndex ->
+                                val item = items.optJSONObject(itemIndex)
+                                if (item == null) items.optString(itemIndex) else
+                                    "${item.optString("category", "Recommendation")} · ${item.optString("title")}\n${item.optString("meta")}"
+                            }
+                            val date = record.optString("created_at").ifBlank {
+                                record.optLong("created_at_ms").takeIf { it > 0 }?.let {
+                                    java.text.SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.getDefault()).format(java.util.Date(it))
+                                }.orEmpty()
+                            }
+                            page.addView(notificationCard("${record.optString("variety", "Assessment")} · saved online", text, date))
+                        }
+                    }
+                    assessments.forEach { record ->
+                        val title = buildString {
+                            append(record.optString("plot_name").ifBlank { "Assessment" })
+                            record.optString("variety").takeIf { it.isNotBlank() }?.let { append(" · ").append(it) }
+                        }
+                        page.addView(notificationCard(title, formatRecommendations(record),
+                            record.optLong("created_at").takeIf { it > 0 }?.let {
+                                java.text.SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.getDefault()).format(java.util.Date(it))
+                            }.orEmpty()))
+                    }
+                }.onFailure { error ->
+                    loading.text = "Could not load saved notifications: ${error.localizedMessage}"
+                }
+            }
+        }
+    }
+
+    private fun notificationMessage(message: String) = TextView(this).apply {
+        text = message
+        textSize = 15f
+        setTextColor(Color.rgb(82, 98, 87))
+        setPadding(dp(4), dp(8), dp(4), dp(12))
+    }
+
+    private fun notificationCard(title: String, message: String, date: String) = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(14), dp(12), dp(14), dp(12))
+        background = rounded(Color.rgb(243, 247, 243), 14)
+        addView(TextView(this@OfflineScanActivity).apply {
+            text = title
+            textSize = 16f
+            setTextColor(Color.rgb(31, 41, 51))
+            setTypeface(null, Typeface.BOLD)
+        })
+        addView(TextView(this@OfflineScanActivity).apply {
+            text = message
+            textSize = 14f
+            setTextColor(Color.rgb(49, 65, 55))
+            setPadding(0, dp(5), 0, 0)
+        })
+        if (date.isNotBlank()) addView(TextView(this@OfflineScanActivity).apply {
+            text = date
+            textSize = 12f
+            setTextColor(Color.rgb(105, 119, 108))
+            setPadding(0, dp(6), 0, 0)
+        })
+    }.also { it.layoutParams = LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(9) } }
 
     private fun showProfile() {
         worker.execute {
