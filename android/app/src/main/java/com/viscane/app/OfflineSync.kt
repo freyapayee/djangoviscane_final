@@ -158,6 +158,7 @@ object OfflineSync {
             "infected" to record.getBoolean("infected").toString(),
             "maturity" to record.getInt("maturity").toString(),
             "scan_id" to record.optString("scan_id"),
+            "plot_name" to record.optString("plot_name"),
         )
         val body = formBody(fields)
         val connection = connection(baseUrl, "api/mobile/offline-assessment", "POST")

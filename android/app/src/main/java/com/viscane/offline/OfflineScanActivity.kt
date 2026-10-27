@@ -12,6 +12,7 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
+import android.text.InputFilter
 import android.util.Base64
 import android.webkit.CookieManager
 import android.widget.*
@@ -51,6 +52,11 @@ class OfflineScanActivity : ComponentActivity() {
     private lateinit var assessment: TextView
     private lateinit var recommendationsView: TextView
     private lateinit var contentScroll: ScrollView
+    private lateinit var reviewActions: LinearLayout
+    private lateinit var detailsPanel: LinearLayout
+    private lateinit var agronomicInputs: LinearLayout
+    private lateinit var plotName: EditText
+    private lateinit var confidenceDetails: TextView
     private var latestScanId: String? = null
     private var latestScanLabel: String? = null
     private var farmerId: Long = 0
@@ -90,7 +96,6 @@ class OfflineScanActivity : ComponentActivity() {
             insets
         }
         val header = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
             orientation = LinearLayout.HORIZONTAL
             setPadding(dp(16), dp(14), dp(16), dp(14))
             background = rounded(Color.WHITE, 20)
@@ -128,14 +133,39 @@ class OfflineScanActivity : ComponentActivity() {
         }
         card.addView(TextView(this).apply { text = "Sugarcane assessment"; textSize = 22f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
         card.addView(TextView(this).apply { text = "Choose a clear photo. Variety and maturity are estimated on your phone."; textSize = 16f; setTextColor(dark) })
+        val scanStepper = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(10), dp(10), dp(10), dp(10))
+            background = rounded(sage, 12)
+        }
+        listOf("1  Photo", "2  Review", "3  Details").forEach { label ->
+            scanStepper.addView(TextView(this).apply {
+                text = label
+                textSize = 13f
+                gravity = android.view.Gravity.CENTER
+                setTextColor(green)
+                setTypeface(null, Typeface.BOLD)
+            }, LinearLayout.LayoutParams(0, -2, 1f))
+        }
+        card.addView(scanStepper, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
         preview = ImageView(this).apply {
             scaleType = ImageView.ScaleType.FIT_CENTER
             contentDescription = "Selected sugarcane photo"
             background = rounded(Color.rgb(237, 247, 240), 18)
         }
         card.addView(preview, LinearLayout.LayoutParams(-1, dp(230)).apply { topMargin = dp(14) })
-        camera = Button(this).apply { text = "Open camera"; textSize = 16f; isEnabled = false; backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE) }
-        gallery = Button(this).apply { text = "Upload photo"; textSize = 16f; isEnabled = false; backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE) }
+        camera = Button(this).apply {
+            text = "Use camera"; textSize = 16f; isEnabled = false
+            backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE)
+            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_camera_white, 0, 0, 0)
+            compoundDrawablePadding = dp(8)
+        }
+        gallery = Button(this).apply {
+            text = "Choose photo"; textSize = 16f; isEnabled = false
+            backgroundTintList = ColorStateList.valueOf(sage); setTextColor(green)
+            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_image, 0, 0, 0)
+            compoundDrawablePadding = dp(8)
+        }
         card.addView(camera, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
         card.addView(gallery, LinearLayout.LayoutParams(-1, -2))
         result = TextView(this).apply {
@@ -145,43 +175,108 @@ class OfflineScanActivity : ComponentActivity() {
             setTypeface(null, Typeface.BOLD)
             setPadding(dp(16), dp(16), dp(16), dp(16))
             background = rounded(sage, 18)
+            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_sparkles, 0, 0, 0)
+            compoundDrawablePadding = dp(10)
         }
         card.addView(result, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+        reviewActions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            visibility = android.view.View.GONE
+        }
+        val changePhoto = Button(this).apply {
+            text = "Change photo"; textSize = 13f
+            backgroundTintList = ColorStateList.valueOf(sage); setTextColor(green)
+            setOnClickListener { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+        }
+        val useResult = Button(this).apply {
+            text = "Use this result"; textSize = 13f
+            backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE)
+            setOnClickListener { openAssessmentDetails() }
+        }
+        reviewActions.addView(changePhoto, LinearLayout.LayoutParams(0, -2, 1f).apply { rightMargin = dp(6) })
+        reviewActions.addView(useResult, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(6) })
+        card.addView(reviewActions, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
         status = TextView(this).apply { text = "Loading offline models…"; textSize = 16f; setTextColor(dark); setPadding(0, dp(12), 0, dp(12)) }
         card.addView(status)
-        card.addView(TextView(this).apply {
+        card.addView(Button(this).apply {
+            text = "Continue without a photo · enter manually"; textSize = 14f
+            backgroundTintList = ColorStateList.valueOf(sage); setTextColor(green)
+            setOnClickListener {
+                latestScanId = null
+                latestScanLabel = null
+                reviewActions.visibility = android.view.View.GONE
+                result.visibility = android.view.View.GONE
+                openAssessmentDetails()
+            }
+        }, LinearLayout.LayoutParams(-1, -2))
+        detailsPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = android.view.View.GONE
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+            background = rounded(Color.WHITE, 16)
+        }
+        detailsPanel.addView(TextView(this).apply { text = "Assessment Details"; textSize = 21f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
+        detailsPanel.addView(TextView(this).apply { text = "Add the plot name to continue to agronomic inputs."; textSize = 14f; setTextColor(Color.rgb(102, 112, 133)) })
+        detailsPanel.addView(TextView(this).apply { text = "Plot name"; textSize = 16f; setTextColor(dark); setPadding(0, dp(12), 0, 0) })
+        plotName = EditText(this).apply {
+            hint = "e.g., North Field 3"; textSize = 16f; isSingleLine = true
+            contentDescription = "Plot name"
+            filters = arrayOf(InputFilter.LengthFilter(80))
+        }
+        detailsPanel.addView(plotName)
+        confidenceDetails = TextView(this).apply { text = "Confidence: Manual assessment"; textSize = 15f; setTextColor(dark); setPadding(0, dp(8), 0, dp(8)) }
+        detailsPanel.addView(confidenceDetails)
+        detailsPanel.addView(Button(this).apply {
+            text = "Proceed to Agronomic Input"; textSize = 15f
+            backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE)
+            setOnClickListener {
+                if (plotName.text.toString().trim().isEmpty()) {
+                    plotName.error = "Enter a plot name to continue"
+                    return@setOnClickListener
+                }
+                agronomicInputs.visibility = android.view.View.VISIBLE
+                contentScroll.post { contentScroll.smoothScrollTo(0, agronomicInputs.top) }
+            }
+        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(10) })
+        card.addView(detailsPanel, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+        agronomicInputs = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = android.view.View.GONE
+        }
+        agronomicInputs.addView(TextView(this).apply {
             text = "Assessment parameters"; textSize = 22f; setTextColor(dark); setTypeface(null, Typeface.BOLD)
             setPadding(0, dp(16), 0, dp(4))
         })
-        card.addView(TextView(this).apply {
+        agronomicInputs.addView(TextView(this).apply {
             text = "Use a scan result or enter the variety and maturity yourself. Calculations and guidance run on this phone."
             textSize = 16f; setTextColor(dark)
         })
-        variety = choice(card, "Sugarcane variety", OfflineRules.VARIETIES)
-        card.addView(TextView(this).apply { text = "Area in hectares"; textSize = 17f; setTextColor(dark) })
+        variety = choice(agronomicInputs, "Sugarcane variety", OfflineRules.VARIETIES)
+        agronomicInputs.addView(TextView(this).apply { text = "Area in hectares"; textSize = 17f; setTextColor(dark) })
         area = EditText(this).apply {
             hint = "e.g. 1.5"
             textSize = 18f
             inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             contentDescription = "Area in hectares"
         }
-        card.addView(area)
+        agronomicInputs.addView(area)
         val counts = arrayOf("1 time", "2 times", "3 times")
-        plowing = choice(card, "Plowing", counts)
-        weeding = choice(card, "Weeding", counts)
-        fertilizer = choice(card, "Fertilizer applications", counts)
-        stage = choice(card, "Crop stage", arrayOf("New plant", "1st ratoon", "2nd ratoon"))
-        infection = choice(card, "RSSI infection observed", arrayOf("No", "Yes"))
-        maturity = choice(card, "Maturity", arrayOf("Unknown / manual", "Not mature", "Mature", "Over mature"))
-        card.addView(Button(this).apply {
+        plowing = choice(agronomicInputs, "Plowing", counts)
+        weeding = choice(agronomicInputs, "Weeding", counts)
+        fertilizer = choice(agronomicInputs, "Fertilizer applications", counts)
+        stage = choice(agronomicInputs, "Crop stage", arrayOf("New plant", "1st ratoon", "2nd ratoon"))
+        infection = choice(agronomicInputs, "RSSI infection observed", arrayOf("No", "Yes"))
+        maturity = choice(agronomicInputs, "Maturity", arrayOf("Unknown / manual", "Not mature", "Mature", "Over mature"))
+        agronomicInputs.addView(Button(this).apply {
             text = "Calculate and save on this phone"; textSize = 16f
             backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE)
             setOnClickListener { calculateAssessment() }
         }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(14) })
         assessment = TextView(this).apply { textSize = 18f; setTextColor(dark); setPadding(0, dp(10), 0, dp(8)) }
-        card.addView(assessment)
+        agronomicInputs.addView(assessment)
         recommendationsView = TextView(this).apply { textSize = 17f; setTextColor(dark) }
-        card.addView(recommendationsView)
+        agronomicInputs.addView(recommendationsView)
+        card.addView(agronomicInputs, LinearLayout.LayoutParams(-1, -2))
         history = TextView(this).apply { text = "Loading saved results…"; textSize = 16f; setTextColor(dark) }
         card.addView(history)
   contentScroll = ScrollView(this).apply {
@@ -198,21 +293,34 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
             orientation = LinearLayout.HORIZONTAL
             setPadding(dp(6), dp(4), dp(6), dp(4))
         }
-        fun nav(label: String, action: () -> Unit) {
-            navigation.addView(TextView(this).apply {
+        fun nav(label: String, icon: Int, action: () -> Unit) {
+            val item = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                setPadding(dp(3), dp(8), dp(3), dp(8))
+                setOnClickListener { action() }
+            }
+            item.addView(ImageView(this).apply {
+                setImageResource(icon)
+                imageTintList = ColorStateList.valueOf(green)
+                contentDescription = label
+            }, LinearLayout.LayoutParams(dp(22), dp(22)))
+            item.addView(TextView(this).apply {
                 text = label
-                textSize = 12f
+                textSize = 11f
                 gravity = android.view.Gravity.CENTER
                 setTextColor(green)
                 setTypeface(null, Typeface.BOLD)
-                minHeight = dp(66)
-                setOnClickListener { action() }
-            }, LinearLayout.LayoutParams(0, -2, 1f))
+                setPadding(0, dp(3), 0, 0)
+            })
+            navigation.addView(item, LinearLayout.LayoutParams(0, -2, 1f))
         }
-        nav("Home") { contentScroll.smoothScrollTo(0, 0) }
-        nav("Recommendations") { showRecommendations() }
-        nav("Input Logs") { showSavedHistory() }
-        nav("Profile") { showProfile() }
+        nav("Home", R.drawable.ic_home) { contentScroll.smoothScrollTo(0, 0) }
+        nav("Recommendations", R.drawable.ic_sparkles) { showRecommendations() }
+        nav("Input Logs", R.drawable.ic_document) { showSavedHistory() }
+        nav("Profile", R.drawable.ic_person) { showProfile() }
         navigation.background = rounded(Color.WHITE, 20)
         navigation.elevation = dp(3).toFloat()
         root.addView(navigation, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(10) })
@@ -293,6 +401,8 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
 
     private fun calculateAssessment() {
         try {
+            val plot = plotName.text.toString().trim()
+            require(plot.isNotEmpty()) { "Enter a plot name before calculating." }
             val hectares = area.text.toString().trim().replace(',', '.').toDouble()
             val v = variety.selectedItemPosition
             val p = plowing.selectedItemPosition + 1
@@ -315,7 +425,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                 latestScanLabel == expected
             }
             val saved = runCatching { OfflineAssessmentStore(this).save(farmerId, v, hectares, p, w, f, s,
-                infected, m, estimate, guides, matchedScan) }
+                infected, m, estimate, guides, matchedScan, plot) }
             assessment.text = "$estimateText\n" + if (saved.isSuccess)
                 "Saved on this phone · Server copy waiting · ${if (matchedScan == null) "Manual inputs" else "Linked to this scan"}"
             else "Result ready, but local save failed: ${saved.exceptionOrNull()?.localizedMessage}"
@@ -357,6 +467,17 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                 }
             }
         }
+    }
+
+    private fun openAssessmentDetails() {
+        detailsPanel.visibility = android.view.View.VISIBLE
+        if (latestScanLabel != null) {
+            val confidenceText = result.text.toString().lineSequence()
+                .firstOrNull { it.startsWith("Confidence:") }?.removePrefix("Confidence:")?.trim()
+            confidenceDetails.text = "AI result: ${displayVariety(latestScanLabel!!.substringBefore("__"))} · ${latestScanLabel!!.substringAfter("__").replace('_', ' ')}" +
+                (confidenceText?.let { " · Confidence: $it" } ?: "")
+        } else confidenceDetails.text = "Confidence: Manual assessment"
+        contentScroll.post { contentScroll.smoothScrollTo(0, detailsPanel.top) }
     }
 
     private fun showFarmerMenu() {
@@ -592,7 +713,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                     else "\n" + records.take(2).joinToString("\n") {
                         "Scan · ${displayVariety(it.label.substringBefore("__"))} · ${it.label.substringAfter("__").replace('_', ' ')}"
                     } + assessments.take(2).joinToString("") {
-                        "\nAssessment · ${OfflineRules.VARIETIES[it.getInt("variety")]} · ${"%.2f".format(it.getDouble("total_lkg"))} LKG"
+                "\nAssessment · ${it.optString("plot_name", "Plot")} · ${OfflineRules.VARIETIES[it.getInt("variety")]} · ${"%.2f".format(it.getDouble("total_lkg"))} LKG"
                     }
             }.getOrElse { "Could not read local history: ${it.localizedMessage}" }
             runOnUiThread { if (!isDestroyed) history.text = message }
@@ -609,7 +730,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
     private fun showResult(label: String, confidence: Float, saveState: String, topMatches: String = "") {
         val variety = displayVariety(label.substringBefore("__"))
         val maturity = label.substringAfter("__").replace('_', ' ')
-        result.text = "RESULT READY ON THIS DEVICE\n\nVariety: $variety\nMaturity: $maturity\nConfidence: ${"%.1f".format(confidence * 100)}%"
+        result.text = "ANALYSIS COMPLETE\n\nClassification: $variety\nMaturity: $maturity\nConfidence: ${"%.1f".format(confidence * 100)}%"
         result.visibility = android.view.View.VISIBLE
         status.text = saveState + if (topMatches.isBlank()) "" else "\n\nOther model matches:\n$topMatches"
     }
@@ -646,7 +767,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                             AlertDialog.Builder(this).setMessage("No saved offline results for this period.").setPositiveButton("OK", null).show()
                         } else {
                             val entries = (scans.map { it.createdAt to ("Scan · ${displayVariety(it.label.substringBefore("__"))} · ${it.label.substringAfter("__").replace('_', ' ')}" to it) } +
-                                assessments.map { it.getLong("created_at") to ("Assessment · ${OfflineRules.VARIETIES[it.getInt("variety")]} · ${"%.2f".format(it.getDouble("total_lkg"))} LKG · ${if (it.getBoolean("synced")) "Server copy saved" else "Server copy waiting"}" to it) } +
+                                assessments.map { it.getLong("created_at") to ("Assessment · ${it.optString("plot_name", "Plot")} · ${OfflineRules.VARIETIES[it.getInt("variety")]} · ${"%.2f".format(it.getDouble("total_lkg"))} LKG · ${if (it.getBoolean("synced")) "Server copy saved" else "Server copy waiting"}" to it) } +
                                 online.map { it.getLong("created_at_ms") to ("Online history · ${it.optString("variety")} · ${it.optString("created_at").take(10)}" to it) })
                                 .sortedByDescending { it.first }
                             val items = entries.map { it.second.first }.toTypedArray()
@@ -665,6 +786,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                                     }
                                     latestScanId = null
                                     latestScanLabel = null
+                                    plotName.setText(selected.optString("plot_name"))
                                     variety.setSelection(selected.getInt("variety"))
                                     area.setText(selected.getDouble("hectares").toString())
                                     plowing.setSelection(selected.getInt("plowing") - 1)
@@ -675,6 +797,8 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                                     maturity.setSelection(selected.getInt("maturity"))
                                     assessment.text = "${formatAssessment(selected)}\nSaved on this phone · ${if (selected.getBoolean("synced")) "Server copy saved" else "Server copy waiting"}"
                                     recommendationsView.text = "Recommendations\n\n${formatRecommendations(selected)}"
+                                    detailsPanel.visibility = android.view.View.VISIBLE
+                                    agronomicInputs.visibility = android.view.View.VISIBLE
                                     return@setItems
                                 }
                                 val scan = selected as PendingScanSummary
@@ -689,6 +813,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                                             showResult(scan.label, scan.confidence,
                                                 if (scan.synced) "Saved on this phone · Also synchronized to the server."
                                                 else "Saved on this phone · Server copy waiting for connection.")
+                                            reviewActions.visibility = android.view.View.VISIBLE
                                         }.onFailure { status.text = "Could not open saved photo: ${it.localizedMessage}" }
                                     }
                                 }
@@ -748,6 +873,9 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
         controls(false)
         preview.setImageDrawable(null)
         result.visibility = android.view.View.GONE
+        reviewActions.visibility = android.view.View.GONE
+        detailsPanel.visibility = android.view.View.GONE
+        agronomicInputs.visibility = android.view.View.GONE
         latestScanId = null
         latestScanLabel = null
         status.text = "Analyzing photo on this device…"
@@ -780,6 +908,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                             })
                     }
                     controls(true)
+                    if (accepted) reviewActions.visibility = android.view.View.VISIBLE
                     if (accepted && saved.isSuccess) refreshHistory()
                 }
             } catch (error: Exception) {

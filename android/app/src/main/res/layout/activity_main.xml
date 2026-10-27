@@ -23,7 +23,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="120dp"
-        android:text="Offline scan"
+        android:text="Offline Farmer Workspace"
         android:textColor="@android:color/white"
         app:backgroundTint="#0B6B38"
         app:cornerRadius="24dp" />

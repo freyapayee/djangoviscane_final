@@ -35,12 +35,12 @@ class OfflineAssessmentStore(private val context: Context) {
     fun save(farmerId: Long, variety: Int, hectares: Double, plowing: Int, weeding: Int,
              fertilizer: Int, stage: Int, infected: Boolean, maturity: Int,
              estimate: OfflineCalculator.Result, recommendations: List<OfflineRecommendation>,
-             scanId: String?): JSONObject {
+             scanId: String?, plotName: String = ""): JSONObject {
         require(farmerId > 0)
         val id = UUID.randomUUID().toString()
         val record = JSONObject()
             .put("id", id).put("farmer_id", farmerId).put("created_at", System.currentTimeMillis())
-            .put("rules_version", OfflineRules.VERSION).put("variety", variety)
+            .put("rules_version", OfflineRules.VERSION).put("plot_name", plotName.trim()).put("variety", variety)
             .put("hectares", hectares).put("plowing", plowing).put("weeding", weeding)
             .put("fertilizer", fertilizer).put("stage", stage).put("infected", infected)
             .put("maturity", maturity).put("scan_id", scanId ?: "")
