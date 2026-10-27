@@ -537,7 +537,7 @@ class OfflineScanActivity : ComponentActivity() {
             setTypeface(null, Typeface.BOLD)
         })
         page.addView(TextView(this).apply {
-            text = "Saved announcements and assessment recommendations are available here offline."
+            text = "View announcements saved on this phone."
             textSize = 15f
             setTextColor(Color.rgb(90, 104, 96))
             setPadding(0, dp(5), 0, dp(12))
@@ -562,11 +562,11 @@ class OfflineScanActivity : ComponentActivity() {
         worker.execute {
             val saved = runCatching {
                 val cache = OfflineFarmerCache(this)
-                Triple(cache.snapshot(farmerId), OfflineAssessmentStore(this).records(farmerId), cache)
+                Triple(cache.snapshot(farmerId), cache.clearedAnnouncementId(farmerId), cache)
             }
             runOnUiThread {
                 if (isDestroyed) return@runOnUiThread
-                saved.onSuccess { (snapshot, assessments, cache) ->
+                saved.onSuccess { (snapshot, clearedAnnouncementId, cache) ->
                     page.removeView(loading)
                     val announcements = snapshot?.optJSONArray("announcements")
                     page.addView(TextView(this).apply {
@@ -578,76 +578,39 @@ class OfflineScanActivity : ComponentActivity() {
                     })
                     if (announcements == null) {
                         page.addView(notificationMessage("Connect once while signed in to save announcements for offline viewing."))
-                    } else if (announcements.length() == 0) {
-                        page.addView(notificationMessage("No saved announcements yet."))
                     } else {
-                        for (index in 0 until announcements.length()) {
-                            val item = announcements.getJSONObject(index)
-                            page.addView(notificationCard(item.optString("title", "Announcement"),
-                                item.optString("message"), item.optString("created_at")))
+                        val visibleAnnouncements = (0 until announcements.length()).mapNotNull { index ->
+                            announcements.optJSONObject(index)?.takeIf { it.optInt("id") > clearedAnnouncementId }
                         }
-                        page.addView(Button(this).apply {
-                            text = "Mark announcements as read"
-                            backgroundTintList = ColorStateList.valueOf(Color.rgb(232, 242, 232))
-                            setTextColor(green)
-                            setOnClickListener {
-                                val latestId = (0 until announcements.length()).maxOfOrNull {
-                                    announcements.getJSONObject(it).optInt("id")
-                                } ?: 0
-                                worker.execute {
-                                    val marked = runCatching { cache.markAnnouncementsRead(farmerId, latestId) }
-                                    runOnUiThread {
-                                        if (!isDestroyed) Toast.makeText(this,
-                                            if (marked.isSuccess) "Marked read on this phone; it will sync when you reconnect."
-                                            else "Could not update notification status.", Toast.LENGTH_LONG).show()
+                        if (visibleAnnouncements.isEmpty()) {
+                            page.addView(notificationMessage(if (announcements.length() == 0) "No saved announcements yet."
+                                else "No new announcements. Previously cleared announcements remain available in News and announcements."))
+                        } else {
+                            visibleAnnouncements.forEach { item ->
+                                page.addView(notificationCard(item.optString("title", "Announcement"),
+                                    item.optString("message"), item.optString("created_at")))
+                            }
+                            page.addView(Button(this).apply {
+                                text = "Clear announcements"
+                                backgroundTintList = ColorStateList.valueOf(Color.rgb(232, 242, 232))
+                                setTextColor(green)
+                                setOnClickListener {
+                                    val latestId = visibleAnnouncements.maxOfOrNull { it.optInt("id") } ?: 0
+                                    isEnabled = false
+                                    worker.execute {
+                                        val cleared = runCatching { cache.clearAnnouncements(farmerId, latestId) }
+                                        runOnUiThread {
+                                            if (!isDestroyed) {
+                                                if (cleared.isSuccess) showNotificationsPage()
+                                                Toast.makeText(this,
+                                                    if (cleared.isSuccess) "Announcements cleared on this phone; read status will sync when you reconnect."
+                                                    else "Could not clear announcements.", Toast.LENGTH_LONG).show()
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
-                    }
-
-                    page.addView(TextView(this).apply {
-                        text = "Assessment Recommendations"
-                        textSize = 18f
-                        setTextColor(green)
-                        setTypeface(null, Typeface.BOLD)
-                        setPadding(0, dp(20), 0, dp(8))
-                    })
-                    val savedHistory = snapshot?.optJSONArray("history")
-                    val hasOnlineRecommendations = savedHistory != null && (0 until savedHistory.length()).any {
-                        val recommendations = savedHistory.optJSONObject(it)?.optJSONArray("recommendations")
-                        recommendations != null && recommendations.length() > 0
-                    }
-                    if (assessments.isEmpty() && !hasOnlineRecommendations) {
-                        page.addView(notificationMessage("Recommendations from your saved offline assessments will appear here."))
-                    }
-                    if (savedHistory != null) {
-                        for (index in 0 until savedHistory.length()) {
-                            val record = savedHistory.optJSONObject(index) ?: continue
-                            val items = record.optJSONArray("recommendations") ?: continue
-                            if (items.length() == 0) continue
-                            val text = (0 until items.length()).joinToString("\n\n") { itemIndex ->
-                                val item = items.optJSONObject(itemIndex)
-                                if (item == null) items.optString(itemIndex) else
-                                    "${item.optString("category", "Recommendation")} · ${item.optString("title")}\n${item.optString("meta")}"
-                            }
-                            val date = record.optString("created_at").ifBlank {
-                                record.optLong("created_at_ms").takeIf { it > 0 }?.let {
-                                    java.text.SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.getDefault()).format(java.util.Date(it))
-                                }.orEmpty()
-                            }
-                            page.addView(notificationCard("${record.optString("variety", "Assessment")} · saved online", text, date))
+                            }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) })
                         }
-                    }
-                    assessments.forEach { record ->
-                        val title = buildString {
-                            append(record.optString("plot_name").ifBlank { "Assessment" })
-                            record.optString("variety").takeIf { it.isNotBlank() }?.let { append(" · ").append(it) }
-                        }
-                        page.addView(notificationCard(title, formatRecommendations(record),
-                            record.optLong("created_at").takeIf { it > 0 }?.let {
-                                java.text.SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.getDefault()).format(java.util.Date(it))
-                            }.orEmpty()))
                     }
                 }.onFailure { error ->
                     loading.text = "Could not load saved notifications: ${error.localizedMessage}"

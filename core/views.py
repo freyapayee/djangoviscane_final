@@ -367,18 +367,19 @@ def farmer_notifications(request):
 
 
 @farmer_login_required
-@require_GET
 def farmer_notification_center(request):
     user = current_user(request)
-    announcements = list(Notification.objects.order_by("-id"))
-    suggestions_query = AgronomicLog.objects.filter(user=user).exclude(recommendations_snapshot=[])
-    suggestions = list(suggestions_query.order_by("-id")[:50])
+    if request.method == "POST":
+        latest_id = Notification.objects.order_by("-id").values_list("id", flat=True).first() or 0
+        User.objects.filter(pk=user.pk, seen_announcement_id__lt=latest_id).update(seen_announcement_id=latest_id)
+        return django_redirect("/homepage?view=notification-center" if request.farmer_only else "/farmer/notification-center")
+    if request.method != "GET":
+        return HttpResponse(status=405)
+    announcements = list(Notification.objects.filter(id__gt=user.seen_announcement_id).order_by("-id"))
     return render_template(request, "farmer_notification_center.html", {
         "user": user,
         "announcements": announcements,
-        "suggestions": suggestions,
-        "unread_announcements": sum(item.id > user.seen_announcement_id for item in announcements),
-        "unread_suggestions": suggestions_query.filter(id__gt=user.seen_suggestion_id).count(),
+        "unread_announcements": len(announcements),
     })
 
 
