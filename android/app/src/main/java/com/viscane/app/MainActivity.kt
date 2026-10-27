@@ -234,7 +234,11 @@ class MainActivity : AppCompatActivity() {
                 if (FarmerNavigation(getBaseUrl()).sameOrigin(url)) {
                     when (Uri.parse(url).path) {
                         "/homepage" -> refreshMobileSessionAndSync()
-                        "/auth", "/logout" -> getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
+                        // A redirect to /auth can be caused by a transient network
+                        // failure or expired server session. Keep the last farmer ID
+                        // so the same account can continue in the offline workspace.
+                        // Explicit /logout is handled in onPageStarted above.
+                        "/logout" -> getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
                             .edit().remove("farmer_id").apply()
                     }
                 }
