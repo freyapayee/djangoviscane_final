@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Sugarcane Scan Gallery</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-2">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-gallery">
     {% include 'components/superadmin_navigation.html' %}
@@ -45,12 +45,10 @@
                 </span>
             </div>
             {% if superadmin_cv_uploads %}
-                <form id="bulk-delete-scans" method="POST" action="/superadmin/scan-gallery/delete-selected" class="superadmin-bulk-delete-form" data-confirm-action="remove" data-confirm-message="Permanently delete the selected photos?">
+                <form id="bulk-delete-scans" method="POST" action="/superadmin/scan-gallery/delete-selected" class="superadmin-bulk-delete-form">
                     {{ csrf_input }}
-                    <label for="bulk-delete-reason">Reason for deleting selected photos</label>
-                    <textarea id="bulk-delete-reason" name="reason" rows="2" maxlength="180" required></textarea>
                     <button type="submit" class="btn danger">Delete selected photos</button>
-                    <span>Select one or more photos below.</span>
+                    <span>Select photos below. You’ll be asked for a reason before deletion.</span>
                 </form>
                 <div class="scan-gallery-grid superadmin-scan-gallery-grid">
                     {% for upload in superadmin_cv_uploads %}
@@ -111,5 +109,36 @@
     </main>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
+    <script>
+        (() => {
+            const form = document.getElementById('bulk-delete-scans');
+            if (!form) return;
+            let approved = false;
+            form.addEventListener('submit', (event) => {
+                if (approved) return;
+                event.preventDefault();
+                const selected = form.querySelectorAll('input[name="upload_ids"]:checked').length;
+                if (!selected) {
+                    window.alert('Select at least one photo to delete.');
+                    return;
+                }
+                const reason = window.prompt(`Enter a reason for deleting ${selected} selected photo${selected === 1 ? '' : 's'} (1–180 characters):`);
+                if (reason === null) return;
+                const trimmedReason = reason.trim();
+                if (!trimmedReason || trimmedReason.length > 180) {
+                    window.alert('The reason must be between 1 and 180 characters.');
+                    return;
+                }
+                if (!window.confirm(`Permanently delete ${selected} selected photo${selected === 1 ? '' : 's'}?`)) return;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'reason';
+                input.value = trimmedReason;
+                form.append(input);
+                approved = true;
+                form.requestSubmit();
+            });
+        })();
+    </script>
 </body>
 </html>
