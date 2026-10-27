@@ -153,7 +153,7 @@ body.ds-app.vis-auth-page .auth-footer { margin-top: 24px; padding-top: 4px; tex
     }
     body.ds-app.vis-auth-page .vis-auth-shell.is-login {
         min-height: calc(100svh - 32px); min-height: calc(100dvh - 32px);
-        align-items: center;
+        align-items: start; padding-block: 8px;
     }
     body.ds-app.vis-auth-page .vis-auth-intro,
     body.ds-app.vis-auth-page .vis-auth-shell.is-register .vis-auth-intro { display: none; }

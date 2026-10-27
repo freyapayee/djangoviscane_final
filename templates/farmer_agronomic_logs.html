@@ -10,10 +10,11 @@
     <link rel="manifest" href="{{ url_for('static', filename='farmer-manifest.webmanifest') }}">
     <title>VISCANE | Agronomic Input Logs</title>
     {% if not offline_mode %}<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>{% endif %}
+    <script src="{{ url_for('static', filename='farmer-icons.js') }}?v=1" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=15">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=6">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=16">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=11">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
     <link rel="stylesheet" href="/static/css/farmer-menu.css?v=8">
 </head>
@@ -110,13 +111,17 @@
                                         <dl class="history-facts">
                                             <div><dt>{{ farmer_text('Plot') }}</dt><dd>{{ scan.plot_name }}</dd></div>
                                             <div><dt>{{ farmer_text('Classification') }}</dt><dd>{{ upload.variety if upload and upload.variety else (log.variety or '—') }}</dd></div>
-                                            <div><dt>{{ farmer_text('Maturity') }}</dt><dd>{{ farmer_text(upload.maturity_status.replace('_', ' ').title()) if upload and upload.maturity_status else '—' }}</dd></div>
+                                            <div><dt>{{ farmer_text('Maturity') }}</dt><dd>{{ farmer_text((upload.maturity_status or log.offline_maturity_status).replace('_', ' ').title()) if (upload and upload.maturity_status) or log.offline_maturity_status else '—' }}</dd></div>
                                             <div><dt>{{ farmer_text('Maturity estimate') }}</dt><dd>{{ scan.maturity_pct }}%</dd></div>
                                             <div><dt>{{ farmer_text('Confidence') }}</dt><dd>{{ '%.1f%%'|format(upload.confidence * 100) if upload and upload.confidence is not none else '—' }}</dd></div>
                                             <div><dt>{{ farmer_text('Scanned') }}</dt><dd>{{ row.scanned_at.strftime('%b %d, %Y · %I:%M %p') if row.scanned_at else '—' }}</dd></div>
                                         </dl>
                                     {% else %}
-                                        <p class="history-unavailable">{{ farmer_text('Scan details were not recorded for this earlier calculation.') }}</p>
+                                        {% if log.offline_maturity_status %}
+                                            <p class="history-unavailable">{{ farmer_text('Manual maturity') }}: {{ farmer_text(log.offline_maturity_status.replace('_', ' ').title()) }}</p>
+                                        {% else %}
+                                            <p class="history-unavailable">{{ farmer_text('Scan details were not recorded for this earlier calculation.') }}</p>
+                                        {% endif %}
                                     {% endif %}
                                 </section>
 

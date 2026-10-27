@@ -21,8 +21,8 @@ public final class OfflineCalculator {
             int weeding, int fertilizer, int stage, boolean infected, int maturity) {
         if (variety < 0 || variety >= OfflineRules.VARIETIES.length)
             throw new IllegalArgumentException("Select a supported variety.");
-        if (Double.isNaN(hectares) || Double.isInfinite(hectares) || hectares <= 0)
-            throw new IllegalArgumentException("Enter a positive, finite area in hectares.");
+        if (Double.isNaN(hectares) || Double.isInfinite(hectares) || hectares <= 0 || hectares > 1_000_000)
+            throw new IllegalArgumentException("Enter an area greater than zero and at most 1,000,000 hectares.");
         for (int count : new int[] {plowing, weeding, fertilizer, stage}) {
             if (count < 1 || count > 3)
                 throw new IllegalArgumentException("Counts and crop stage must be 1, 2 or 3.");

@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private var loadFailed = false
     private var isOfflineServer = false
     private var offlineServerStarting = false
+    private var launchedOfflineWorkspace = false
     private val syncRunning = AtomicBoolean(false)
 
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -240,12 +241,15 @@ class MainActivity : AppCompatActivity() {
                 if (navigation.allows(url)) {
                     view.evaluateJavascript("""
                         if ('serviceWorker' in navigator) {
-                          navigator.serviceWorker.register('/service-worker.js').then(function() {
-                            return navigator.serviceWorker.ready;
-                          }).then(function(reg) {
-                            if (!reg.active) return;
-                            reg.active.postMessage({type:'SAVE_PAGE', url:location.href, html:'<!doctype html>'+document.documentElement.outerHTML,
-                              styles:Array.from(document.querySelectorAll('link[rel=stylesheet]')).map(function(x){return x.href})});
+                          navigator.serviceWorker.getRegistrations().then(function(regs) {
+                            regs.filter(function(reg) { return reg.scope === location.origin + '/'; })
+                              .forEach(function(reg) { reg.unregister(); });
+                          }).catch(function(){});
+                        }
+                        if ('caches' in window) {
+                          caches.keys().then(function(keys) {
+                            keys.filter(function(key) { return key.startsWith('viscane-pages-'); })
+                              .forEach(function(key) { caches.delete(key); });
                           }).catch(function(){});
                         }
                     """.trimIndent(), null)
@@ -254,7 +258,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                 if (request.isForMainFrame) {
-                    if (!hasNetworkConnection()) showLoadError("Offline", "Connect to use the online portal, or scan a photo on this device.")
+                    if (!hasNetworkConnection()) showLoadError("Offline", "Open the offline farmer workspace for scans, agronomic calculations, recommendations, and saved input logs.")
                     else showLoadError()
                 }
             }
@@ -278,7 +282,7 @@ class MainActivity : AppCompatActivity() {
 
         // Existing server accounts and history are authoritative whenever online.
         if (hasNetworkConnection()) webView.loadUrl(activeBaseUrl)
-        else showLoadError("Offline", "Connect once to sign in, or scan a photo on this device if you previously signed in.")
+        else showLoadError("Offline", "Connect once to sign in, then use scans, agronomic calculations, recommendations, and saved input logs on this device.")
     }
 
     override fun onResume() {
@@ -292,6 +296,14 @@ class MainActivity : AppCompatActivity() {
             webView.loadUrl(baseUrl)
         }
         if (::webView.isInitialized && hasNetworkConnection()) refreshMobileSessionAndSync()
+        if (launchedOfflineWorkspace) {
+            launchedOfflineWorkspace = false
+            if (::webView.isInitialized && !hasNetworkConnection() &&
+                getSharedPreferences("farmer_offline_access", MODE_PRIVATE).getLong("farmer_id", 0) <= 0) {
+                loadFailed = false
+                showLoadError("Offline", "Sign in online with your farmer account to unlock saved offline work on this phone.")
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -342,7 +354,7 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this).setTitle(title)
             .setMessage(message)
             .setPositiveButton("Retry") { _, _ -> webView.reload() }
-            .setNeutralButton("Scan offline") { _, _ -> openOfflineScanner() }
+            .setNeutralButton("Open offline workspace") { _, _ -> openOfflineScanner() }
             .setNegativeButton("Close", null).show()
     }
 
@@ -370,10 +382,13 @@ class MainActivity : AppCompatActivity() {
     private fun openOfflineScanner() {
         val farmerId = getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
             .getLong("farmer_id", 0)
-        if (farmerId > 0) startActivity(Intent(this, OfflineScanActivity::class.java).putExtra("farmer_id", farmerId))
+        if (farmerId > 0) {
+            launchedOfflineWorkspace = true
+            startActivity(Intent(this, OfflineScanActivity::class.java).putExtra("farmer_id", farmerId))
+        }
         else AlertDialog.Builder(this)
             .setTitle("Sign in first")
-            .setMessage("Connect to the internet and sign in to your farmer account before using offline scan.")
+            .setMessage("Connect to the internet and sign in to your farmer account once before using offline scans, calculations, and recommendations.")
             .setPositiveButton("OK", null).show()
     }
 
@@ -387,7 +402,8 @@ class MainActivity : AppCompatActivity() {
                 if (farmerId != null) {
                     getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
                         .edit().putLong("farmer_id", farmerId).apply()
-                    OfflineSync.sync(applicationContext, base, farmerId)
+                    runCatching { OfflineSync.sync(applicationContext, base, farmerId) }
+                    runCatching { OfflineSync.refreshContent(applicationContext, base, farmerId) }
                 }
             } catch (_: Exception) {
                 // Network and server failures leave encrypted pending records intact.

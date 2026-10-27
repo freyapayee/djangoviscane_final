@@ -86,6 +86,7 @@ class Notification(models.Model):
 class Feedback(models.Model):
     user_id = models.IntegerField(blank=True, null=True)
     message = models.TextField()
+    offline_id = models.UUIDField(null=True, blank=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -113,6 +114,7 @@ class AgronomicLog(models.Model):
     fertilizer_count = models.CharField(max_length=20, blank=True, null=True)
     ratoon_stage = models.CharField(max_length=40, blank=True, null=True)
     rssi_infected = models.CharField(max_length=20, blank=True, null=True)
+    offline_maturity_status = models.CharField(max_length=20, blank=True, null=True)
     predicted_lkg_tc = models.FloatField(blank=True, null=True)
     predicted_tc_ha = models.FloatField(blank=True, null=True)
     predicted_lkg = models.FloatField(blank=True, null=True)
@@ -146,3 +148,22 @@ class OfflineScanReceipt(models.Model):
 
     class Meta:
         db_table = "offline_scan_receipt"
+
+
+class OfflineAssessmentReceipt(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="offline_assessment_receipts")
+    log = models.OneToOneField(AgronomicLog, on_delete=models.CASCADE, related_name="offline_assessment_receipt")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "offline_assessment_receipt"
+
+
+class OfflineProfileReceipt(models.Model):
+    id = models.UUIDField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="offline_profile_receipts")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "offline_profile_receipt"

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import csv
+import base64
+import hashlib
 import json
 import math
 import os
@@ -14,6 +16,8 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Avg, Count, Sum, Q
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
@@ -26,7 +30,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .language import translate_recommendations
-from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, Notification, OfflineScanReceipt, Scan, SystemConfig, User
+from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, Notification, OfflineAssessmentReceipt, OfflineProfileReceipt, OfflineScanReceipt, Scan, SystemConfig, User
 from .services import (
     DEFAULT_RECOMMENDATIONS,
     DEFAULT_SCAN_PREDICT_TOP_K,
@@ -584,6 +588,222 @@ def api_mobile_offline_scan(request):
         )
         OfflineScanReceipt.objects.create(id=record_id, user=user, log=log)
     return JsonResponse({"record_id": str(record_id), "log_id": log.pk, "synced": True}, status=201)
+
+
+@require_POST
+def api_mobile_offline_assessment(request):
+    """Persist a completed on-device assessment after rechecking its inputs on the server."""
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Offline results must sync to the production server."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    if request.POST.get("farmer_id") != str(user.pk):
+        return JsonResponse({"error": "Assessment owner does not match the signed-in farmer."}, status=403)
+    try:
+        record_id = uuid.UUID(request.POST.get("record_id", ""))
+    except (ValueError, AttributeError):
+        return JsonResponse({"error": "Invalid record ID."}, status=400)
+    existing = OfflineAssessmentReceipt.objects.filter(pk=record_id).first()
+    if existing:
+        if existing.user_id != user.pk:
+            return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+        return JsonResponse({"record_id": str(record_id), "log_id": existing.log_id, "synced": True})
+    varieties = ("VMC 84-524", "VMC 84-947", "MAURITIO RC888")
+    maturity = ("", "NOT_MATURE", "MATURE", "OVER_MATURE")
+    try:
+        variety_index = int(request.POST.get("variety", ""))
+        maturity_index = int(request.POST.get("maturity", ""))
+        plowing = int(request.POST.get("plowing", ""))
+        weeding = int(request.POST.get("weeding", ""))
+        fertilizer = int(request.POST.get("fertilizer", ""))
+        stage = int(request.POST.get("stage", ""))
+        hectares = float(request.POST.get("hectares", ""))
+        infected = request.POST.get("infected")
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid assessment inputs."}, status=400)
+    if not (0 <= variety_index < len(varieties) and 0 <= maturity_index < len(maturity)
+            and all(1 <= value <= 3 for value in (plowing, weeding, fertilizer, stage))
+            and math.isfinite(hectares) and 0 < hectares <= 1_000_000 and infected in {"true", "false"}):
+        return JsonResponse({"error": "Assessment inputs are out of range."}, status=400)
+    scan_id_text = request.POST.get("scan_id", "").strip()
+    upload = None
+    if scan_id_text:
+        try:
+            scan_id = uuid.UUID(scan_id_text)
+        except (ValueError, AttributeError):
+            return JsonResponse({"error": "Invalid linked scan ID."}, status=400)
+        scan_receipt = OfflineScanReceipt.objects.select_related("log").filter(pk=scan_id, user=user).first()
+        if not scan_receipt:
+            return JsonResponse({"error": "Linked scan has not synced yet."}, status=409)
+        upload = scan_receipt.log.offline_cv_upload
+    variety = varieties[variety_index]
+    inputs = {"rssi": 1 if infected == "true" else 0, "weeding": weeding,
+              "fertilizer": fertilizer, "ratoon": stage, "plowing": plowing}
+    try:
+        prediction = predict_variety_metrics(variety, hectares, [0.21, 0.48, 0.63, 0.74, 0.59],
+            inputs, custom_weights={"rssi": -0.50, "weeding": 0.32, "fertilizer": 0.22,
+                                    "ratoon": -0.10, "plowing": 0.09},
+            cv_maturity_status=maturity[maturity_index])
+        recommendations = generate_recommendations(prediction, inputs, variety=variety)
+    except (ValueError, TypeError, KeyError) as error:
+        return JsonResponse({"error": str(error)}, status=400)
+    summary = " | ".join(f"{item.get('category', 'General')}: {item.get('title', '')}"
+                         for item in recommendations)
+    with transaction.atomic():
+        existing = OfflineAssessmentReceipt.objects.filter(pk=record_id).first()
+        if existing:
+            if existing.user_id != user.pk:
+                return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+            return JsonResponse({"record_id": str(record_id), "log_id": existing.log_id, "synced": True})
+        log = AgronomicLog.objects.create(
+            user=user, offline_cv_upload=upload, variety=variety, hectares=str(hectares),
+            plowing_count=str(plowing), weeding_count=str(weeding), fertilizer_count=str(fertilizer),
+            ratoon_stage=str(stage), rssi_infected="Yes" if infected == "true" else "No",
+            offline_maturity_status=maturity[maturity_index] or None,
+            predicted_lkg_tc=prediction["predicted_lkg_tc"], predicted_tc_ha=prediction["predicted_tc_ha"],
+            predicted_lkg=prediction["predicted_lkg"], recommendations_summary=summary,
+            recommendations_snapshot=recommendations,
+        )
+        OfflineAssessmentReceipt.objects.create(id=record_id, user=user, log=log)
+    return JsonResponse({"record_id": str(record_id), "log_id": log.pk, "synced": True}, status=201)
+
+
+@require_GET
+def api_mobile_offline_content(request):
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Local server has no production session."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    announcements = list(Notification.objects.order_by("-created_at")[:100]
+        .values("id", "title", "message", "created_at"))
+    feedback = [
+        {"id": item.pk, "offline_id": str(item.offline_id) if item.offline_id else "",
+         "message": item.message, "created_at": item.created_at.isoformat(),
+         "replies": [{"message": reply.message, "created_at": reply.created_at.isoformat()}
+                     for reply in item.replies.all()]}
+        for item in Feedback.objects.filter(user_id=user.pk).prefetch_related("replies").order_by("-created_at")[:20]
+    ]
+    history = [
+        {"id": log.pk, "created_at": log.created_at.isoformat(),
+         "created_at_ms": int(log.created_at.timestamp() * 1000), "variety": log.variety or "",
+         "hectares": log.hectares or "", "maturity_status": log.offline_maturity_status or "",
+         "lkg_per_ton": log.predicted_lkg_tc,
+         "total_tons": log.predicted_tc_ha, "total_lkg": log.predicted_lkg,
+         "recommendations": log.recommendations_snapshot or [],
+         "scan_variety": (log.offline_cv_upload or (log.scan.cv_upload if log.scan else None)).variety
+                         if (log.offline_cv_upload or (log.scan.cv_upload if log.scan else None)) else "",
+         "cached_online": True}
+        for log in AgronomicLog.objects.filter(user=user).select_related(
+            "offline_cv_upload", "scan__cv_upload").order_by("-created_at")[:100]
+    ]
+    profile_values = (user.email.lower(), user.phone, user.province or "", user.municipality or "", user.barangay or "")
+    profile_version = hashlib.sha256(json.dumps(profile_values, ensure_ascii=False).encode("utf-8")).hexdigest()
+    photo_base64 = ""
+    if user.profile_photo_path:
+        photo_root = (Path(settings.PRIVATE_UPLOAD_ROOT) / "profile_photos").resolve()
+        photo_path = (photo_root / Path(user.profile_photo_path).name).resolve()
+        try:
+            if photo_path.is_relative_to(photo_root) and photo_path.is_file() and photo_path.stat().st_size <= 1_000_000:
+                photo_base64 = base64.b64encode(photo_path.read_bytes()).decode("ascii")
+        except OSError:
+            pass
+    response = JsonResponse({
+        "farmer_id": user.pk,
+        "fetched_at": timezone.now().isoformat(),
+        "profile": {"name": user.fullname, "email": user.email, "phone": user.phone,
+                    "province": user.province or "", "municipality": user.municipality or "",
+                    "barangay": user.barangay or "", "version": profile_version,
+                    "photo_base64": photo_base64},
+        "announcements": announcements,
+        "feedback": feedback,
+        "history": history,
+        "recommendations": request.session.get("farmer_recommendations") or DEFAULT_RECOMMENDATIONS,
+        "seen_announcement_id": user.seen_announcement_id,
+    })
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@require_POST
+def api_mobile_offline_feedback(request):
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Offline feedback must sync to the production server."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    if request.POST.get("farmer_id") != str(user.pk):
+        return JsonResponse({"error": "Feedback owner does not match the signed-in farmer."}, status=403)
+    try:
+        record_id = uuid.UUID(request.POST.get("record_id", ""))
+    except (ValueError, AttributeError):
+        return JsonResponse({"error": "Invalid record ID."}, status=400)
+    existing = Feedback.objects.filter(offline_id=record_id).first()
+    if existing:
+        if existing.user_id != user.pk:
+            return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+        return JsonResponse({"record_id": str(record_id), "feedback_id": existing.pk, "synced": True})
+    message = request.POST.get("message", "").strip()
+    if not message or len(message) > 5000:
+        return JsonResponse({"error": "Enter feedback of 1 to 5000 characters."}, status=400)
+    feedback = Feedback.objects.create(user_id=user.pk, message=message, offline_id=record_id)
+    log_audit(f"Farmer feedback submitted by {user.fullname}", user_id=user.pk)
+    return JsonResponse({"record_id": str(record_id), "feedback_id": feedback.pk, "synced": True}, status=201)
+
+
+@require_POST
+def api_mobile_offline_profile(request):
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Offline profile edits must sync to the production server."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    if request.POST.get("farmer_id") != str(user.pk):
+        return JsonResponse({"error": "Profile owner does not match the signed-in farmer."}, status=403)
+    try:
+        record_id = uuid.UUID(request.POST.get("record_id", ""))
+    except (ValueError, AttributeError):
+        return JsonResponse({"error": "Invalid record ID."}, status=400)
+    existing = OfflineProfileReceipt.objects.filter(pk=record_id).first()
+    if existing:
+        if existing.user_id != user.pk:
+            return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+        return JsonResponse({"record_id": str(record_id), "synced": True})
+    email = request.POST.get("email", "").strip().lower()
+    original_email = request.POST.get("original_email", "").strip().lower()
+    original_version = request.POST.get("original_version", "").strip().lower()
+    phone = request.POST.get("phone", "").strip()
+    location = {name: request.POST.get(name, "").strip() for name in ("province", "municipality", "barangay")}
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({"error": "Enter a valid email address."}, status=400)
+    if (not original_email or len(original_version) != 64 or len(phone) != 11 or not phone.isdigit()
+            or any(not value or len(value) > 120 for value in location.values())):
+        return JsonResponse({"error": "Invalid phone or location details."}, status=400)
+    with transaction.atomic():
+        locked = User.objects.select_for_update().get(pk=user.pk)
+        existing = OfflineProfileReceipt.objects.filter(pk=record_id).first()
+        if existing:
+            if existing.user_id != user.pk:
+                return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
+            return JsonResponse({"record_id": str(record_id), "synced": True})
+        current_values = (locked.email.lower(), locked.phone, locked.province or "",
+                          locked.municipality or "", locked.barangay or "")
+        current_version = hashlib.sha256(json.dumps(current_values, ensure_ascii=False).encode("utf-8")).hexdigest()
+        if locked.email.lower() != original_email or current_version != original_version:
+            return JsonResponse({"error": "Profile changed online since this draft was saved. Review it before retrying."}, status=409)
+        if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+            return JsonResponse({"error": "Email already exists."}, status=409)
+        locked.email = email
+        locked.phone = phone
+        for name, value in location.items():
+            setattr(locked, name, value)
+        locked.save(update_fields=["email", "phone", "province", "municipality", "barangay"])
+        OfflineProfileReceipt.objects.create(id=record_id, user=locked)
+    log_audit(f"Farmer updated profile details: {user.fullname}", user_id=user.pk)
+    return JsonResponse({"record_id": str(record_id), "synced": True}, status=201)
 
 
 @farmer_login_required
