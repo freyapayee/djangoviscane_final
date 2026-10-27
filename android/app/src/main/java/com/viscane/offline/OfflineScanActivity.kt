@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.Color
 import android.graphics.Typeface
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -18,6 +20,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -51,6 +54,12 @@ class OfflineScanActivity : ComponentActivity() {
     private var latestScanId: String? = null
     private var latestScanLabel: String? = null
     private var farmerId: Long = 0
+    private val cameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) launchCamera() else {
+            status.text = "Camera permission is needed to take a photo. You can still upload a photo from your gallery."
+            controls(true)
+        }
+    }
     private val picker = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) classify(uri)
     }
@@ -65,13 +74,15 @@ class OfflineScanActivity : ComponentActivity() {
         if (farmerId <= 0 || getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
                 .getLong("farmer_id", 0) != farmerId) { finish(); return }
         cameraUri = savedInstanceState?.getString("cameraUri")?.let(Uri::parse)
-        val green = Color.rgb(11, 107, 56)
-        val dark = Color.rgb(16, 48, 37)
+        val green = Color.rgb(62, 124, 74)
+        val dark = Color.rgb(31, 41, 51)
+        val sage = Color.rgb(232, 242, 232)
+        val cream = Color.rgb(248, 244, 234)
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(12), dp(16), dp(12))
-            setBackgroundColor(green)
+            setBackgroundColor(cream)
         }
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -80,28 +91,39 @@ class OfflineScanActivity : ComponentActivity() {
         }
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(22), dp(20), dp(22))
-            background = rounded(green, 24)
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = rounded(Color.WHITE, 20)
+            elevation = dp(3).toFloat()
         }
-        header.addView(TextView(this).apply { text = "Scan Sugarcane"; textSize = 26f; setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD) })
-        header.addView(TextView(this).apply { text = "Offline photo recognition · stored on this device"; textSize = 16f; setTextColor(Color.WHITE) })
-        header.addView(TextView(this).apply {
-            text = "Offline · ${java.text.SimpleDateFormat("EEE, MMM d", java.util.Locale.getDefault()).format(java.util.Date())}"
-            textSize = 18f
-            setTextColor(Color.WHITE)
-            setTypeface(null, Typeface.BOLD)
-            setPadding(0, dp(12), 0, 0)
+        header.addView(ImageView(this).apply {
+            setImageResource(R.drawable.app_logo)
+            contentDescription = "VISCANE"
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            background = rounded(sage, 12)
+            clipToOutline = true
+        }, LinearLayout.LayoutParams(dp(48), dp(48)).apply { rightMargin = dp(12) })
+        val brand = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = android.view.Gravity.CENTER_VERTICAL }
+        brand.addView(TextView(this).apply { text = "VISCANE"; textSize = 14f; setTextColor(green); setTypeface(null, Typeface.BOLD) })
+        brand.addView(TextView(this).apply { text = "Scan Sugarcane"; textSize = 21f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
+        brand.addView(TextView(this).apply {
+            text = "Offline · ${java.text.SimpleDateFormat("EEE, MMM d", java.util.Locale.getDefault()).format(java.util.Date())} · Saved on this device"
+            textSize = 12f
+            setTextColor(Color.rgb(102, 112, 133))
         })
+        header.addView(brand, LinearLayout.LayoutParams(0, -2, 1f))
         header.addView(Button(this).apply {
-            text = "Farmer menu"; textSize = 16f
+            text = "Menu"; textSize = 14f
+            backgroundTintList = ColorStateList.valueOf(sage)
+            setTextColor(green)
             setOnClickListener { showFarmerMenu() }
-        }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(10) })
-        root.addView(header, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
+        }, LinearLayout.LayoutParams(-2, -2).apply { leftMargin = dp(8) })
+        root.addView(header, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(14) })
 
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(18), dp(18), dp(18), dp(18))
-            background = rounded(Color.WHITE, 22)
+            background = rounded(Color.WHITE, 20)
             elevation = dp(3).toFloat()
         }
         card.addView(TextView(this).apply { text = "Sugarcane assessment"; textSize = 22f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
@@ -122,7 +144,7 @@ class OfflineScanActivity : ComponentActivity() {
             setTextColor(dark)
             setTypeface(null, Typeface.BOLD)
             setPadding(dp(16), dp(16), dp(16), dp(16))
-            background = rounded(Color.rgb(232, 247, 237), 18)
+            background = rounded(sage, 18)
         }
         card.addView(result, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
         status = TextView(this).apply { text = "Loading offline models…"; textSize = 16f; setTextColor(dark); setPadding(0, dp(12), 0, dp(12)) }
@@ -172,6 +194,10 @@ class OfflineScanActivity : ComponentActivity() {
 }
 root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
         }
+        val navigation = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(6), dp(4), dp(6), dp(4))
+        }
         fun nav(label: String, action: () -> Unit) {
             navigation.addView(TextView(this).apply {
                 text = label
@@ -187,21 +213,16 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
         nav("Recommendations") { showRecommendations() }
         nav("Input Logs") { showSavedHistory() }
         nav("Profile") { showProfile() }
-        root.addView(navigation, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
+        navigation.background = rounded(Color.WHITE, 20)
+        navigation.elevation = dp(3).toFloat()
+        root.addView(navigation, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(10) })
         setContentView(root)
         refreshHistory()
         gallery.setOnClickListener { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
         camera.setOnClickListener {
-            try {
-                val directory = File(cacheDir, "camera").apply { mkdirs() }
-                val photo = File(directory, "capture.jpg")
-                cameraUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", photo)
-                controls(false)
-                capture.launch(cameraUri!!)
-            } catch (error: Exception) {
-                status.text = "Camera unavailable: ${error.localizedMessage}"
-                controls(true)
-            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                launchCamera()
+            } else cameraPermission.launch(Manifest.permission.CAMERA)
         }
         worker.execute {
             try {
@@ -214,6 +235,19 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
     }
 
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+
+    private fun launchCamera() {
+        try {
+            val directory = File(cacheDir, "camera").apply { mkdirs() }
+            val photo = File(directory, "capture.jpg")
+            cameraUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", photo)
+            controls(false)
+            capture.launch(cameraUri!!)
+        } catch (error: Exception) {
+            status.text = "Camera unavailable: ${error.localizedMessage}"
+            controls(true)
+        }
+    }
 
     private fun rounded(color: Int, radiusDp: Int) = GradientDrawable().apply {
         // Keep the deep green header, while tinting card surfaces slightly gray for contrast.
@@ -345,7 +379,7 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                     .setMessage("1. Sign in online once.\n2. Open Offline Farmer Workspace.\n3. Capture or choose a sugarcane photo.\n4. Check the variety and maturity.\n5. Enter area and agronomic inputs, then calculate.\n6. Read recommendations and Input Logs.\n7. Reconnect using the same account to sync server copies.")
                     .setPositiveButton("OK", null).show()
                 10 -> AlertDialog.Builder(this).setTitle("Sign out on this phone")
-                    .setMessage("Offline work stays encrypted for this farmer. Signing in online again with the same account will unlock it. Continue?")
+                    .setMessage("Offline work stays encrypted and linked to your online farmer account. Signing in online again with the same account will unlock it. Continue?")
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("Sign out") { _, _ ->
                         getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
@@ -722,26 +756,40 @@ root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
                 val bitmap = decode(uri)
                 val predictions = try { classifier!!.classify(bitmap) } catch (error: Throwable) { bitmap.recycle(); throw error }
                 val top = predictions.first()
-                val saved = runCatching { OfflineScanStore(this).save(farmerId, top, bitmap) }
+                val accepted = top.confidence >= MIN_ACCEPTED_CONFIDENCE
+                val saved = if (accepted) runCatching { OfflineScanStore(this).save(farmerId, top, bitmap) }
+                    else Result.failure(IllegalArgumentException("Prediction confidence below threshold"))
                 runOnUiThread {
                     if (isDestroyed) { bitmap.recycle(); return@runOnUiThread }
                     preview.setImageBitmap(bitmap)
-                    latestScanId = saved.getOrNull()?.id
-                    latestScanLabel = top.label
-                    applyScanLabel(top.label)
-                    showResult(top.label, top.confidence,
-                        if (saved.isSuccess) "Saved on this phone. You can use this result now. A server copy will sync when connected."
-                        else "Result ready, but it could not be saved on this phone: ${saved.exceptionOrNull()?.localizedMessage}",
-                        predictions.drop(1).take(2).joinToString("\n") {
-                            "${displayVariety(it.variety)} · ${it.maturity}: ${"%.1f".format(it.confidence * 100)}%"
-                        })
+                    if (!accepted) {
+                        latestScanId = null
+                        latestScanLabel = null
+                        result.text = "Invalid Image or the image can't be read. Please choose a clear sugarcane photo and try again."
+                        result.visibility = android.view.View.VISIBLE
+                        status.text = "Prediction confidence ${"%.1f".format(top.confidence * 100)}% is below the 75% minimum. No result was saved."
+                    } else {
+                        latestScanId = saved.getOrNull()?.id
+                        latestScanLabel = top.label
+                        applyScanLabel(top.label)
+                        showResult(top.label, top.confidence,
+                            if (saved.isSuccess) "Saved on this phone. You can use this result now. A server copy will sync when connected."
+                            else "Result ready, but it could not be saved on this phone: ${saved.exceptionOrNull()?.localizedMessage}",
+                            predictions.drop(1).take(2).joinToString("\n") {
+                                "${displayVariety(it.variety)} · ${it.maturity}: ${"%.1f".format(it.confidence * 100)}%"
+                            })
+                    }
                     controls(true)
-                    if (saved.isSuccess) refreshHistory()
+                    if (accepted && saved.isSuccess) refreshHistory()
                 }
             } catch (error: Exception) {
                 runOnUiThread { if (!isDestroyed) { status.text = "Could not analyze photo: ${error.localizedMessage}"; controls(true) } }
             }
         }
+    }
+
+    companion object {
+        private const val MIN_ACCEPTED_CONFIDENCE = 0.75f
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
