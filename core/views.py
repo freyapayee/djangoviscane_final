@@ -627,6 +627,9 @@ def api_mobile_offline_assessment(request):
             and math.isfinite(hectares) and 0 < hectares <= 1_000_000 and infected in {"true", "false"}):
         return JsonResponse({"error": "Assessment inputs are out of range."}, status=400)
     scan_id_text = request.POST.get("scan_id", "").strip()
+    plot_name = request.POST.get("plot_name", "").strip()
+    if len(plot_name) > 80:
+        return JsonResponse({"error": "Plot name must be 80 characters or fewer."}, status=400)
     upload = None
     if scan_id_text:
         try:
@@ -656,8 +659,15 @@ def api_mobile_offline_assessment(request):
             if existing.user_id != user.pk:
                 return JsonResponse({"error": "Record belongs to another farmer."}, status=403)
             return JsonResponse({"record_id": str(record_id), "log_id": existing.log_id, "synced": True})
+        scan = None
+        if upload and plot_name:
+            scan_assessment = derive_scan_assessment(upload.maturity_status, upload.confidence)
+            if scan_assessment:
+                scan = Scan.objects.create(user=user, cv_upload=upload, plot_name=plot_name,
+                    grade=scan_assessment["grade"], maturity_pct=scan_assessment["maturity_pct"],
+                    status=scan_assessment["status"])
         log = AgronomicLog.objects.create(
-            user=user, offline_cv_upload=upload, variety=variety, hectares=str(hectares),
+            user=user, scan=scan, offline_cv_upload=upload, variety=variety, hectares=str(hectares),
             plowing_count=str(plowing), weeding_count=str(weeding), fertilizer_count=str(fertilizer),
             ratoon_stage=str(stage), rssi_infected="Yes" if infected == "true" else "No",
             offline_maturity_status=maturity[maturity_index] or None,
