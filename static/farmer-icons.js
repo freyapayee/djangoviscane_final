@@ -54,6 +54,7 @@
     function replaceIcon(node) {
         if (!(node instanceof HTMLElement) || node.tagName !== 'ION-ICON' || node.dataset.localIcon === 'true') return;
         const name = node.getAttribute('name') || '';
+        const computed = window.getComputedStyle(node);
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('viewBox', '0 0 24 24');
         svg.setAttribute('fill', 'none');
@@ -68,6 +69,22 @@
         if (classes) classes.split(/\s+/).forEach(value => value && svg.classList.add(value));
         const style = node.getAttribute('style');
         if (style) svg.setAttribute('style', style);
+        // Ionicons sizing rules target the custom element. Preserve those resolved
+        // dimensions and layout values on the local SVG replacement.
+        const inheritedSize = computed.fontSize || '1em';
+        const dimension = value => (!value || value === 'auto' || value === 'normal') ? inheritedSize : value;
+        ['display', 'position', 'box-sizing', 'vertical-align', 'font-size', 'color',
+            'opacity', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+            'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'flex', 'flex-basis', 'flex-grow', 'flex-shrink', 'align-self', 'order',
+            'top', 'right', 'bottom', 'left', 'pointer-events', 'background-color',
+            'border-radius', 'transform'].forEach(property => {
+                const value = computed.getPropertyValue(property);
+                if (value) svg.style.setProperty(property, value);
+            });
+        svg.style.setProperty('width', dimension(computed.getPropertyValue('width')));
+        svg.style.setProperty('height', dimension(computed.getPropertyValue('height')));
+        svg.dataset.localIcon = 'true';
         svg.innerHTML = drawings[groups[name]] || drawings.default;
         node.replaceWith(svg);
     }
