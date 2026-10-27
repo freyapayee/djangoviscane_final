@@ -95,6 +95,28 @@ body.ds-app.farmer_settings .settings-signout-button:hover,
 body.ds-app.farmer_settings .settings-signout-button:focus-visible { border-color: #91b89a; background: #edf5ef; }
 body.ds-app.farmer_settings .settings-signout-button:focus-visible { outline: 2px solid #237742; outline-offset: 2px; }
 
+/* Firmer card edges and touch scrolling on the farmer phone experience. */
+body.ds-app:is(.vis-farmer-dashboard,.vis-farmer-page) {
+    min-height: 100vh; min-height: 100dvh; height: auto;
+    overflow-y: auto; overscroll-behavior-y: auto; touch-action: pan-y;
+}
+body.ds-app:is(.vis-farmer-dashboard,.vis-farmer-page) :is(.panel,.stat-card,.hero-panel,.profile-hero-card,.history-card,.recommendation-card,.settings-action-card,.list-row,.assessment-result-card) {
+    border: 1.5px solid #a9cdb2;
+    box-shadow: 0 5px 18px rgba(14, 91, 43, .09);
+}
+body.ds-app:is(.vis-farmer-dashboard,.vis-farmer-page) :is(.stat-card,.list-row,.history-card,.recommendation-card,.settings-action-card) {
+    background-color: #fbfefb;
+}
+body.ds-app:is(.vis-farmer-dashboard,.vis-farmer-page) :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea,.stat-select,.themed-select-trigger,.variety-trigger,.selector-trigger) {
+    border-color: #91bd9d;
+}
+body.ds-app:is(.vis-farmer-dashboard,.vis-farmer-page) :is(.list-row,details,.history-card,.recommendation-card) {
+    border-radius: 16px;
+}
+body.ds-app:is(.vis-farmer-dashboard,.vis-farmer-page) :is(.panel,.stat-card,.hero-panel,.profile-hero-card,.history-card,.recommendation-card,.settings-action-card,.list-row) {
+    background-clip: padding-box;
+}
+
 /* Farmer profile: let the page carry the color, with cards directly on its canvas. */
 body.ds-app.farmer_settings {
     background: radial-gradient(circle at 82% 9%, rgba(205, 233, 211, .55), transparent 32%),

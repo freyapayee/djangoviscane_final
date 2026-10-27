@@ -3064,9 +3064,9 @@ body.modal-open {
 /* Farmer portal: app-style touch targets and readable field text. */
 body.farmer-layout {
     min-height: 100dvh;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    touch-action: pan-y;
     padding-bottom: env(safe-area-inset-bottom);
 }
 

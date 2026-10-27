@@ -9,11 +9,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{{ url_for('static', filename='farmer-manifest.webmanifest') }}">
     {% if not offline_mode %}<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>{% endif %}
+    <script src="{{ url_for('static', filename='farmer-icons.js') }}?v=1" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Farmer Profile</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=15">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=16">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=11">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
     <link rel="stylesheet" href="/static/css/farmer-menu.css?v=8">
 </head>

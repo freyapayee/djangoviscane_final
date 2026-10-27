@@ -1,6 +1,10 @@
-const CACHE_NAME = 'viscane-farmer-shell-v2';
+const CACHE_NAME = 'viscane-farmer-shell-v3';
 const APP_SHELL = [
   '/static/style.css',
+  '/static/css/design-system.css',
+  '/static/css/farmer-dashboard.css',
+  '/static/css/farmer-pages.css',
+  '/static/farmer-icons.js',
   '/static/farmer_ui.js',
   '/static/logo.jpg',
   '/static/farmer-manifest.webmanifest'
