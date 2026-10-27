@@ -45,9 +45,17 @@
                 </span>
             </div>
             {% if superadmin_cv_uploads %}
+                <form id="bulk-delete-scans" method="POST" action="/superadmin/scan-gallery/delete-selected" class="superadmin-bulk-delete-form" data-confirm-action="remove" data-confirm-message="Permanently delete the selected photos?">
+                    {{ csrf_input }}
+                    <label for="bulk-delete-reason">Reason for deleting selected photos</label>
+                    <textarea id="bulk-delete-reason" name="reason" rows="2" maxlength="180" required></textarea>
+                    <button type="submit" class="btn danger">Delete selected photos</button>
+                    <span>Select one or more photos below.</span>
+                </form>
                 <div class="scan-gallery-grid superadmin-scan-gallery-grid">
                     {% for upload in superadmin_cv_uploads %}
                         <figure class="scan-gallery-item superadmin-scan-gallery-item">
+                            <label class="superadmin-scan-select"><input type="checkbox" name="upload_ids" value="{{ upload.id }}" form="bulk-delete-scans"><span>Select photo</span></label>
                             <div class="superadmin-scan-media">
                                 <a href="{{ url_for('cv_upload_image', upload_id=upload.id) }}" target="_blank" rel="noopener" aria-label="View full photo {{ loop.index }}"><img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="Sugarcane scan uploaded by {{ upload.user.fullname if upload.user else ('User #' ~ upload.user_id) }}" loading="lazy"></a>
                                 <span class="superadmin-scan-number">Scan {{ loop.index }}</span>

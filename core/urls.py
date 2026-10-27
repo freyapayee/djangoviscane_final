@@ -46,6 +46,7 @@ urlpatterns = [
     path("superadmin", views.superadmin_portal, name="superadmin_portal"),
     path("superadmin/admins", views.superadmin_admins, name="superadmin_admins"),
     path("superadmin/scan-gallery/<int:upload_id>/delete", views.superadmin_delete_photo, name="superadmin_delete_photo"),
+    path("superadmin/scan-gallery/delete-selected", views.superadmin_delete_photos, name="superadmin_delete_photos"),
     path("superadmin/governance", views.superadmin_governance, name="superadmin_governance"),
     path("superadmin/scan-gallery", views.superadmin_scan_gallery, name="superadmin_scan_gallery"),
     path("superadmin/admins/create", views.superadmin_create_admin, name="superadmin_create_admin"),
