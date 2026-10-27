@@ -6,19 +6,17 @@ Use this guide to build the combined VISCANE app with the current offline scanne
 
 Install the latest stable Android Studio for Windows from [developer.android.com/studio](https://developer.android.com/studio/install). Complete the setup wizard and install the Android SDK packages it recommends. This project compiles against Android SDK 36; Android Studio can install that platform through **Tools → SDK Manager**. Use Android Studio's bundled Gradle JDK unless Gradle reports a Java version error.
 
-## 2. Get the latest project from GitHub
+## 2. Update the existing repository
 
-Clone this repository or update the checkout that contains the changes you want to build. Replace `OWNER/REPOSITORY` with this GitHub repository's path. If the changes are on `feature/offline-farmer-classifier`, run:
+Open PowerShell in the folder where your existing `djangoviscane_final` repository is saved. Pull the latest changes from the integration branch:
 
 ```powershell
-git clone https://github.com/OWNER/REPOSITORY.git
-cd REPOSITORY
 git fetch origin
 git switch feature/offline-farmer-classifier
 git pull origin feature/offline-farmer-classifier
 ```
 
-If you already have the repository, open PowerShell in that folder and run the last three commands.
+If Git says the branch is already checked out in another worktree, switch to the branch in that worktree before pulling.
 
 ## 3. Open the correct Android project
 
@@ -30,10 +28,10 @@ In PowerShell, change into the `android/` folder and run:
 
 ```powershell
 cd android
-.\gradlew.bat :app:assembleDebug -PfarmerBaseUrl=https://YOUR-FARMER-HOST/
+.\gradlew.bat :app:assembleDebug -PfarmerBaseUrl=https://viscane.app/
 ```
 
-Replace `https://YOUR-FARMER-HOST/` with the exact HTTPS address that opens the farmer portal in Chrome, including the final `/`. The debug build needs this setting to use that portal. Android Studio can also build it with **Build → Build APK(s)** after you open the `android/` project.
+The app is configured to use the farmer portal at `https://viscane.app/`. Use only the site origin with the final slash, not a page path such as `/homepage`. The app’s Gradle configuration requires an HTTPS origin. Android Studio can also build it with **Build → Build APK(s)** after you open the `android/` project.
 
 The debug APK is written to:
 

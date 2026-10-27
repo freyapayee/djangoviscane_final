@@ -2115,6 +2115,35 @@ def superadmin_delete_photo(request, upload_id):
 
 
 @role_required("superadmin")
+@require_POST
+def superadmin_delete_photos(request):
+    reason = request.POST.get("reason", "").strip()
+    raw_ids = request.POST.getlist("upload_ids")
+    try:
+        upload_ids = list(dict.fromkeys(int(value) for value in raw_ids))
+    except (TypeError, ValueError):
+        upload_ids = []
+    if not upload_ids:
+        return redirect("superadmin_scan_gallery", error="Select at least one photo to delete.")
+    if not reason or len(reason) > 180:
+        return redirect("superadmin_scan_gallery", error="Enter a deletion reason (1–180 characters).")
+    uploads = list(CvScanUpload.objects.filter(pk__in=upload_ids))
+    if len(uploads) != len(upload_ids):
+        return redirect("superadmin_scan_gallery", error="One or more selected photos could not be found. No photos were deleted.")
+    try:
+        with transaction.atomic():
+            for upload in uploads:
+                path = cv_image_path(upload.image_path)
+                log_audit(f"Scan photo #{upload.pk} (farmer #{upload.user_id}) deleted. Reason: {reason}", user_id=current_admin(request).id)
+                Scan.objects.filter(cv_upload=upload).update(hidden_from_recent=True)
+                upload.delete()
+                path.unlink(missing_ok=True)
+    except OSError:
+        return redirect("superadmin_scan_gallery", error="Unable to delete the selected photos. Please try again.")
+    return redirect("superadmin_scan_gallery", notice=f"{len(uploads)} photos deleted and reasons recorded in the audit trail.")
+
+
+@role_required("superadmin")
 def superadmin_create_admin(request):
     current = current_admin(request)
     username = request.POST.get("username", "").strip()
