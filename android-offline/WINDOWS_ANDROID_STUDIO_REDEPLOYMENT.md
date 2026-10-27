@@ -149,35 +149,42 @@ Match these flows, not just colors: camera/gallery, image preview, scan result, 
 
 ## Windows Android Studio build steps
 
-1. Install Android Studio, JDK 17, and Android SDK/Build Tools for GitHub's `android/` project (its Gradle module currently sets compile/target SDK 36). Do not open `android-offline/` as the final app.
-2. Clone the GitHub repository and open its **`android/`** folder in Android Studio. Confirm its `farmerBaseUrl` matches the HTTPS origin that works in Chrome; avoid a stale IP, test server, or second login database. `127.0.0.1` is only the bundled offline server.
-3. Switch to the integration branch created above:
+These steps build the combined Android app with the latest offline scanner, photo review, agronomic input flow, bundled icons, and scrollable assessment screen. Changes in GitHub do not appear on the phone until the APK is rebuilt and installed.
+
+### Quick rebuild for a test phone
+
+1. Install the latest stable Android Studio for Windows from [developer.android.com/studio](https://developer.android.com/studio/install). Complete its setup wizard and install the Android SDK packages it offers. This project compiles against Android SDK 36. Android Studio includes a Gradle JDK; use its bundled JDK unless Gradle reports a specific Java version problem.
+2. Clone the GitHub repository (replace the placeholders with this repository's URL/name), or open an existing checkout. Then fetch and switch to the branch that contains the latest changes:
 
    ```powershell
+   git clone https://github.com/OWNER/REPOSITORY.git
+   cd REPOSITORY
+   git fetch origin
    git switch feature/offline-farmer-classifier
+   git pull origin feature/offline-farmer-classifier
    ```
 
-4. Review the online-first startup, Kotlin classifier, exact assets, farmer-only offline screen, encrypted pending queue, and `OfflineSync.kt` already in source. Keep `com.viscane.app` if that is the installed app's real application ID, plus the portal URL, online API route, cookie/session handling, and release signing setup. Do not add another farmer credential store.
-   The source now uses `versionCode 7` / `versionName 1.6`; confirm this code is higher than the APK already installed on the test phone before signing an update.
-5. Check the green status bar and offline UI on the real phone. The camera/gallery flow and photo orientation code are in `OfflineScanActivity.kt`.
-6. In Android Studio, let Gradle sync, then choose **Build > Rebuild Project** and **Run** on a physical phone. Exercise login and online scan before testing airplane mode.
-7. Build a debug APK with **Build > Build APK(s)**, or run in PowerShell if the WebView repository includes a Gradle wrapper:
+3. In Android Studio choose **Open**, select the repository's **`android/`** folder, and wait for Gradle Sync to finish. Open the `android/` project, not the older `android-offline/` starter.
+4. Build a debug APK from PowerShell in that `android/` folder:
 
    ```powershell
    .\gradlew.bat :app:assembleDebug -PfarmerBaseUrl=https://YOUR-ACTUAL-FARMER-HOST/
    ```
 
-   Replace the placeholder with the exact HTTPS origin that works in Chrome, including the final `/`. Pass it for **debug and release** builds; otherwise the debug app defaults to `http://10.0.2.2:5000/` and will not use production credentials. For a release, use the existing private signing setup and increase `versionCode`. Debug builds add `.debug` to the application ID, so they install beside the production app and do not test an in-place update. Faye deploys the server migration and route **before** releasing an APK expected to sync.
+   Replace the placeholder with the exact HTTPS origin that works in Chrome, including the final `/`. The APK is created at:
 
-8. Commit after validation:
-
-   ```powershell
-   git add .
-   git commit -m "Integrate offline farmer classifier with online portal"
-   git push origin feature/offline-farmer-classifier
+   ```text
+   android\app\build\outputs\apk\debug\app-debug.apk
    ```
 
-9. To update the installed production app, Faye or the release owner signs with the **existing** release key and verifies the unchanged application ID plus a higher `versionCode`. Installing a debug APK with a different signing key may require uninstalling the old app, which can erase local pending data. Never uninstall or clear app storage to “fix” a login or HTTP 500 problem.
+   Alternatively, in Android Studio choose **Build > Build APK(s)**. Android Studio reports the output location when the build completes. The official command-line build guide is [here](https://developer.android.com/build/building-cmdline).
+
+5. Copy `app-debug.apk` to the test phone and install it. A debug build uses the `.debug` application ID, so it installs beside the production app instead of replacing it. Open the app, sign in online once with the farmer account, then enable airplane mode and verify the offline workspace, camera/gallery, review buttons, agronomic flow, and scrolling.
+
+### Updating the installed production app
+
+Use a release APK only when the release owner has the existing private signing key. Preserve the installed application ID, use a `versionCode` higher than the installed APK, and pass the production HTTPS origin with `-PfarmerBaseUrl=...`. A different signing key cannot update the installed app; do not uninstall or clear app data to work around that, because it can erase saved offline records. Debug builds are for testing and do not verify an in-place production update. Faye deploys the server routes and migrations before a release expected to sync records.
+
 
 ### If the new APK shows HTTP 500 or “invalid credentials”
 
