@@ -1335,8 +1335,8 @@ body.ds-app.vis-management-dashboard.vis-superadmin-audit .data-table td:last-ch
 .admin-logs-empty { margin: 16px 0 0; color: #66766c; }
 
 /* Compact superadmin photo review and governance controls. */
-body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-item { min-height: 0; flex-direction: column; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-item { position: relative; min-height: 0; flex-direction: column; }
 body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-media { height: 140px; flex-basis: 140px; }
 body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-item .superadmin-scan-content { padding: 12px; gap: 10px; }
 body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-details { grid-template-columns: minmax(0, 1fr); gap: 8px; }
@@ -1347,10 +1347,8 @@ body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-res
 .scan-delete-controls label { display: block; margin: 10px 0 6px; }
 .scan-delete-controls textarea { box-sizing: border-box; width: 100%; resize: vertical; border: 1px solid #becfc2; border-radius: 6px; padding: 8px; font: inherit; }
 .scan-delete-controls .btn { width: 100%; min-width: 0; padding: 8px; }
-.superadmin-bulk-delete-form { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(240px, 2fr) auto; align-items: end; gap: 10px 14px; margin: 0 0 18px; padding: 14px; border: 1px solid #e0e9e2; border-radius: 12px; background: #f8fbf9; }
-.superadmin-bulk-delete-form label { grid-column: 1 / -1; font-weight: 700; }
-.superadmin-bulk-delete-form textarea { box-sizing: border-box; width: 100%; resize: vertical; border: 1px solid #becfc2; border-radius: 6px; padding: 8px; font: inherit; }
-.superadmin-bulk-delete-form > span { color: #66766c; font-size: 12px; }
+.superadmin-bulk-delete-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 18px; padding: 14px; border: 1px solid #e0e9e2; border-radius: 12px; background: #f8fbf9; }
+.superadmin-bulk-delete-form > span { color: #66766c; font-size: 13px; }
 .superadmin-scan-select { position: absolute; z-index: 2; top: 10px; right: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 999px; background: rgba(255,255,255,.94); color: #203b2b; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
 .superadmin-scan-select input { width: 16px; height: 16px; margin: 0; accent-color: #168346; }
 .governance-menu > .panel { margin-top: 20px; }
@@ -1361,12 +1359,10 @@ body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-res
     body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) {
-    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .superadmin-bulk-delete-form { grid-template-columns: 1fr; }
-    .superadmin-bulk-delete-form label { grid-column: auto; }
+    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 }
 @media (max-width: 420px) {
-    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: minmax(0, 1fr); }
+    body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
 }
 
 .superadmin-accounts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
