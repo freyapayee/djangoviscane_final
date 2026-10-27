@@ -3153,3 +3153,22 @@ body.farmer-layout .farmer-bottom-link ion-icon { font-size: 1.65rem; }
 
     body.farmer-layout .farmer-bottom-link { min-height: 68px; font-size: 0.86rem; }
 }
+
+/* Farmer UI: strengthen card and action-box outlines without scaling icons. */
+body.farmer-layout .panel,
+body.farmer-layout .list-row,
+body.farmer-layout .profile-detail-row,
+body.farmer-layout .profile-card,
+body.farmer-layout .profile-section,
+body.farmer-layout .settings-card,
+body.farmer-layout .farmer-bottom-nav {
+    border: 2px solid #8ab99a;
+}
+body.farmer-layout .list-row,
+body.farmer-layout .profile-detail-row { border-radius: 16px; }
+body.farmer-layout .farmer-bottom-link.is-active {
+    box-shadow: inset 0 0 0 2px rgba(24, 112, 61, 0.22);
+}
+body.farmer-layout .profile-detail-input,
+body.farmer-layout .stat-input,
+body.farmer-layout .stat-select { border: 2px solid #a4c8ad; }
