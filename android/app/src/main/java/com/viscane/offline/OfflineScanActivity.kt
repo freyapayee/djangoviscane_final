@@ -1031,7 +1031,7 @@ class OfflineScanActivity : ComponentActivity() {
                         latestScanLabel = null
                         result.text = "Invalid Image or the image can't be read. Please choose a clear sugarcane photo and try again."
                         result.visibility = android.view.View.VISIBLE
-                        status.text = "Prediction confidence ${"%.1f".format(top.confidence * 100)}% is below the 75% minimum. No result was saved."
+                        status.text = "Prediction confidence ${"%.1f".format(top.confidence * 100)}% is below the 50% minimum. No result was saved."
                     } else {
                         latestScanId = saved.getOrNull()?.id
                         latestScanLabel = top.label
@@ -1054,7 +1054,7 @@ class OfflineScanActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val MIN_ACCEPTED_CONFIDENCE = 0.75f
+        private const val MIN_ACCEPTED_CONFIDENCE = 0.50f
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
