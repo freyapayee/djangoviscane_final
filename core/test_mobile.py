@@ -97,6 +97,45 @@ class FarmerMobileTests(TestCase):
         session.save()
         self.assertEqual(self.client.post("/api/mobile/offline-assessment", payload).status_code, 403)
 
+    def test_linked_offline_assessment_completes_scan_log_without_pending_duplicate(self):
+        import uuid
+        session = self.client.session
+        session["user_id"] = self.farmer.pk
+        session.save()
+        upload = CvScanUpload.objects.create(user=self.farmer, image_path="test/offline.jpg",
+            variety="VMC 84-524", maturity_status="MATURE", confidence=0.94)
+        placeholder = AgronomicLog.objects.create(user=self.farmer, offline_cv_upload=upload,
+            variety="VMC 84-524")
+        scan_id = uuid.uuid4()
+        OfflineScanReceipt.objects.create(id=scan_id, user=self.farmer, log=placeholder)
+        self.assertNotContains(self.client.get("/farmer/agronomic-logs"), 'class="history-card"')
+        payload = {"record_id": str(uuid.uuid4()), "farmer_id": str(self.farmer.pk),
+            "scan_id": str(scan_id), "plot_name": "North Field", "variety": "0",
+            "hectares": "1.5", "plowing": "1", "weeding": "1", "fertilizer": "1",
+            "stage": "1", "infected": "false", "maturity": "2"}
+        first = self.client.post("/api/mobile/offline-assessment", payload)
+        self.assertEqual(first.status_code, 201, first.content)
+        self.assertEqual(first.json()["log_id"], placeholder.pk)
+        self.assertEqual(self.client.post("/api/mobile/offline-assessment", payload).status_code, 200)
+        self.assertEqual(AgronomicLog.objects.filter(user=self.farmer).count(), 1)
+        placeholder.refresh_from_db()
+        self.assertIsNotNone(placeholder.predicted_lkg)
+        self.assertEqual(placeholder.scan.plot_name, "North Field")
+
+        # Existing deployments may already have both the placeholder and a
+        # completed log. The online history should show the completed one.
+        completed = AgronomicLog.objects.create(user=self.farmer, offline_cv_upload=upload,
+            variety="VMC 84-524", predicted_lkg=12.0)
+        placeholder.predicted_lkg = None
+        placeholder.save(update_fields=["predicted_lkg"])
+        history = self.client.get("/farmer/agronomic-logs")
+        self.assertEqual(history.status_code, 200)
+        self.assertEqual(history.content.count(b'class="history-card"'), 1)
+        self.assertContains(history, "12.00")
+        cached_history = self.client.get("/api/mobile/offline-content").json()["history"]
+        self.assertEqual(len(cached_history), 1)
+        self.assertEqual(cached_history[0]["total_lkg"], 12.0)
+
     def test_offline_content_feedback_and_profile_are_farmer_owned(self):
         import uuid
         Notification.objects.create(title="Harvest bulletin", message="Saved when connected")
@@ -109,7 +148,7 @@ class FarmerMobileTests(TestCase):
         self.assertEqual(snapshot.status_code, 200)
         self.assertEqual(snapshot.json()["farmer_id"], self.farmer.pk)
         self.assertEqual(snapshot.json()["announcements"][0]["title"], "Harvest bulletin")
-        self.assertEqual(snapshot.json()["history"][0]["predicted_lkg"], 123.0)
+        self.assertEqual(snapshot.json()["history"][0]["total_lkg"], 123.0)
         feedback_id = str(uuid.uuid4())
         feedback = {"record_id": feedback_id, "farmer_id": str(self.farmer.pk), "message": "Field feedback"}
         strict = Client(enforce_csrf_checks=True)

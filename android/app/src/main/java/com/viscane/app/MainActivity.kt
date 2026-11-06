@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Network
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
@@ -58,6 +59,15 @@ class MainActivity : AppCompatActivity() {
     private var offlineServerStarting = false
     private var launchedOfflineWorkspace = false
     private val syncRunning = AtomicBoolean(false)
+    private var networkCallbackRegistered = false
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+            if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                runOnUiThread { if (!isFinishing) refreshMobileSessionAndSync() }
+            }
+        }
+    }
 
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private var pendingCameraImageUri: Uri? = null
@@ -313,6 +323,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivity.registerDefaultNetworkCallback(networkCallback)
+        networkCallbackRegistered = true
+    }
+
+    override fun onStop() {
+        if (networkCallbackRegistered) {
+            val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+            connectivity.unregisterNetworkCallback(networkCallback)
+            networkCallbackRegistered = false
+        }
+        super.onStop()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         if (BuildConfig.DEBUG) menuInflater.inflate(R.menu.main_menu, menu)
         return true
@@ -377,6 +403,10 @@ class MainActivity : AppCompatActivity() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val raw = prefs.getString(SettingsActivity.KEY_BASE_URL, SettingsActivity.DEFAULT_BASE_URL) ?: ""
         val trimmed = raw.trim()
+        if (trimmed == "http://10.0.2.2:5000/") {
+            prefs.edit().putString(SettingsActivity.KEY_BASE_URL, SettingsActivity.DEFAULT_BASE_URL).apply()
+            return SettingsActivity.DEFAULT_BASE_URL
+        }
         if (!FarmerNavigation.validOrigin(trimmed, true)) return SettingsActivity.DEFAULT_BASE_URL
         return if (trimmed.endsWith("/")) trimmed else "$trimmed/"
     }
@@ -402,14 +432,6 @@ class MainActivity : AppCompatActivity() {
         return runCatching { telephony.isDataEnabled }.getOrDefault(true)
     }
 
-    private fun hasValidatedNetwork(): Boolean {
-        val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivity.activeNetwork ?: return false
-        val capabilities = connectivity.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-    }
-
     private fun openOfflineScanner() {
         val farmerId = getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
             .getLong("farmer_id", 0)
@@ -425,7 +447,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshMobileSessionAndSync() {
         val base = getBaseUrl()
-        if (!hasValidatedNetwork() || !base.startsWith("https://") || !syncRunning.compareAndSet(false, true)) return
+        if (!base.startsWith("https://") || !syncRunning.compareAndSet(false, true)) return
         CookieManager.getInstance().flush()
         Thread {
             try {
@@ -433,8 +455,11 @@ class MainActivity : AppCompatActivity() {
                 if (farmerId != null) {
                     getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
                         .edit().putLong("farmer_id", farmerId).apply()
-                    runCatching { OfflineSync.sync(applicationContext, base, farmerId) }
+                    val synced = runCatching { OfflineSync.sync(applicationContext, base, farmerId) }.getOrDefault(0)
                     runCatching { OfflineSync.refreshContent(applicationContext, base, farmerId) }
+                    if (synced > 0) runOnUiThread {
+                        if (!isFinishing && Uri.parse(webView.url.orEmpty()).path == "/farmer/agronomic-logs") webView.reload()
+                    }
                 }
             } catch (_: Exception) {
                 // Network and server failures leave encrypted pending records intact.

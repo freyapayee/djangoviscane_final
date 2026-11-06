@@ -38,6 +38,7 @@ object OfflineSync {
         }
     }
 
+    @Synchronized
     fun sync(context: Context, baseUrl: String, farmerId: Long): Int {
         if (!baseUrl.startsWith("https://") || farmerId <= 0) return 0
         val queue = OfflineScanStore(context)
@@ -53,13 +54,14 @@ object OfflineSync {
             }
             if (!scansReady) break
         }
-        if (scansReady) {
-            val assessments = OfflineAssessmentStore(context)
-            for (record in assessments.records(farmerId, pendingOnly = true)) {
-                if (!sendAssessment(baseUrl, farmerId, record)) break
-                assessments.markSynced(farmerId, record.getString("id"))
-                count++
-            }
+        val unsyncedScanIds = if (scansReady) emptySet() else
+            queue.summaries(farmerId).filter { !it.synced }.map { it.id }.toSet()
+        val assessments = OfflineAssessmentStore(context)
+        for (record in assessments.records(farmerId, pendingOnly = true)) {
+            if (record.optString("scan_id") in unsyncedScanIds) continue
+            if (!sendAssessment(baseUrl, farmerId, record)) break
+            assessments.markSynced(farmerId, record.getString("id"))
+            count++
         }
         val cache = OfflineFarmerCache(context)
         cache.profileDraft(farmerId)?.let { draft ->

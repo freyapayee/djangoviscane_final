@@ -435,7 +435,11 @@ def farmer_agronomic_logs(request):
     if selected_filter not in filter_options:
         selected_filter = "all"
 
-    logs_query = AgronomicLog.objects.filter(user_id=user.id)
+    # A synced photo creates a placeholder before its assessment arrives.
+    # Input Logs show calculations; photo-only records belong in scan history.
+    logs_query = AgronomicLog.objects.filter(user_id=user.id).exclude(
+        offline_cv_upload__isnull=False, predicted_lkg__isnull=True,
+    )
     total_log_count = logs_query.count()
     today = timezone.localdate()
     if selected_filter == "week":
@@ -704,8 +708,11 @@ def api_mobile_offline_assessment(request):
                 scan = Scan.objects.create(user=user, cv_upload=upload, plot_name=plot_name,
                     grade=scan_assessment["grade"], maturity_pct=scan_assessment["maturity_pct"],
                     status=scan_assessment["status"])
-        log = AgronomicLog.objects.create(
-            user=user, scan=scan, offline_cv_upload=upload, variety=variety, hectares=str(hectares),
+        scan_receipt = (OfflineScanReceipt.objects.select_for_update().select_related("log")
+                        .filter(pk=scan_id, user=user).first()) if upload else None
+        log = scan_receipt.log if scan_receipt and scan_receipt.log.predicted_lkg is None else None
+        values = dict(
+            scan=scan, offline_cv_upload=upload, variety=variety, hectares=str(hectares),
             plowing_count=str(plowing), weeding_count=str(weeding), fertilizer_count=str(fertilizer),
             ratoon_stage=str(stage), rssi_infected="Yes" if infected == "true" else "No",
             offline_maturity_status=maturity[maturity_index] or None,
@@ -713,6 +720,12 @@ def api_mobile_offline_assessment(request):
             predicted_lkg=prediction["predicted_lkg"], recommendations_summary=summary,
             recommendations_snapshot=recommendations,
         )
+        if log:
+            for field, value in values.items():
+                setattr(log, field, value)
+            log.save(update_fields=list(values))
+        else:
+            log = AgronomicLog.objects.create(user=user, **values)
         OfflineAssessmentReceipt.objects.create(id=record_id, user=user, log=log)
     return JsonResponse({"record_id": str(record_id), "log_id": log.pk, "synced": True}, status=201)
 
@@ -733,6 +746,9 @@ def api_mobile_offline_content(request):
                      for reply in item.replies.all()]}
         for item in Feedback.objects.filter(user_id=user.pk).prefetch_related("replies").order_by("-created_at")[:20]
     ]
+    visible_history = AgronomicLog.objects.filter(user=user).exclude(
+        offline_cv_upload__isnull=False, predicted_lkg__isnull=True,
+    )
     history = [
         {"id": log.pk, "created_at": log.created_at.isoformat(),
          "created_at_ms": int(log.created_at.timestamp() * 1000), "variety": log.variety or "",
@@ -743,7 +759,7 @@ def api_mobile_offline_content(request):
          "scan_variety": (log.offline_cv_upload or (log.scan.cv_upload if log.scan else None)).variety
                          if (log.offline_cv_upload or (log.scan.cv_upload if log.scan else None)) else "",
          "cached_online": True}
-        for log in AgronomicLog.objects.filter(user=user).select_related(
+        for log in visible_history.select_related(
             "offline_cv_upload", "scan__cv_upload").order_by("-created_at")[:100]
     ]
     profile_values = (user.email.lower(), user.phone, user.province or "", user.municipality or "", user.barangay or "")

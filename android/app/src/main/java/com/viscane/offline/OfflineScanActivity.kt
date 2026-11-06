@@ -1,5 +1,9 @@
 package com.viscane.offline
 
+import com.viscane.app.R
+import com.viscane.app.FarmerNavigation
+import com.viscane.app.OfflineSync
+import com.viscane.app.SettingsActivity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -10,6 +14,9 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.text.InputType
 import android.text.InputFilter
@@ -25,11 +32,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.preference.PreferenceManager
 import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.Calendar
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 class OfflineScanActivity : ComponentActivity() {
     private val worker = Executors.newSingleThreadExecutor()
@@ -38,9 +47,14 @@ class OfflineScanActivity : ComponentActivity() {
     private lateinit var status: TextView
     private lateinit var result: TextView
     private lateinit var preview: ImageView
+    private lateinit var previewHint: TextView
     private lateinit var camera: Button
     private lateinit var gallery: Button
     private lateinit var history: TextView
+    private lateinit var syncStatus: TextView
+    private lateinit var headerTitle: TextView
+    private lateinit var headerSubtitle: TextView
+    private lateinit var backButton: Button
     private lateinit var area: EditText
     private lateinit var variety: Spinner
     private lateinit var plowing: Spinner
@@ -61,6 +75,17 @@ class OfflineScanActivity : ComponentActivity() {
     private var latestScanId: String? = null
     private var latestScanLabel: String? = null
     private var farmerId: Long = 0
+    private var currentPageTitle = "Home"
+    private val syncRunning = AtomicBoolean(false)
+    private var networkCallbackRegistered = false
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+            if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                runOnUiThread { syncWhenOnline() }
+            }
+        }
+    }
     private val cameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) launchCamera() else {
             status.text = "Camera permission is needed to take a photo. You can still upload a photo from your gallery."
@@ -111,13 +136,24 @@ class OfflineScanActivity : ComponentActivity() {
         }, LinearLayout.LayoutParams(dp(48), dp(48)).apply { rightMargin = dp(12) })
         val brand = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = android.view.Gravity.CENTER_VERTICAL }
         brand.addView(TextView(this).apply { text = "VISCANE"; textSize = 14f; setTextColor(green); setTypeface(null, Typeface.BOLD) })
-        brand.addView(TextView(this).apply { text = "Scan Sugarcane"; textSize = 21f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
-        brand.addView(TextView(this).apply {
+        headerTitle = TextView(this).apply { text = "Scan Sugarcane"; textSize = 21f; setTextColor(dark); setTypeface(null, Typeface.BOLD) }
+        brand.addView(headerTitle)
+        headerSubtitle = TextView(this).apply {
             text = "Offline · ${java.text.SimpleDateFormat("EEE, MMM d", java.util.Locale.getDefault()).format(java.util.Date())} · Saved on this device"
             textSize = 12f
             setTextColor(Color.rgb(102, 112, 133))
-        })
+        }
+        brand.addView(headerSubtitle)
         header.addView(brand, LinearLayout.LayoutParams(0, -2, 1f))
+        backButton = Button(this).apply {
+            text = "Back"
+            textSize = 13f
+            visibility = android.view.View.GONE
+            backgroundTintList = ColorStateList.valueOf(sage)
+            setTextColor(green)
+            setOnClickListener { showHomePage() }
+        }
+        header.addView(backButton, LinearLayout.LayoutParams(-2, -2))
         header.addView(Button(this).apply {
             text = "Menu"; textSize = 14f
             backgroundTintList = ColorStateList.valueOf(sage)
@@ -133,8 +169,8 @@ class OfflineScanActivity : ComponentActivity() {
             elevation = dp(3).toFloat()
         }
         homeCard = card
-        card.addView(TextView(this).apply { text = "Sugarcane assessment"; textSize = 22f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
-        card.addView(TextView(this).apply { text = "Choose a clear photo. Variety and maturity are estimated on your phone."; textSize = 16f; setTextColor(dark) })
+        card.addView(TextView(this).apply { text = "Upload a sugarcane photo"; textSize = 22f; setTextColor(dark); setTypeface(null, Typeface.BOLD) })
+        card.addView(TextView(this).apply { text = "Choose a photo from your device to check its quality."; textSize = 14f; setTextColor(Color.rgb(102, 112, 133)) })
         val scanStepper = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(dp(10), dp(10), dp(10), dp(10))
@@ -153,9 +189,19 @@ class OfflineScanActivity : ComponentActivity() {
         preview = ImageView(this).apply {
             scaleType = ImageView.ScaleType.FIT_CENTER
             contentDescription = "Selected sugarcane photo"
-            background = rounded(Color.rgb(237, 247, 240), 18)
+            background = rounded(Color.rgb(23, 36, 27), 18)
         }
-        card.addView(preview, LinearLayout.LayoutParams(-1, dp(230)).apply { topMargin = dp(14) })
+        val photoViewport = FrameLayout(this).apply { background = rounded(Color.rgb(23, 36, 27), 18) }
+        photoViewport.addView(preview, FrameLayout.LayoutParams(-1, -1))
+        previewHint = TextView(this).apply {
+            text = "Start with a clear photo\nKeep the stalk in focus, use good lighting, and avoid a busy background."
+            textSize = 15f
+            gravity = android.view.Gravity.CENTER
+            setTextColor(Color.WHITE)
+            setPadding(dp(22), dp(22), dp(22), dp(22))
+        }
+        photoViewport.addView(previewHint, FrameLayout.LayoutParams(-1, -1))
+        card.addView(photoViewport, LinearLayout.LayoutParams(-1, dp(230)).apply { topMargin = dp(14) })
         camera = Button(this).apply {
             text = "Use camera"; textSize = 16f; isEnabled = false
             backgroundTintList = ColorStateList.valueOf(green); setTextColor(Color.WHITE)
@@ -168,8 +214,10 @@ class OfflineScanActivity : ComponentActivity() {
             setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_image, 0, 0, 0)
             compoundDrawablePadding = dp(8)
         }
-        card.addView(camera, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
-        card.addView(gallery, LinearLayout.LayoutParams(-1, -2))
+        val photoActions = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        photoActions.addView(gallery, LinearLayout.LayoutParams(0, -2, 1f).apply { rightMargin = dp(5) })
+        photoActions.addView(camera, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(5) })
+        card.addView(photoActions, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
         result = TextView(this).apply {
             visibility = android.view.View.GONE
             textSize = 20f
@@ -281,7 +329,20 @@ class OfflineScanActivity : ComponentActivity() {
         card.addView(agronomicInputs, LinearLayout.LayoutParams(-1, -2))
         history = TextView(this).apply { text = "Loading saved results…"; textSize = 16f; setTextColor(dark) }
         card.addView(history)
+        syncStatus = TextView(this).apply {
+            text = "Saved work will sync when connected."
+            textSize = 13f
+            setTextColor(green)
+            setPadding(0, dp(8), 0, dp(8))
         }
+        card.addView(syncStatus)
+        card.addView(Button(this).apply {
+            text = "Sync now"
+            isAllCaps = false
+            backgroundTintList = ColorStateList.valueOf(sage)
+            setTextColor(green)
+            setOnClickListener { syncWhenOnline() }
+        })
         contentScroll = ScrollView(this).apply {
             setFillViewport(false)
             isSmoothScrollingEnabled = true
@@ -289,7 +350,7 @@ class OfflineScanActivity : ComponentActivity() {
             isVerticalScrollBarEnabled = true
             overScrollMode = android.view.View.OVER_SCROLL_IF_CONTENT_SCROLLS
             descendantFocusability = android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS
-            addView(card, ScrollView.LayoutParams(-1, -2))
+            addView(card, android.widget.FrameLayout.LayoutParams(-1, -2))
         }
         root.addView(contentScroll, LinearLayout.LayoutParams(-1, 0, 1f))
         val navigation = LinearLayout(this).apply {
@@ -422,28 +483,32 @@ class OfflineScanActivity : ComponentActivity() {
             recommendationsView.text = "Recommendations\n\n" + guides.joinToString("\n\n") {
                 "${it.category} · ${it.title}\n${it.detail}"
             }
-            val matchedScan = latestScanId?.takeIf {
-                val expected = when (v) { 0 -> "524"; 1 -> "847"; else -> "Mauritio" } + "__" +
-                    arrayOf("", "Not_Mature", "Mature", "Over_Mature")[m]
-                latestScanLabel == expected
-            }
+            // Keep the photo linked even when the farmer corrects an AI label.
+            // The server stores the original scan and the chosen inputs separately.
+            val matchedScan = latestScanId
             val saved = runCatching { OfflineAssessmentStore(this).save(farmerId, v, hectares, p, w, f, s,
                 infected, m, estimate, guides, matchedScan, plot) }
             assessment.text = "$estimateText\n" + if (saved.isSuccess)
                 "Saved on this phone · Server copy waiting · ${if (matchedScan == null) "Manual inputs" else "Linked to this scan"}"
             else "Result ready, but local save failed: ${saved.exceptionOrNull()?.localizedMessage}"
-            if (saved.isSuccess) refreshHistory()
+            if (saved.isSuccess) {
+                refreshHistory()
+                syncWhenOnline()
+            }
         } catch (error: Exception) {
             assessment.text = "Could not calculate or save: ${error.localizedMessage}"
         }
     }
 
     private fun showRecommendations() {
+        val page = showFarmerPage("Recommendations", "Guidance from your latest assessment")
         val current = recommendationsView.text.toString()
         if (current.isNotBlank()) {
-            AlertDialog.Builder(this).setTitle("Offline recommendations").setMessage(current).setPositiveButton("OK", null).show()
+            page.addView(pageText(current))
             return
         }
+        val loading = pageText("Loading saved recommendations…")
+        page.addView(loading)
         worker.execute {
             val latest = runCatching {
                 Pair(OfflineAssessmentStore(this).records(farmerId).firstOrNull(),
@@ -462,11 +527,9 @@ class OfflineScanActivity : ComponentActivity() {
                             }
                         else -> "Enter assessment parameters and calculate to generate recommendations on this phone."
                     }
-                    AlertDialog.Builder(this).setTitle("Offline recommendations")
-                        .setMessage(message).setPositiveButton("OK", null).show()
+                    loading.text = message
                 }.onFailure { error ->
-                    AlertDialog.Builder(this).setMessage("Could not read saved recommendations: ${error.localizedMessage}")
-                        .setPositiveButton("OK", null).show()
+                    loading.text = "Could not read saved recommendations: ${error.localizedMessage}"
                 }
             }
         }
@@ -494,12 +557,10 @@ class OfflineScanActivity : ComponentActivity() {
                 3 -> showProfile()
                 4 -> showAnnouncements("News and announcements")
                 5 -> showFeedback()
-                6 -> AlertDialog.Builder(this).setTitle("About VISCANE")
-                    .setMessage("VISCANE supports sugarcane farmers with on-device variety and maturity recognition, agronomic estimates, and guidance. Saved scans and assessments synchronize with the farmer portal when connected.")
-                    .setPositiveButton("OK", null).show()
-                7 -> AlertDialog.Builder(this).setTitle("Offline tutorial")
-                    .setMessage("1. Sign in online once.\n2. Open Offline Farmer Workspace.\n3. Capture or choose a sugarcane photo.\n4. Check the variety and maturity.\n5. Enter area and agronomic inputs, then calculate.\n6. Read recommendations and Input Logs.\n7. Reconnect using the same account to sync server copies.")
-                    .setPositiveButton("OK", null).show()
+                6 -> showFarmerPage("About VISCANE", "Farmer tools on your phone").addView(pageText(
+                    "VISCANE supports sugarcane farmers with on-device variety and maturity recognition, agronomic estimates, and guidance. Saved scans and assessments synchronize with the farmer portal when connected."))
+                7 -> showFarmerPage("Tutorial", "How to use VISCANE offline").addView(pageText(
+                    "1. Sign in online once.\n2. Open Offline Farmer Workspace.\n3. Capture or choose a sugarcane photo.\n4. Check the variety and maturity.\n5. Enter area and agronomic inputs, then calculate.\n6. Read recommendations and Input Logs.\n7. Reconnect using the same account to sync server copies."))
                 8 -> AlertDialog.Builder(this).setTitle("Sign out on this phone")
                     .setMessage("Offline work stays encrypted and linked to your online farmer account. Signing in online again with the same account will unlock it. Continue?")
                     .setNegativeButton("Cancel", null)
@@ -516,14 +577,20 @@ class OfflineScanActivity : ComponentActivity() {
     }
 
     private fun showHomePage() {
+        currentPageTitle = "Home"
+        headerTitle.text = "Scan Sugarcane"
+        headerSubtitle.text = "Offline · Saved on this device"
+        backButton.visibility = android.view.View.GONE
         contentScroll.removeAllViews()
-        contentScroll.addView(homeCard, ScrollView.LayoutParams(-1, -2))
+        contentScroll.addView(homeCard, android.widget.FrameLayout.LayoutParams(-1, -2))
         contentScroll.post { contentScroll.scrollTo(0, 0) }
     }
 
-    private fun showNotificationsPage() {
-        val green = Color.rgb(36, 112, 61)
-        val dark = Color.rgb(31, 41, 51)
+    private fun showFarmerPage(title: String, subtitle: String): LinearLayout {
+        currentPageTitle = title
+        headerTitle.text = title
+        headerSubtitle.text = subtitle
+        backButton.visibility = android.view.View.VISIBLE
         val page = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(18), dp(18), dp(18), dp(22))
@@ -531,17 +598,33 @@ class OfflineScanActivity : ComponentActivity() {
             elevation = dp(3).toFloat()
         }
         page.addView(TextView(this).apply {
-            text = "See Notifications"
+            text = title
             textSize = 23f
-            setTextColor(dark)
+            setTextColor(Color.rgb(31, 41, 51))
             setTypeface(null, Typeface.BOLD)
         })
         page.addView(TextView(this).apply {
-            text = "View announcements saved on this phone."
-            textSize = 15f
-            setTextColor(Color.rgb(90, 104, 96))
-            setPadding(0, dp(5), 0, dp(12))
+            text = subtitle
+            textSize = 14f
+            setTextColor(Color.rgb(102, 112, 133))
+            setPadding(0, dp(4), 0, dp(16))
         })
+        contentScroll.removeAllViews()
+        contentScroll.addView(page, android.widget.FrameLayout.LayoutParams(-1, -2))
+        contentScroll.post { contentScroll.scrollTo(0, 0) }
+        return page
+    }
+
+    private fun pageText(message: String) = TextView(this).apply {
+        text = message
+        textSize = 16f
+        setTextColor(Color.rgb(31, 41, 51))
+        setPadding(0, dp(8), 0, dp(8))
+    }
+
+    private fun showNotificationsPage() {
+        val green = Color.rgb(36, 112, 61)
+        val page = showFarmerPage("Notifications", "Announcements saved from your last connection")
         page.addView(Button(this).apply {
             text = "Back to Home"
             backgroundTintList = ColorStateList.valueOf(Color.rgb(232, 242, 232))
@@ -551,13 +634,10 @@ class OfflineScanActivity : ComponentActivity() {
         val loading = TextView(this).apply {
             text = "Loading saved notifications…"
             textSize = 16f
-            setTextColor(dark)
+            setTextColor(Color.rgb(31, 41, 51))
             setPadding(0, dp(8), 0, dp(8))
         }
         page.addView(loading)
-        contentScroll.removeAllViews()
-        contentScroll.addView(page, ScrollView.LayoutParams(-1, -2))
-        contentScroll.post { contentScroll.scrollTo(0, 0) }
 
         worker.execute {
             val saved = runCatching {
@@ -602,7 +682,7 @@ class OfflineScanActivity : ComponentActivity() {
                                         runOnUiThread {
                                             if (!isDestroyed) {
                                                 if (cleared.isSuccess) showNotificationsPage()
-                                                Toast.makeText(this,
+                                                Toast.makeText(this@OfflineScanActivity,
                                                     if (cleared.isSuccess) "Announcements cleared on this phone; read status will sync when you reconnect."
                                                     else "Could not clear announcements.", Toast.LENGTH_LONG).show()
                                             }
@@ -651,6 +731,9 @@ class OfflineScanActivity : ComponentActivity() {
     }.also { it.layoutParams = LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(9) } }
 
     private fun showProfile() {
+        val page = showFarmerPage("Profile", "Your saved farmer account details")
+        val loading = pageText("Loading saved profile…")
+        page.addView(loading)
         worker.execute {
             val cached = runCatching { OfflineFarmerCache(this).snapshot(farmerId) }
             runOnUiThread {
@@ -678,26 +761,31 @@ class OfflineScanActivity : ComponentActivity() {
                     profileView.addView(TextView(this).apply {
                         text = message + pendingMessage; textSize = 17f; setPadding(0, dp(8), 0, dp(8))
                     })
-                    AlertDialog.Builder(this).setTitle("Saved profile")
-                        .setView(ScrollView(this).apply { addView(profileView) })
-                        .setNeutralButton("Edit details") { _, _ ->
-                            if (profile != null) showProfileEditor(profile)
-                            else AlertDialog.Builder(this).setMessage("Connect once to load your profile before editing it offline.")
+                    page.removeView(loading)
+                    page.addView(profileView)
+                    page.addView(Button(this).apply {
+                        text = "Edit details"
+                        setOnClickListener {
+                            if (profile != null) showProfileEditor(profile) else
+                                Toast.makeText(this@OfflineScanActivity, "Connect once to load your profile before editing it offline.", Toast.LENGTH_LONG).show()
+                        }
+                    })
+                    page.addView(Button(this).apply {
+                        text = "Password / photo"
+                        setOnClickListener {
+                            AlertDialog.Builder(this@OfflineScanActivity).setMessage("Password changes require online verification of your current password. Photo updates need an authenticated upload. Your saved profile and offline work remain available now.")
                                 .setPositiveButton("OK", null).show()
                         }
-                        .setNegativeButton("Password / photo") { _, _ ->
-                            AlertDialog.Builder(this).setMessage("Password changes require online verification of your current password. Photo updates need an authenticated upload. Your saved profile and offline work remain available now.")
-                                .setPositiveButton("OK", null).show()
-                        }.setPositiveButton("Close", null).show()
+                    })
                 }.onFailure { error ->
-                    AlertDialog.Builder(this).setMessage("Could not read saved profile: ${error.localizedMessage}")
-                        .setPositiveButton("OK", null).show()
+                    loading.text = "Could not read saved profile: ${error.localizedMessage}"
                 }
             }
         }
     }
 
     private fun showProfileEditor(profile: org.json.JSONObject) {
+        val page = showFarmerPage("Edit profile", "Changes are saved on this phone until they sync")
         val fields = linkedMapOf<String, EditText>()
         val labels = linkedMapOf("email" to "Email", "phone" to "Phone", "province" to "Province",
             "municipality" to "Municipality", "barangay" to "Barangay")
@@ -714,28 +802,32 @@ class OfflineScanActivity : ComponentActivity() {
                 form.addView(it)
             }
         }
-        AlertDialog.Builder(this).setTitle("Edit profile offline")
-            .setView(ScrollView(this).apply { addView(form) })
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Save on phone") { _, _ ->
+        page.addView(form)
+        page.addView(Button(this).apply {
+            text = "Save on phone"
+            setOnClickListener {
                 val values = fields.mapValues { it.value.text.toString() }
                 worker.execute {
-                    val saved = runCatching { OfflineFarmerCache(this).saveProfileDraft(farmerId,
+                    val saved = runCatching { OfflineFarmerCache(this@OfflineScanActivity).saveProfileDraft(farmerId,
                         profile.getString("email"), profile.getString("version"),
                         values.getValue("email"), values.getValue("phone"),
                         values.getValue("province"), values.getValue("municipality"), values.getValue("barangay")) }
                     runOnUiThread {
                         if (isDestroyed) return@runOnUiThread
-                        AlertDialog.Builder(this).setMessage(if (saved.isSuccess)
+                        AlertDialog.Builder(this@OfflineScanActivity).setMessage(if (saved.isSuccess)
                             "Profile changes are saved on this phone and will be checked by the server when you reconnect."
                             else "Could not save profile changes: ${saved.exceptionOrNull()?.localizedMessage}")
                             .setPositiveButton("OK", null).show()
                     }
                 }
-            }.show()
+            }
+        })
     }
 
     private fun showAnnouncements(title: String) {
+        val page = showFarmerPage(title, "Saved announcements from your last connection")
+        val loading = pageText("Loading saved announcements…")
+        page.addView(loading)
         worker.execute {
             val cached = runCatching { Pair(OfflineFarmerCache(this).snapshot(farmerId),
                 if (title == "Notifications") OfflineAssessmentStore(this).records(farmerId).firstOrNull() else null) }
@@ -750,57 +842,65 @@ class OfflineScanActivity : ComponentActivity() {
                         }
                     val message = if (recentAssessment == null) news else
                         "Latest assessment suggestions\n${formatRecommendations(recentAssessment)}\n\nSaved announcements\n$news"
-                    val dialog = AlertDialog.Builder(this).setTitle("$title · saved copy")
-                        .setMessage(message).setPositiveButton("OK", null)
+                    loading.text = message
                     if (title == "Notifications" && announcements != null && announcements.length() > 0) {
-                        dialog.setNeutralButton("Mark read") { _, _ ->
+                        page.addView(Button(this).apply {
+                            text = "Mark read"
+                            setOnClickListener {
                             worker.execute {
-                                val saved = runCatching { OfflineFarmerCache(this).markAnnouncementsRead(farmerId,
+                                val saved = runCatching { OfflineFarmerCache(this@OfflineScanActivity).markAnnouncementsRead(farmerId,
                                     announcements.getJSONObject(0).getInt("id")) }
                                 runOnUiThread {
                                     if (isDestroyed) return@runOnUiThread
-                                    AlertDialog.Builder(this).setMessage(if (saved.isSuccess)
+                                    AlertDialog.Builder(this@OfflineScanActivity).setMessage(if (saved.isSuccess)
                                         "Marked read on this phone. The online notification state will update after reconnecting."
                                         else "Could not save read state: ${saved.exceptionOrNull()?.localizedMessage}")
                                         .setPositiveButton("OK", null).show()
                                 }
                             }
-                        }
+                            }
+                        })
                     }
-                    dialog.show()
                 }.onFailure { error ->
-                    AlertDialog.Builder(this).setMessage("Could not read saved announcements: ${error.localizedMessage}")
-                        .setPositiveButton("OK", null).show()
+                    loading.text = "Could not read saved announcements: ${error.localizedMessage}"
                 }
             }
         }
     }
 
     private fun showFeedback() {
+        val page = showFarmerPage("Feedback", "Send feedback when you reconnect")
         val field = EditText(this).apply {
             hint = "Write feedback for the VISCANE team"
             minLines = 3
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         }
-        AlertDialog.Builder(this).setTitle("Feedback · saved until connected")
-            .setView(field)
-            .setNeutralButton("Saved feedback") { _, _ -> showFeedbackHistory() }
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Save") { _, _ ->
+        page.addView(field)
+        page.addView(Button(this).apply {
+            text = "Save feedback"
+            setOnClickListener {
                 worker.execute {
-                    val saved = runCatching { OfflineFarmerCache(this).saveFeedback(farmerId, field.text.toString()) }
+                    val saved = runCatching { OfflineFarmerCache(this@OfflineScanActivity).saveFeedback(farmerId, field.text.toString()) }
                     runOnUiThread {
                         if (isDestroyed) return@runOnUiThread
-                        AlertDialog.Builder(this).setMessage(if (saved.isSuccess)
+                        AlertDialog.Builder(this@OfflineScanActivity).setMessage(if (saved.isSuccess)
                             "Feedback saved on this phone. Its server copy will sync when you reconnect."
                             else "Could not save feedback: ${saved.exceptionOrNull()?.localizedMessage}")
                             .setPositiveButton("OK", null).show()
                     }
                 }
-            }.show()
+            }
+        })
+        page.addView(Button(this).apply {
+            text = "Saved feedback"
+            setOnClickListener { showFeedbackHistory() }
+        })
     }
 
     private fun showFeedbackHistory() {
+        val page = showFarmerPage("Saved feedback", "Feedback saved on this phone and online")
+        val loading = pageText("Loading saved feedback…")
+        page.addView(loading)
         worker.execute {
             val saved = runCatching {
                 val cache = OfflineFarmerCache(this)
@@ -830,9 +930,7 @@ class OfflineScanActivity : ComponentActivity() {
             }
             runOnUiThread {
                 if (isDestroyed) return@runOnUiThread
-                AlertDialog.Builder(this).setTitle("Saved feedback")
-                    .setMessage(saved.getOrElse { "Could not read feedback: ${it.localizedMessage}" })
-                    .setPositiveButton("OK", null).show()
+                loading.text = saved.getOrElse { "Could not read feedback: ${it.localizedMessage}" }
             }
         }
     }
@@ -873,7 +971,34 @@ class OfflineScanActivity : ComponentActivity() {
 
     private fun showSavedHistory() {
         val periods = arrayOf("All", "This week", "This month", "This year")
-        AlertDialog.Builder(this).setTitle("Filter input logs").setItems(periods) { _, index ->
+        val page = showFarmerPage("Input Logs", "Your saved inputs and prediction history")
+        val syncNote = pageText(syncStatus.text.toString())
+        page.addView(syncNote)
+        page.addView(Button(this).apply {
+            text = "Sync now"
+            isAllCaps = false
+            backgroundTintList = ColorStateList.valueOf(Color.rgb(232, 242, 232))
+            setTextColor(Color.rgb(36, 112, 61))
+            setOnClickListener {
+                syncWhenOnline()
+                syncNote.text = syncStatus.text
+            }
+        })
+        val filters = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        page.addView(filters)
+        page.addView(list)
+        var loadSequence = 0
+        fun load(index: Int) {
+            val sequence = ++loadSequence
+            (0 until filters.childCount).forEach { position ->
+                (filters.getChildAt(position) as Button).apply {
+                    backgroundTintList = ColorStateList.valueOf(if (position == index) Color.rgb(62, 124, 74) else Color.rgb(232, 242, 232))
+                    setTextColor(if (position == index) Color.WHITE else Color.rgb(36, 112, 61))
+                }
+            }
+            list.removeAllViews()
+            list.addView(pageText("Loading input logs…"))
             worker.execute {
                 val result = runCatching {
                     val scans = OfflineScanStore(this).summaries(farmerId)
@@ -897,18 +1022,24 @@ class OfflineScanActivity : ComponentActivity() {
                         online.filter { inPeriod(it.getLong("created_at_ms")) })
                 }
                 runOnUiThread {
-                    if (isDestroyed) return@runOnUiThread
+                    if (isDestroyed || sequence != loadSequence) return@runOnUiThread
                     result.onSuccess { (scans, assessments, online) ->
+                        list.removeAllViews()
                         if (scans.isEmpty() && assessments.isEmpty() && online.isEmpty()) {
-                            AlertDialog.Builder(this).setMessage("No saved offline results for this period.").setPositiveButton("OK", null).show()
+                            list.addView(pageText("No saved results for this period."))
                         } else {
                             val entries = (scans.map { it.createdAt to ("Scan · ${displayVariety(it.label.substringBefore("__"))} · ${it.label.substringAfter("__").replace('_', ' ')}" to it) } +
                                 assessments.map { it.getLong("created_at") to ("Assessment · ${it.optString("plot_name", "Plot")} · ${OfflineRules.VARIETIES[it.getInt("variety")]} · ${"%.2f".format(it.getDouble("total_lkg"))} LKG · ${if (it.getBoolean("synced")) "Server copy saved" else "Server copy waiting"}" to it) } +
                                 online.map { it.getLong("created_at_ms") to ("Online history · ${it.optString("variety")} · ${it.optString("created_at").take(10)}" to it) })
                                 .sortedByDescending { it.first }
-                            val items = entries.map { it.second.first }.toTypedArray()
-                            AlertDialog.Builder(this).setTitle("Input Logs · ${periods[index]}").setItems(items) { _, position ->
-                                val selected = entries[position].second.second
+                            entries.forEach { entry ->
+                                list.addView(Button(this).apply {
+                                    text = entry.second.first
+                                    isAllCaps = false
+                                    backgroundTintList = ColorStateList.valueOf(Color.rgb(243, 247, 243))
+                                    setTextColor(Color.rgb(31, 41, 51))
+                                    setOnClickListener {
+                                val selected = entry.second.second
                                 if (selected is org.json.JSONObject) {
                                     if (selected.optBoolean("cached_online")) {
                                         val estimates = if (selected.isNull("lkg_per_ton")) "No agronomic estimate for this record."
@@ -916,9 +1047,9 @@ class OfflineScanActivity : ComponentActivity() {
                                         val details = "${selected.optString("variety")} · ${selected.optString("created_at").take(10)}\n\n$estimates" +
                                             if ((selected.optJSONArray("recommendations")?.length() ?: 0) > 0)
                                                 "\n\nRecommendations\n${formatRecommendations(selected)}" else ""
-                                        AlertDialog.Builder(this).setTitle("Saved online history")
+                                        AlertDialog.Builder(this@OfflineScanActivity).setTitle("Saved online history")
                                             .setMessage(details).setPositiveButton("OK", null).show()
-                                        return@setItems
+                                        return@setOnClickListener
                                     }
                                     latestScanId = null
                                     latestScanLabel = null
@@ -935,14 +1066,17 @@ class OfflineScanActivity : ComponentActivity() {
                                     recommendationsView.text = "Recommendations\n\n${formatRecommendations(selected)}"
                                     detailsPanel.visibility = android.view.View.VISIBLE
                                     agronomicInputs.visibility = android.view.View.VISIBLE
-                                    return@setItems
+                                    showHomePage()
+                                    contentScroll.post { contentScroll.smoothScrollTo(0, agronomicInputs.top) }
+                                    return@setOnClickListener
                                 }
                                 val scan = selected as PendingScanSummary
                                 worker.execute {
-                                    val photo = runCatching { OfflineScanStore(this).read(farmerId, scan.id).jpeg }
+                                    val photo = runCatching { OfflineScanStore(this@OfflineScanActivity).read(farmerId, scan.id).jpeg }
                                     runOnUiThread {
                                         photo.onSuccess {
                                             preview.setImageBitmap(BitmapFactory.decodeByteArray(it, 0, it.size))
+                                            previewHint.visibility = android.view.View.GONE
                                             latestScanId = scan.id
                                             latestScanLabel = scan.label
                                             applyScanLabel(scan.label)
@@ -950,17 +1084,30 @@ class OfflineScanActivity : ComponentActivity() {
                                                 if (scan.synced) "Saved on this phone · Also synchronized to the server."
                                                 else "Saved on this phone · Server copy waiting for connection.")
                                             reviewActions.visibility = android.view.View.VISIBLE
+                                            showHomePage()
                                         }.onFailure { status.text = "Could not open saved photo: ${it.localizedMessage}" }
                                     }
                                 }
-                            }.setPositiveButton("Close", null).show()
+                                    }
+                                })
+                            }
                         }
                     }.onFailure { error ->
-                        AlertDialog.Builder(this).setMessage("Could not read input logs: ${error.localizedMessage}").setPositiveButton("OK", null).show()
+                        list.removeAllViews()
+                        list.addView(pageText("Could not read input logs: ${error.localizedMessage}"))
                     }
                 }
             }
-        }.show()
+        }
+        periods.forEachIndexed { index, label ->
+            filters.addView(Button(this).apply {
+                text = label
+                textSize = 11f
+                isAllCaps = false
+                setOnClickListener { load(index) }
+            }, LinearLayout.LayoutParams(0, -2, 1f))
+        }
+        load(0)
     }
 
     private fun controls(enabled: Boolean) {
@@ -1008,6 +1155,7 @@ class OfflineScanActivity : ComponentActivity() {
     private fun classify(uri: Uri) {
         controls(false)
         preview.setImageDrawable(null)
+        previewHint.visibility = android.view.View.VISIBLE
         result.visibility = android.view.View.GONE
         reviewActions.visibility = android.view.View.GONE
         detailsPanel.visibility = android.view.View.GONE
@@ -1026,6 +1174,7 @@ class OfflineScanActivity : ComponentActivity() {
                 runOnUiThread {
                     if (isDestroyed) { bitmap.recycle(); return@runOnUiThread }
                     preview.setImageBitmap(bitmap)
+                    previewHint.visibility = android.view.View.GONE
                     if (!accepted) {
                         latestScanId = null
                         latestScanLabel = null
@@ -1045,7 +1194,10 @@ class OfflineScanActivity : ComponentActivity() {
                     }
                     controls(true)
                     if (accepted) reviewActions.visibility = android.view.View.VISIBLE
-                    if (accepted && saved.isSuccess) refreshHistory()
+                    if (accepted && saved.isSuccess) {
+                        refreshHistory()
+                        syncWhenOnline()
+                    }
                 }
             } catch (error: Exception) {
                 runOnUiThread { if (!isDestroyed) { status.text = "Could not analyze photo: ${error.localizedMessage}"; controls(true) } }
@@ -1067,6 +1219,73 @@ class OfflineScanActivity : ComponentActivity() {
         if (farmerId > 0 && getSharedPreferences("farmer_offline_access", MODE_PRIVATE)
                 .getLong("farmer_id", 0) != farmerId) { finish(); return }
         if (::history.isInitialized && farmerId > 0) refreshHistory()
+        syncWhenOnline()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivity.registerDefaultNetworkCallback(networkCallback)
+        networkCallbackRegistered = true
+    }
+
+    override fun onStop() {
+        if (networkCallbackRegistered) {
+            val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+            connectivity.unregisterNetworkCallback(networkCallback)
+            networkCallbackRegistered = false
+        }
+        super.onStop()
+    }
+
+    private fun syncWhenOnline() {
+        if (isDestroyed || farmerId <= 0 || !::syncStatus.isInitialized || !syncRunning.compareAndSet(false, true)) return
+        val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities = connectivity.activeNetwork?.let(connectivity::getNetworkCapabilities)
+        if (capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) != true ||
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) != true) {
+            syncRunning.set(false)
+            syncStatus.text = "Connect to the internet to sync saved work."
+            return
+        }
+        val configured = PreferenceManager.getDefaultSharedPreferences(this)
+            .getString(SettingsActivity.KEY_BASE_URL, SettingsActivity.DEFAULT_BASE_URL)
+            .orEmpty().trim().ifEmpty { SettingsActivity.DEFAULT_BASE_URL }
+        if (!FarmerNavigation.validOrigin(configured, false)) {
+            syncRunning.set(false)
+            syncStatus.text = "An HTTPS farmer server is required to sync saved work."
+            return
+        }
+        val base = configured
+        syncStatus.text = "Syncing saved work…"
+        worker.execute {
+            val outcome = runCatching {
+                val signedIn = OfflineSync.authenticatedFarmerId(base)
+                when {
+                    signedIn == null -> "Sign in online to sync saved work."
+                    signedIn != farmerId -> "Sign in with the same farmer account to sync saved work."
+                    else -> {
+                        val count = OfflineSync.sync(applicationContext, base, farmerId)
+                        OfflineSync.refreshContent(applicationContext, base, farmerId)
+                        val pending = OfflineScanStore(applicationContext).pendingCount(farmerId) +
+                            OfflineAssessmentStore(applicationContext).records(farmerId, pendingOnly = true).size
+                        when {
+                            pending > 0 -> "$pending saved item${if (pending == 1) " is" else "s are"} still waiting to sync. Sign in online and tap Sync now to retry."
+                            count > 0 -> "$count saved item${if (count == 1) "" else "s"} synced to the server."
+                            else -> "Saved work is up to date."
+                        }
+                    }
+                }
+            }.getOrElse { "Sync could not finish: ${it.localizedMessage ?: "connection error"}. Saved work is still on this phone." }
+            runOnUiThread {
+                syncRunning.set(false)
+                if (!isDestroyed) {
+                    syncStatus.text = outcome
+                    refreshHistory()
+                    if (currentPageTitle == "Input Logs") showSavedHistory()
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
