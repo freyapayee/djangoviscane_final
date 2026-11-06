@@ -1577,7 +1577,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=17">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/camera-dialog.css') }}?v=2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=9">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=10">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard">
     <div class="dashboard-bg"></div>
@@ -1607,11 +1607,13 @@
                     <ion-icon name="partly-sunny-outline"></ion-icon>
                     <span data-farmer-info-text>Loading date...</span>
                 </div>
-                <button class="btn light tutorial-launch" type="button" data-start-farmer-tour>
-                    <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
-                    <span>{{ farmer_text('Tutorial') }}</span>
-                </button>
-                {% include 'components/farmer_menu_button.html' %}
+                <div class="farmer-header-navigation">
+                    <button class="btn light tutorial-launch" type="button" data-start-farmer-tour>
+                        <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
+                        <span>{{ farmer_text('Tutorial') }}</span>
+                    </button>
+                    {% include 'components/farmer_menu_button.html' %}
+                </div>
             </div>
         </div>
     </header>
