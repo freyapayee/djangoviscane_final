@@ -58,7 +58,8 @@
                 <h2 id="profile-farmer-name">{{ user.fullname }}</h2>
                 <p class="profile-hero-email">{{ user.email }}</p>
                 <p class="profile-hero-location"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-                    {% if user.municipality and user.province %}{{ user.municipality }}, {{ user.province }}{% elif user.province or user.municipality %}{{ user.province or user.municipality }}{% else %}{{ farmer_text('Location not set') }}{% endif %}
+                    {% set location_parts = [user.barangay, user.municipality, user.province] | select | list %}
+                    {{ location_parts | join(', ') if location_parts else farmer_text('Location not set') }}
                 </p>
                 <details class="profile-edit-disclosure"{% if request.POST.get('action') == 'update_profile' and not profile_updated %} open{% endif %}>
                     <summary class="profile-edit-button"><ion-icon name="create-outline" aria-hidden="true"></ion-icon>{{ farmer_text('Edit Profile') }}</summary>

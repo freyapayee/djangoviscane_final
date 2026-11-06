@@ -309,6 +309,10 @@ body.ds-app.vis-farmer-dashboard .farmer-bottom-nav {
     border-color: #aeb9b1;
     box-shadow: 0 4px 14px rgba(35, 49, 40, .12);
 }
+body.ds-app.vis-farmer-dashboard :is(#recent-scans, #scan-gallery) {
+    border: 2px solid #aeb9b1;
+    box-shadow: 0 4px 14px rgba(35, 49, 40, .12);
+}
 body.ds-app.vis-farmer-dashboard .stat-card {
     border-color: #aeb9b1;
     box-shadow: 0 4px 14px rgba(35, 49, 40, .12);
