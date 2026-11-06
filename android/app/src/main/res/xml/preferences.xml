@@ -3,6 +3,6 @@
     <EditTextPreference
         android:key="base_url"
         android:title="Server URL"
-        android:defaultValue="http://10.0.2.2:5000/" />
+        android:defaultValue="https://viscane.app/" />
 </PreferenceScreen>
 

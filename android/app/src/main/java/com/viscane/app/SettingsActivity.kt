@@ -59,6 +59,6 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         const val KEY_BASE_URL = "base_url"
-        val DEFAULT_BASE_URL = BuildConfig.FARMER_BASE_URL.ifBlank { "http://10.0.2.2:5000/" }
+        val DEFAULT_BASE_URL = BuildConfig.FARMER_BASE_URL.ifBlank { "https://viscane.app/" }
     }
 }
