@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import secrets
 import uuid
 from datetime import datetime, timedelta
@@ -81,8 +82,8 @@ def render_template(request, template_name, context=None, status=200):
     return render(request, template_name, payload, status=status)
 
 
-INVALID_CV_IMAGE_MESSAGE = "Invalid Image. This Image is not supported"
-CV_CONFIDENCE_THRESHOLD = 0.30
+INVALID_CV_IMAGE_MESSAGE = "Sugarcane could not be confirmed in this photo. Please take a clear photo of a sugarcane stalk."
+CV_CONFIDENCE_THRESHOLD = 0.39
 REGISTRATION_BARANGAYS = [
     "Amin", "Banogbanog", "Bulad", "Bungahin", "Cabcab", "Camangcamang", "Camp Clark",
     "Cansalongon", "Guintubhan", "Libas", "Limalima", "Makilignit", "Mansablay", "Maytubig",
@@ -110,6 +111,24 @@ def supported_cv_confidence(cv_context):
     if confidence > 1:
         confidence /= 100
     return math.isfinite(confidence) and confidence >= CV_CONFIDENCE_THRESHOLD
+
+
+def reports_non_sugarcane(payload):
+    """Honor an explicit negative class from a recognition service that supports one."""
+    if isinstance(payload, list):
+        return any(reports_non_sugarcane(item) for item in payload)
+    if not isinstance(payload, dict):
+        return False
+    if any(payload.get(key) is False for key in ("is_sugarcane", "sugarcane_detected", "contains_sugarcane")):
+        return True
+    label = payload.get("class_name") or payload.get("label") or payload.get("class")
+    if isinstance(label, str):
+        normalized = re.sub(r"[\s-]+", "_", label.strip().lower())
+        if normalized in {"not_sugarcane", "non_sugarcane", "no_sugarcane", "unknown", "background", "person", "object"}:
+            return True
+    return any(reports_non_sugarcane(payload.get(key)) for key in ("prediction", "result", "data", "predictions", "results", "models")) or (
+        isinstance(payload.get("models"), dict) and any(reports_non_sugarcane(item) for item in payload["models"].values())
+    )
 
 
 _REDIRECT_PATH_PARAMS = {
@@ -879,6 +898,9 @@ def api_scan_predict(request):
             decoded_payload = json.loads(response_body.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError):
             return JsonResponse({"error": "Prediction service did not return valid JSON."}, status=502)
+        if reports_non_sugarcane(decoded_payload):
+            request.session.pop("latest_cv_context", None)
+            return JsonResponse({"error": "No sugarcane detected in this photo. Please take a clear photo of a sugarcane stalk."}, status=422)
         cv_context = _extract_cv_context(decoded_payload)
         if not cv_context:
             response_keys = list(decoded_payload) if isinstance(decoded_payload, dict) else []

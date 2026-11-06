@@ -310,44 +310,61 @@ class ExecutionTests(TestCase):
     def test_low_confidence_scan_is_rejected_before_it_is_saved(self):
         self.login_farmer()
         with tempfile.TemporaryDirectory() as folder, override_settings(PRIVATE_UPLOAD_ROOT=Path(folder)):
-            for confidence in (0.40, 0.749, 74.9):
+            for confidence in (0.38, 0.389, 38.9):
                 with self.subTest(confidence=confidence):
                     payload = {'variety': 'VMC 84-524', 'maturity_status': 'MATURE', 'confidence': confidence}
                     with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
                         response = self.client.post('/api/scan/predict', {'file': prediction_test_image()})
                     self.assertEqual(response.status_code, 422)
-                    self.assertEqual(response.json()['error'], 'Invalid Image. This Image is not supported')
+                    self.assertEqual(response.json()['error'], 'Sugarcane could not be confirmed in this photo. Please take a clear photo of a sugarcane stalk.')
                     self.assertFalse(CvScanUpload.objects.exists())
                     self.assertNotIn('latest_cv_context', self.client.session)
 
-            for confidence in (0.75, 75):
+            for confidence in (0.39, 0.40, 39):
                 with self.subTest(confidence=confidence):
                     payload['confidence'] = confidence
                     with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
                         response = self.client.post('/api/scan/predict', {'file': prediction_test_image()})
                     self.assertEqual(response.status_code, 200)
-            self.assertEqual(CvScanUpload.objects.count(), 2)
+            self.assertEqual(CvScanUpload.objects.count(), 3)
+
+    def test_explicit_non_sugarcane_result_is_rejected_even_with_high_score(self):
+        self.login_farmer()
+        session = self.client.session
+        session['latest_cv_context'] = {'confidence': .95, 'upload_id': 123}
+        session.save()
+        for payload in (
+            {'is_sugarcane': False, 'prediction': {'variety': 'VMC 84-524', 'maturity_status': 'MATURE', 'confidence': .99}},
+            {'result': {'prediction': {'label': 'person', 'variety': 'VMC 84-524', 'maturity_status': 'MATURE', 'confidence': .99}}},
+        ):
+            with self.subTest(payload=payload):
+                with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
+                    response = self.client.post('/api/scan/predict', {'file': prediction_test_image()})
+                self.assertEqual(response.status_code, 422)
+                self.assertIn('No sugarcane detected', response.json()['error'])
+                self.assertFalse(CvScanUpload.objects.exists())
+                self.assertNotIn('latest_cv_context', self.client.session)
 
     def test_old_low_confidence_result_cannot_be_used_for_a_scan(self):
         self.login_farmer()
-        upload = CvScanUpload.objects.create(user=self.user, image_path='old-low-result.jpg', confidence=0.4)
+        upload = CvScanUpload.objects.create(user=self.user, image_path='old-low-result.jpg', confidence=0.38)
         session = self.client.session
         session['latest_cv_context'] = {'upload_id': upload.pk, 'variety': 'VMC 84-524',
-                                        'maturity_status': 'MATURE', 'confidence': 0.4}
+                                        'maturity_status': 'MATURE', 'confidence': 0.38}
         session.save()
         review = self.client.get('/scan/new?review=1')
-        self.assertNotContains(review, '40.0%')
+        self.assertNotContains(review, '38.0%')
         self.assertNotIn('latest_cv_context', self.client.session)
         response = self.client.post('/scan/new', {'plot_name': 'Unsupported image', 'ai_prediction_applied': '1'})
-        self.assertContains(response, 'Invalid Image. This Image is not supported')
+        self.assertContains(response, 'Sugarcane could not be confirmed in this photo.')
         self.assertFalse(Scan.objects.filter(plot_name='Unsupported image').exists())
         session = self.client.session
         session['latest_cv_context'] = {'upload_id': upload.pk, 'variety': 'VMC 84-524',
-                                        'maturity_status': 'MATURE', 'confidence': 0.4}
+                                        'maturity_status': 'MATURE', 'confidence': 0.38}
         session.save()
         response = self.client.post('/calculate', {'cv_prediction_applied': '1'})
         self.assertEqual(response.status_code, 302)
-        self.assertIn('Invalid+Image.', response['Location'])
+        self.assertIn('Sugarcane+could+not+be+confirmed', response['Location'])
         self.assertFalse(AgronomicLog.objects.exists())
 
     def test_scan_classification_expands_supported_varieties(self):
