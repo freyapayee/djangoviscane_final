@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-dashboard.css') }}?v=16">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-pages.css') }}?v=12">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/farmer-tutorial.css') }}?v=6">
-    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=9">
+    <link rel="stylesheet" href="/static/css/farmer-menu.css?v=10">
 </head>
 <body class="farmer-layout ds-app vis-farmer-dashboard vis-farmer-page farmer_recommendations">
 
@@ -41,8 +41,7 @@
                 </div>
                 <div class="farmer-header-navigation">
                     <a class="btn light" href="/homepage">
-                    <ion-icon name="home-outline"></ion-icon>
-                    {{ farmer_text('Home') }}
+                    {{ farmer_text('Back') }}
                 </a>
                     {% include 'components/farmer_menu_button.html' %}
                 </div>
