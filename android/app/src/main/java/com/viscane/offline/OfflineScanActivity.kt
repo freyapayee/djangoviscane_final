@@ -1020,9 +1020,9 @@ class OfflineScanActivity : ComponentActivity() {
                 val bitmap = decode(uri)
                 val predictions = try { classifier!!.classify(bitmap) } catch (error: Throwable) { bitmap.recycle(); throw error }
                 val top = predictions.first()
-                val accepted = top.confidence >= MIN_ACCEPTED_CONFIDENCE
+                val accepted = top.confidence > MIN_ACCEPTED_CONFIDENCE
                 val saved = if (accepted) runCatching { OfflineScanStore(this).save(farmerId, top, bitmap) }
-                    else Result.failure(IllegalArgumentException("Prediction confidence below threshold"))
+                    else Result.failure(IllegalArgumentException("Prediction confidence at or below threshold"))
                 runOnUiThread {
                     if (isDestroyed) { bitmap.recycle(); return@runOnUiThread }
                     preview.setImageBitmap(bitmap)
@@ -1031,7 +1031,7 @@ class OfflineScanActivity : ComponentActivity() {
                         latestScanLabel = null
                         result.text = "Sugarcane could not be confirmed in this photo. Please choose a clear sugarcane photo and try again."
                         result.visibility = android.view.View.VISIBLE
-                        status.text = "Sugarcane could not be confirmed (model score ${"%.1f".format(top.confidence * 100)}% is below 39%). No result was saved."
+                        status.text = "Sugarcane could not be confirmed (model score ${"%.1f".format(top.confidence * 100)}% is at or below 39.9%). No result was saved."
                     } else {
                         latestScanId = saved.getOrNull()?.id
                         latestScanLabel = top.label
@@ -1054,7 +1054,7 @@ class OfflineScanActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val MIN_ACCEPTED_CONFIDENCE = 0.39f
+        private const val MIN_ACCEPTED_CONFIDENCE = 0.399f
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

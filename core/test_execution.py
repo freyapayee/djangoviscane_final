@@ -310,7 +310,7 @@ class ExecutionTests(TestCase):
     def test_low_confidence_scan_is_rejected_before_it_is_saved(self):
         self.login_farmer()
         with tempfile.TemporaryDirectory() as folder, override_settings(PRIVATE_UPLOAD_ROOT=Path(folder)):
-            for confidence in (0.38, 0.389, 38.9):
+            for confidence in (0.39, 0.398, 39.8, 0.399, 39.9):
                 with self.subTest(confidence=confidence):
                     payload = {'variety': 'VMC 84-524', 'maturity_status': 'MATURE', 'confidence': confidence}
                     with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
@@ -320,7 +320,7 @@ class ExecutionTests(TestCase):
                     self.assertFalse(CvScanUpload.objects.exists())
                     self.assertNotIn('latest_cv_context', self.client.session)
 
-            for confidence in (0.39, 0.40, 39):
+            for confidence in (0.3991, 0.40, 39.91):
                 with self.subTest(confidence=confidence):
                     payload['confidence'] = confidence
                     with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
@@ -347,20 +347,20 @@ class ExecutionTests(TestCase):
 
     def test_old_low_confidence_result_cannot_be_used_for_a_scan(self):
         self.login_farmer()
-        upload = CvScanUpload.objects.create(user=self.user, image_path='old-low-result.jpg', confidence=0.38)
+        upload = CvScanUpload.objects.create(user=self.user, image_path='old-low-result.jpg', confidence=0.39)
         session = self.client.session
         session['latest_cv_context'] = {'upload_id': upload.pk, 'variety': 'VMC 84-524',
-                                        'maturity_status': 'MATURE', 'confidence': 0.38}
+                                        'maturity_status': 'MATURE', 'confidence': 0.39}
         session.save()
         review = self.client.get('/scan/new?review=1')
-        self.assertNotContains(review, '38.0%')
+        self.assertNotContains(review, '39.0%')
         self.assertNotIn('latest_cv_context', self.client.session)
         response = self.client.post('/scan/new', {'plot_name': 'Unsupported image', 'ai_prediction_applied': '1'})
         self.assertContains(response, 'Sugarcane could not be confirmed in this photo.')
         self.assertFalse(Scan.objects.filter(plot_name='Unsupported image').exists())
         session = self.client.session
         session['latest_cv_context'] = {'upload_id': upload.pk, 'variety': 'VMC 84-524',
-                                        'maturity_status': 'MATURE', 'confidence': 0.38}
+                                        'maturity_status': 'MATURE', 'confidence': 0.39}
         session.save()
         response = self.client.post('/calculate', {'cv_prediction_applied': '1'})
         self.assertEqual(response.status_code, 302)

@@ -83,7 +83,7 @@ def render_template(request, template_name, context=None, status=200):
 
 
 INVALID_CV_IMAGE_MESSAGE = "Sugarcane could not be confirmed in this photo. Please take a clear photo of a sugarcane stalk."
-CV_CONFIDENCE_THRESHOLD = 0.39
+CV_CONFIDENCE_THRESHOLD = 0.399
 REGISTRATION_BARANGAYS = [
     "Amin", "Banogbanog", "Bulad", "Bungahin", "Cabcab", "Camangcamang", "Camp Clark",
     "Cansalongon", "Guintubhan", "Libas", "Limalima", "Makilignit", "Mansablay", "Maytubig",
@@ -110,7 +110,7 @@ def supported_cv_confidence(cv_context):
         return False
     if confidence > 1:
         confidence /= 100
-    return math.isfinite(confidence) and confidence >= CV_CONFIDENCE_THRESHOLD
+    return math.isfinite(confidence) and confidence > CV_CONFIDENCE_THRESHOLD
 
 
 def reports_non_sugarcane(payload):
