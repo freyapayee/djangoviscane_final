@@ -78,6 +78,15 @@ class ExecutionTests(TestCase):
             with self.subTest(route=route):
                 self.assertEqual(self.client.get(route).status_code, 200)
 
+    def test_profile_location_includes_barangay(self):
+        self.user.barangay = 'Amin'
+        self.user.municipality = 'Isabela'
+        self.user.province = 'Negros Occidental'
+        self.user.save(update_fields=['barangay', 'municipality', 'province'])
+        self.login_farmer()
+        response = self.client.get('/farmer/settings')
+        self.assertContains(response, 'Amin, Isabela, Negros Occidental')
+
     def test_farmer_settings_password_disclosure_and_signout(self):
         self.login_farmer()
         response = self.client.get('/farmer/settings')

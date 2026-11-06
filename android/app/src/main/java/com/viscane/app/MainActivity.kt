@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -24,6 +26,7 @@ import android.webkit.WebResourceError
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.widget.Toast
+import android.telephony.TelephonyManager
 import com.viscane.offline.OfflineScanActivity
 import androidx.appcompat.app.AlertDialog
 import androidx.activity.OnBackPressedCallback
@@ -262,7 +265,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                 if (request.isForMainFrame) {
-                    if (!hasNetworkConnection()) showLoadError("Offline", "Open the offline farmer workspace for scans, agronomic calculations, recommendations, and saved input logs.")
+                    if (!hasNetworkAccessEnabled()) showLoadError("Offline", "Open the offline farmer workspace for scans, agronomic calculations, recommendations, and saved input logs.")
                     else showLoadError()
                 }
             }
@@ -285,7 +288,7 @@ class MainActivity : AppCompatActivity() {
         swipeRefresh.setOnChildScrollUpCallback { _, _ -> webView.canScrollVertically(-1) }
 
         // Existing server accounts and history are authoritative whenever online.
-        if (hasNetworkConnection()) webView.loadUrl(activeBaseUrl)
+        if (hasNetworkAccessEnabled()) webView.loadUrl(activeBaseUrl)
         else showLoadError("Offline", "Connect once to sign in, then use scans, agronomic calculations, recommendations, and saved input logs on this device.")
     }
 
@@ -299,10 +302,10 @@ class MainActivity : AppCompatActivity() {
             webView.clearHistory()
             webView.loadUrl(baseUrl)
         }
-        if (::webView.isInitialized && hasNetworkConnection()) refreshMobileSessionAndSync()
+        if (::webView.isInitialized && hasNetworkAccessEnabled()) refreshMobileSessionAndSync()
         if (launchedOfflineWorkspace) {
             launchedOfflineWorkspace = false
-            if (::webView.isInitialized && !hasNetworkConnection() &&
+            if (::webView.isInitialized && !hasNetworkAccessEnabled() &&
                 getSharedPreferences("farmer_offline_access", MODE_PRIVATE).getLong("farmer_id", 0) <= 0) {
                 loadFailed = false
                 showLoadError("Offline", "Sign in online with your farmer account to unlock saved offline work on this phone.")
@@ -355,11 +358,18 @@ class MainActivity : AppCompatActivity() {
         swipeRefresh.isRefreshing = false
         if (loadFailed || isFinishing) return
         loadFailed = true
-        AlertDialog.Builder(this).setTitle(title)
+        val dialog = AlertDialog.Builder(this).setTitle(title)
             .setMessage(message)
-            .setPositiveButton("Retry") { _, _ -> webView.reload() }
-            .setNeutralButton("Open offline workspace") { _, _ -> openOfflineScanner() }
-            .setNegativeButton("Close", null).show()
+            .setPositiveButton("Retry") { _, _ ->
+                loadFailed = false
+                if (webView.url.isNullOrBlank() || webView.url == "about:blank") webView.loadUrl(activeBaseUrl)
+                else webView.reload()
+            }
+            .setNegativeButton("Close", null)
+        if (!hasNetworkAccessEnabled()) {
+            dialog.setNeutralButton("Open offline workspace") { _, _ -> openOfflineScanner() }
+        }
+        dialog.show()
     }
 
     private fun getBaseUrl(): String {
@@ -375,7 +385,24 @@ class MainActivity : AppCompatActivity() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun hasNetworkConnection(): Boolean {
+    private fun hasNetworkAccessEnabled(): Boolean {
+        val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val active = connectivity.activeNetwork?.let(connectivity::getNetworkCapabilities)
+        if (active?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true) return true
+
+        // Validation can disappear during a brief outage. Only offer automatic
+        // offline mode when both user-controlled network radios are disabled.
+        val wifi = getSystemService(WIFI_SERVICE) as? WifiManager
+        if (runCatching { wifi?.isWifiEnabled == true }.getOrDefault(true)) return true
+        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) return false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_DATA)) return false
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return true
+        val telephony = getSystemService(TELEPHONY_SERVICE) as? TelephonyManager ?: return true
+        return runCatching { telephony.isDataEnabled }.getOrDefault(true)
+    }
+
+    private fun hasValidatedNetwork(): Boolean {
         val connectivity = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivity.activeNetwork ?: return false
         val capabilities = connectivity.getNetworkCapabilities(network) ?: return false
@@ -398,7 +425,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshMobileSessionAndSync() {
         val base = getBaseUrl()
-        if (!hasNetworkConnection() || !base.startsWith("https://") || !syncRunning.compareAndSet(false, true)) return
+        if (!hasValidatedNetwork() || !base.startsWith("https://") || !syncRunning.compareAndSet(false, true)) return
         CookieManager.getInstance().flush()
         Thread {
             try {
