@@ -22,6 +22,15 @@
 .farmer-menu-links a { display: flex; align-items: center; gap: 12px; color: #285c32; padding: 14px 16px; font-weight: 700; text-decoration: none; background: white; border: 1px solid #dae5d9; border-radius: 12px; min-height: 48px; box-sizing: border-box; }
 .farmer-menu-links a:hover, .farmer-menu-links a:focus-visible { background: #e5f1e2; outline: 2px solid #397746; outline-offset: 2px; }
 .farmer-menu-links ion-icon { font-size: 22px; flex: none; }
+/* The farmer screens use text labels for navigation and choices. */
+body.ds-app:is(.vis-farmer-dashboard,.vis-scan-page,.vis-calculate-page) ion-icon[name*="arrow"],
+body.ds-app:is(.vis-farmer-dashboard,.vis-scan-page,.vis-calculate-page) ion-icon[name*="chevron"],
+body.ds-app:is(.vis-farmer-dashboard,.vis-scan-page,.vis-calculate-page) .farmer-local-icon[data-icon-kind="arrow"] { display: none !important; }
+body.ds-app.vis-farmer-dashboard #calc-form .stat-select,
+body.ds-app.farmer_settings .settings-layout .profile-detail-select { appearance: none; background-image: none; }
+@media (max-width: 600px) {
+    body.ds-app.vis-farmer-dashboard:not(.vis-farmer-page) .header-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .farmer-news-page { max-width: 1040px; }
 .farmer-news-page .panel { margin-bottom: 24px; padding: 24px; }
 .farmer-news-page .panel-header { flex-wrap: wrap; gap: 12px; }
