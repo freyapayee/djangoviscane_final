@@ -80,6 +80,7 @@ SECRET_KEY = os.getenv("VISCANE_SECRET_KEY", "change-this-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes", "on"}
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if host.strip()]
 FARMER_ONLY = os.getenv("VISCANE_FARMER_ONLY", "false").lower() in {"1", "true", "yes", "on"}
+VISCANE_OFFLINE = os.getenv("VISCANE_OFFLINE", "false").lower() in {"1", "true", "yes", "on"}
 if not DEBUG and (SECRET_KEY == "change-this-key" or "*" in ALLOWED_HOSTS):
     raise ImproperlyConfigured("Production requires VISCANE_SECRET_KEY and explicit DJANGO_ALLOWED_HOSTS.")
 
