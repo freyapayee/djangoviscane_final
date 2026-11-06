@@ -18,6 +18,15 @@ git pull origin feature/offline-farmer-classifier
 
 If Git says the branch is already checked out in another worktree, switch to the branch in that worktree before pulling.
 
+Confirm that this is the updated checkout before building. Run these commands from the repository root:
+
+```powershell
+git rev-parse --show-toplevel
+Select-String -Path android\app\src\main\java\com\viscane\app\MainActivity.kt -Pattern 'hasNetworkAccessEnabled'
+```
+
+The second command must find `hasNetworkAccessEnabled`. If it finds nothing, that checkout still has the older network check, which can label a slow connection as offline. Update that checkout before building.
+
 ## 3. Open the correct Android project
 
 In Android Studio, choose **Open** and select the repository's **`android/`** folder. Wait for Gradle Sync to complete. Do not select the older `android-offline/` starter project; it builds a different app and will not include the current combined-app changes.
@@ -40,6 +49,8 @@ android\app\build\outputs\apk\debug\app-debug.apk
 ```
 
 Copy `app-debug.apk` to the phone and install it. The debug app has a `.debug` application ID, so it installs separately from the production app. Sign in online once with the farmer account, then turn on airplane mode and check the offline workspace. Verify photo capture and upload, the result review buttons, agronomic inputs, and scrolling.
+
+When testing the network fix, open the newly installed **debug app**. With Wi-Fi or mobile data enabled, a slow or failed request should offer Retry without switching to the offline workspace. With both disabled, the offline workspace option should appear.
 
 ## Updating the production app
 
