@@ -3,11 +3,14 @@
     const drawings = {
         home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/><path d="M2 10 12 2l10 8"/>',
         person: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0z"/>',
+        personCircle: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="9" r="3"/><path d="M5.5 19a7 7 0 0 1 13 0"/>',
         document: '<path d="M6 2h8l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
         sparkle: '<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l1 2.5 2.5 1-2.5 1L19 23l-1-2.5-2.5-1 2.5-1zM5 2l.8 2.2L8 5l-2.2.8L5 8l-.8-2.2L2 5l2.2-.8z"/>',
         calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M12 14h2M17 14h.1M7 17h2M12 17h2"/>',
         clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         leaf: '<path d="M20 4C10 4 5 7 5 13a6 6 0 0 0 6 6c6 0 9-5 9-15Z"/><path d="M4 21c3-6 7-9 13-13"/>',
+        compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+        bulb: '<path d="M9 18h6M10 21h4M8.4 15.6A7 7 0 1 1 15.6 15.6c-.9.7-1.6 1.6-1.6 2.4h-4c0-.8-.7-1.7-1.6-2.4Z"/><path d="M12 8v4m-2-2 2 2 2-2"/>',
         camera: '<path d="M4 7h4l2-3h4l2 3h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/>',
         image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
         menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
@@ -35,20 +38,20 @@
         default: '<circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/>'
     };
     const groups = {
-        'home-outline': 'home', 'grid-outline': 'home', 'person-outline': 'person', 'person-circle-outline': 'person',
+        'home-outline': 'home', 'grid-outline': 'home', 'person-outline': 'person', 'person-circle-outline': 'personCircle',
         'document-text-outline': 'document', 'analytics-outline': 'chart', 'bar-chart-outline': 'chart', 'stats-chart-outline': 'chart',
         'sparkles-outline': 'sparkle', sparkles: 'sparkle', 'calendar-outline': 'calendar', 'time-outline': 'clock',
         'leaf-outline': 'leaf', 'camera-outline': 'camera', camera: 'camera', 'images-outline': 'image', images: 'image',
         'menu-outline': 'menu', 'partly-sunny-outline': 'weather', 'notifications-outline': 'notifications',
         'newspaper-outline': 'newspaper', 'megaphone-outline': 'notifications', 'arrow-forward-outline': 'arrow',
-        'chevron-forward-outline': 'arrow', 'chevron-back-outline': 'arrow', 'chevron-down-outline': 'arrow', 'chevron-down': 'arrow',
+        'arrow-back-outline': 'arrow', 'chevron-forward-outline': 'arrow', 'chevron-back-outline': 'arrow', 'chevron-down-outline': 'arrow', 'chevron-down': 'arrow',
         checkmark: 'check', 'checkmark-circle-outline': 'check', 'close-outline': 'close', 'location-outline': 'location',
         'pin-outline': 'location', 'map-outline': 'location', 'mail-outline': 'mail', 'call-outline': 'phone', 'phone': 'phone',
         'lock-closed-outline': 'lock', 'scan-outline': 'scan', 'resize-outline': 'scan', 'information-circle-outline': 'info',
         'help-circle-outline': 'help', 'language': 'language', 'create-outline': 'edit', 'download-outline': 'download',
         'save-outline': 'save', 'log-out-outline': 'logout', 'calculator-outline': 'calculator', 'bug-outline': 'bug',
-        'flask-outline': 'calculator', 'cut-outline': 'edit', 'compass-outline': 'scan', 'navigate-outline': 'arrow',
-        'business-outline': 'home', 'layers-outline': 'document', 'git-branch-outline': 'document', 'bulb-outline': 'sparkle',
+        'flask-outline': 'calculator', 'cut-outline': 'edit', 'compass-outline': 'compass', 'navigate-outline': 'compass',
+        'business-outline': 'home', 'layers-outline': 'document', 'git-branch-outline': 'document', 'bulb-outline': 'bulb',
         'send-outline': 'arrow'
     };
     function replaceIcon(node) {
@@ -85,6 +88,7 @@
         svg.style.setProperty('width', dimension(computed.getPropertyValue('width')));
         svg.style.setProperty('height', dimension(computed.getPropertyValue('height')));
         svg.dataset.localIcon = 'true';
+        svg.dataset.iconKind = groups[name] || 'default';
         svg.innerHTML = drawings[groups[name]] || drawings.default;
         node.replaceWith(svg);
     }

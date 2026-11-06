@@ -24,9 +24,10 @@ class FarmerNotificationTests(TestCase):
             self.assertContains(response, f'href="{href}"')
         self.assertLess(html.index('header-date-weather'), html.index('id="farmer-menu-toggle"'))
         self.assertLess(html.index('data-start-farmer-tour'), html.index('id="farmer-menu-toggle"'))
-        self.assertLess(html.index('farmer-settings-link'), html.index('id="farmer-menu-toggle"'))
         header = html.split('<header class="dashboard-header">', 1)[1].split('</header>', 1)[0]
         self.assertNotIn('href="/homepage"', header)
+        self.assertNotIn('farmer-settings-link', header)
+        self.assertIn('href="/farmer/settings"', html)
 
     def test_news_page_and_feedback_redirect(self):
         Notification.objects.create(title='New announcement', message='News message')
