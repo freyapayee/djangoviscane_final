@@ -382,7 +382,11 @@
                     });
                     let payload = null;
                     try { payload = await response.json(); } catch (_) { payload = null; }
-                    if (!response.ok) throw new Error(payload?.error || 'Image analysis failed.');
+                    if (!response.ok) {
+                        const message = payload?.error || 'Image analysis failed.';
+                        const details = payload?.details ? ` ${payload.details}` : '';
+                        throw new Error(`${message}${details}`);
+                    }
                     const prediction = payload?.prediction || payload?.result?.prediction;
                     if (!prediction) throw new Error('Prediction service returned no recognizable result.');
                     if (sequence !== analysisSequence) return;

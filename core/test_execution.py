@@ -12,7 +12,7 @@ from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
 from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, Notification, Scan, User
-from .services import normalize_cv_variety_name
+from .services import DEFAULT_SCAN_PREDICT_ENDPOINT, normalize_cv_variety_name, request_prediction_service
 
 
 def prediction_test_image():
@@ -534,6 +534,45 @@ class ExecutionTests(TestCase):
             upload = CvScanUpload.objects.get()
             self.assertTrue((Path(folder) / upload.image_path).exists())
             self.assertIn('latest_cv_context', self.client.session)
+
+    def test_stalk_prediction_request_uses_documented_route_and_file_field(self):
+        self.assertEqual(DEFAULT_SCAN_PREDICT_ENDPOINT, 'http://52.74.98.121:8010/predict/stalks')
+        with patch('core.services.urlopen') as urlopen_mock:
+            urlopen_mock.return_value.__enter__.return_value.read.return_value = b'{}'
+            urlopen_mock.return_value.__enter__.return_value.status = 200
+            response, error, status = request_prediction_service('stalk.jpg', b'photo bytes', 'image/jpeg', 3)
+        self.assertIsNone(error)
+        self.assertIsNone(status)
+        self.assertEqual(response, (b'{}', 200))
+        request = urlopen_mock.call_args.args[0]
+        self.assertEqual(request.full_url, 'http://52.74.98.121:8010/predict/stalks?top_k=3')
+        self.assertIn(b'name="file"; filename="stalk.jpg"', request.data)
+
+        with patch('core.services.urlopen') as urlopen_mock:
+            urlopen_mock.return_value.__enter__.return_value.read.return_value = b'{}'
+            urlopen_mock.return_value.__enter__.return_value.status = 200
+            request_prediction_service('stalk.jpg', b'photo bytes', 'image/jpeg', 3,
+                endpoint='http://52.74.98.121:8010/predict')
+        self.assertEqual(urlopen_mock.call_args.args[0].full_url,
+            'http://52.74.98.121:8010/predict/stalks?top_k=3')
+
+    def test_stalk_level_prediction_is_saved_for_scan_review(self):
+        self.login_farmer()
+        payload = {'filename': 'vmc-84-524.jpg', 'count': 1, 'stalks': [{
+            'detection_confidence': 0.57,
+            'prediction': {
+                'class_name': '524__Not_Mature', 'variety': '524',
+                'maturity_status': 'Not_Mature', 'confidence': 0.84,
+            },
+            'top_k': [{'class_name': '524__Not_Mature', 'confidence': 0.84}],
+        }]}
+        with tempfile.TemporaryDirectory() as folder, override_settings(PRIVATE_UPLOAD_ROOT=Path(folder)):
+            with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
+                response = self.client.post('/api/scan/predict', {'file': prediction_test_image()})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['prediction']['variety'], 'VMC 84-524')
+            self.assertEqual(response.json()['prediction']['maturity_status'], 'NOT_MATURE')
+            self.assertEqual(CvScanUpload.objects.get().variety, 'VMC 84-524')
 
     def test_prediction_bad_json_and_unreachable(self):
         self.login_farmer()

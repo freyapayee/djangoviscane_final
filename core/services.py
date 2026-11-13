@@ -155,7 +155,7 @@ DEFAULT_RECOMMENDATIONS = [
     },
 ]
 
-DEFAULT_SCAN_PREDICT_ENDPOINT = "http://52.74.98.121:8010/predict"
+DEFAULT_SCAN_PREDICT_ENDPOINT = "http://52.74.98.121:8010/predict/stalks"
 DEFAULT_SCAN_PREDICT_TOP_K = 3
 DEFAULT_SCAN_PREDICT_TIMEOUT_SECONDS = 30
 CV_UPLOAD_RELATIVE_DIR = os.path.join("uploads", "cv_scans")
@@ -716,10 +716,12 @@ def _prediction_endpoint_candidates(endpoint):
     if not normalized_endpoint:
         return []
 
-    candidates = [normalized_endpoint]
     parsed = urlsplit(normalized_endpoint)
     hostname = (parsed.hostname or "").lower()
     port = parsed.port
+    candidates = [normalized_endpoint]
+    if hostname == "52.74.98.121" and port == 8010 and parsed.path == "/predict":
+        candidates.insert(0, urlunsplit((parsed.scheme, parsed.netloc, "/predict/stalks", parsed.query, parsed.fragment)))
 
     def _swap_host(new_host):
         netloc = new_host
@@ -784,7 +786,7 @@ def summarize_prediction_service_error(exc, endpoint, timeout_seconds=None):
 
     hint = ""
     if status_code == 404:
-        hint = " Check SCAN_PREDICT_ENDPOINT and make sure the remote service exposes the expected /predict route."
+        hint = " Check SCAN_PREDICT_ENDPOINT and make sure the remote service exposes the expected /predict/stalks route."
     elif content_type and content_type != "application/json":
         hint = f" The service responded with {content_type}, not JSON."
 
@@ -897,18 +899,24 @@ def verify_and_upgrade_password(instance, raw_password, field_name="password"):
 
 
 def _extract_cv_context(prediction_payload):
-    if not isinstance(prediction_payload, dict):
+    if not isinstance(prediction_payload, (dict, list)):
         return {}
-    candidates = [("", prediction_payload)]
-    for key in ("result", "data", "predictions", "results"):
-        value = prediction_payload.get(key)
-        if isinstance(value, dict):
-            candidates.append(("", value))
-        elif isinstance(value, list):
-            candidates.extend(("", item) for item in value if isinstance(item, dict))
-    models = prediction_payload.get("models")
+    candidates = []
+    models = prediction_payload.get("models") if isinstance(prediction_payload, dict) else None
+
+    def add_candidates(value, model_name=""):
+        if isinstance(value, list):
+            for item in value:
+                add_candidates(item, model_name)
+        elif isinstance(value, dict):
+            candidates.append((model_name, value))
+            for key in ("result", "data", "predictions", "results", "stalks", "detections", "classification", "prediction"):
+                add_candidates(value.get(key), model_name)
+
+    add_candidates(prediction_payload)
     if isinstance(models, dict):
-        candidates.extend((name, value) for name, value in models.items() if isinstance(value, dict))
+        for name, value in models.items():
+            add_candidates(value, name)
 
     best_entry = None
     best_confidence = float("-inf")
