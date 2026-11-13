@@ -934,6 +934,8 @@ def api_scan_predict(request):
         if not cv_context.get("upload_id"):
             return JsonResponse({"error": "The analyzed photo could not be saved. Please try again."}, status=500)
         request.session["latest_cv_context"] = cv_context
+        if not isinstance(decoded_payload, dict):
+            decoded_payload = {"stalks": decoded_payload}
         decoded_payload["prediction"] = {
             "variety": cv_context.get("normalized_variety") or cv_context.get("variety"),
             "maturity_status": cv_context.get("maturity_status"),
