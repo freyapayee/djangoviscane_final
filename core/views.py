@@ -917,6 +917,9 @@ def api_scan_predict(request):
         if reports_non_sugarcane(decoded_payload):
             request.session.pop("latest_cv_context", None)
             return JsonResponse({"error": "No sugarcane detected in this photo. Please take a clear photo of a sugarcane stalk."}, status=422)
+        if isinstance(decoded_payload, dict) and decoded_payload.get("count") == 0 and decoded_payload.get("stalks") == []:
+            request.session.pop("latest_cv_context", None)
+            return JsonResponse({"error": "Unrecognized image. Try a clear sugarcane stalk photo."}, status=422)
         cv_context = _extract_cv_context(decoded_payload)
         if not cv_context:
             response_keys = list(decoded_payload) if isinstance(decoded_payload, dict) else []

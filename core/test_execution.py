@@ -574,6 +574,15 @@ class ExecutionTests(TestCase):
             self.assertEqual(response.json()['prediction']['maturity_status'], 'NOT_MATURE')
             self.assertEqual(CvScanUpload.objects.get().variety, 'VMC 84-524')
 
+    def test_no_stalk_response_is_rejected_without_saving(self):
+        self.login_farmer()
+        payload = {'count': 0, 'stalks': [], 'method': 'yolov8_detection_then_resnet18_crop_classification'}
+        with patch('core.views.request_prediction_service', return_value=((json.dumps(payload).encode(), 200), None, None)):
+            response = self.client.post('/api/scan/predict', {'file': prediction_test_image()})
+        self.assertEqual(response.status_code, 422)
+        self.assertIn('Unrecognized image', response.json()['error'])
+        self.assertEqual(CvScanUpload.objects.count(), 0)
+
     def test_prediction_bad_json_and_unreachable(self):
         self.login_farmer()
         cases = [(((b'not-json', 200), None, None), 502),
