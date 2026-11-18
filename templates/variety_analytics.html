@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1">
     <title>VISCANE | Yield Analytics</title>
     <style>
         .yield-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
@@ -47,13 +47,16 @@
             <div class="stat-card accent-purple"><div class="stat-label">Maturity Groups</div><div class="stat-value" data-analytics-maturity>{{ maturity_rows|length }}</div><div class="stat-meta">Scan maturity classifications</div></div>
         </section>
 
-        <form class="yield-period-filters" method="GET" action="{{ nav_base }}/variety-analytics">
-            <label>Year<select name="year">{% for year in analytics_years %}<option value="{{ year }}"{% if year == selected_year %} selected{% endif %}>{{ year }}</option>{% endfor %}</select></label>
-            <label>Month<select name="month"><option value="">All months</option>{% for month in month_options %}<option value="{{ month.value }}"{% if month.value == selected_month %} selected{% endif %}>{{ month.label }}</option>{% endfor %}</select></label>
-            <button class="btn primary" type="submit"><ion-icon name="filter-outline"></ion-icon>View data</button>
-        </form>
-        <p class="yield-period-note">Showing results for {{ selected_year }}{% if selected_month_label %} · {{ selected_month_label }}{% endif %}. Month options begin at the first scan month{% if first_scan_month %} ({{ first_scan_month }}){% endif %}.</p>
-
+        <div class="admin-filtered-layout">
+            <aside class="admin-filter-sidebar" aria-label="Yield analytics filters">
+                <form class="yield-period-filters" method="GET" action="{{ nav_base }}/variety-analytics">
+                    <label>Year<select name="year">{% for year in analytics_years %}<option value="{{ year }}"{% if year == selected_year %} selected{% endif %}>{{ year }}</option>{% endfor %}</select></label>
+                    <label>Month<select name="month"><option value="">All months</option>{% for month in month_options %}<option value="{{ month.value }}"{% if month.value == selected_month %} selected{% endif %}>{{ month.label }}</option>{% endfor %}</select></label>
+                    <button class="btn primary" type="submit"><ion-icon name="filter-outline"></ion-icon>View data</button>
+                </form>
+                <p class="yield-period-note">Showing results for {{ selected_year }}{% if selected_month_label %} · {{ selected_month_label }}{% endif %}. Month options begin at the first scan month{% if first_scan_month %} ({{ first_scan_month }}){% endif %}.</p>
+            </aside>
+            <div class="admin-filtered-results">
         <section class="yield-chart-grid">
             <article class="panel yield-chart-card">
                 <div class="panel-header"><div><h2 class="panel-title">Results by Variety</h2><p class="panel-subtitle">Average LKG/TC and LKG/HA with total LKG.</p></div><ion-icon name="bar-chart-outline"></ion-icon></div>
@@ -80,6 +83,8 @@
             </article>
             {% endfor %}
         </section>
+            </div>
+        </div>
         <div class="footer-link">VISCANE | Yield Analytics</div>
     </main>
     {% include 'hiligaynon_runtime.html' %}

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Sugarcane Scan Gallery</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-gallery">
     {% include 'components/superadmin_navigation.html' %}
@@ -45,30 +45,34 @@
                 </span>
             </div>
             {% if superadmin_cv_uploads %}
-                <form id="bulk-delete-scans" method="POST" action="/superadmin/scan-gallery/delete-selected" class="superadmin-bulk-delete-form">
-                    {{ csrf_input }}
-                    <button type="button" class="btn light" id="select-visible-scans">Select visible</button>
-                    <button type="button" class="btn light" id="clear-selected-scans">Clear selection</button>
-                    <span>Select photos below. You’ll be asked for a reason before deletion.</span>
-                </form>
-                <div class="superadmin-gallery-filters" aria-label="Filter sugarcane scans">
-                    <label for="scan-variety-filter">Variety
-                        <select id="scan-variety-filter"><option value="">All varieties</option></select>
-                    </label>
-                    <label for="scan-maturity-filter">Maturity
-                        <select id="scan-maturity-filter">
-                            <option value="">All maturity levels</option>
-                            <option value="mature">Mature</option>
-                            <option value="not mature">Not mature</option>
-                            <option value="over mature">Over mature</option>
-                            <option value="unknown">Unknown</option>
-                        </select>
-                    </label>
-                    <span id="scan-filter-count" aria-live="polite"></span>
-                </div>
-                <div class="scan-gallery-grid superadmin-scan-gallery-grid">
-                    {% for upload in superadmin_cv_uploads %}
-                        <figure class="scan-gallery-item superadmin-scan-gallery-item" data-variety="{{ upload.variety or 'Unknown variety' }}" data-maturity="{{ (upload.maturity_status or 'unknown').replace('_', ' ').lower() }}">
+                <div class="superadmin-gallery-layout">
+                    <aside class="superadmin-gallery-tools" aria-label="Gallery filters and selection">
+                        <form id="bulk-delete-scans" method="POST" action="/superadmin/scan-gallery/delete-selected" class="superadmin-bulk-delete-form">
+                            {{ csrf_input }}
+                            <button type="button" class="btn light" id="select-visible-scans">Select visible</button>
+                            <button type="button" class="btn light" id="clear-selected-scans">Clear selection</button>
+                            <span>Select photos below. You’ll be asked for a reason before deletion.</span>
+                        </form>
+                        <div class="superadmin-gallery-filters" aria-label="Filter sugarcane scans">
+                            <label for="scan-variety-filter">Variety
+                                <select id="scan-variety-filter"><option value="">All varieties</option></select>
+                            </label>
+                            <label for="scan-maturity-filter">Maturity
+                                <select id="scan-maturity-filter">
+                                    <option value="">All maturity levels</option>
+                                    <option value="mature">Mature</option>
+                                    <option value="not mature">Not mature</option>
+                                    <option value="over mature">Over mature</option>
+                                    <option value="unknown">Unknown</option>
+                                </select>
+                            </label>
+                            <span id="scan-filter-count" aria-live="polite"></span>
+                        </div>
+                    </aside>
+                    <div class="superadmin-gallery-results">
+                        <div class="scan-gallery-grid superadmin-scan-gallery-grid">
+                            {% for upload in superadmin_cv_uploads %}
+                                <figure class="scan-gallery-item superadmin-scan-gallery-item" data-variety="{{ upload.variety or 'Unknown variety' }}" data-maturity="{{ (upload.maturity_status or 'unknown').replace('_', ' ').lower() }}">
                             <label class="superadmin-scan-select"><input type="checkbox" name="upload_ids" value="{{ upload.id }}" form="bulk-delete-scans"><span>Select photo</span></label>
                             <div class="superadmin-scan-media">
                                 <a href="{{ url_for('cv_upload_image', upload_id=upload.id) }}" target="_blank" rel="noopener" aria-label="View full photo {{ loop.index }}"><img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="Sugarcane scan uploaded by {{ upload.user.fullname if upload.user else ('User #' ~ upload.user_id) }}" loading="lazy"></a>
@@ -110,8 +114,10 @@
                                     </form>
                                 </details>
                             </figcaption>
-                        </figure>
-                    {% endfor %}
+                                </figure>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             {% else %}
                 <div class="superadmin-scan-empty">

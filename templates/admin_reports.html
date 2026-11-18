@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}?v=report-export-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1"><link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}?v=report-export-1">
     <title>VISCANE | Performance Reports</title>
 </head>
 <body class="admin-layout has-vis-sidebar ds-app vis-management-dashboard vis-admin-section vis-admin-reports">
@@ -32,11 +32,13 @@
 
         <section class="panel admin-data-panel">
             <div class="admin-panel-heading"><div><span class="admin-eyebrow">Farm comparison</span><h2 class="panel-title">Farm Performance</h2><p class="panel-subtitle">{{ report.filtered_farms }} farm{% if report.filtered_farms != 1 %}s{% endif %} match the current view.</p></div>{% if report.latest_prediction_at %}<span class="report-updated"><ion-icon name="time-outline"></ion-icon><span>Latest update<strong>{{ report.latest_prediction_at.strftime('%b %d, %Y · %I:%M %p') }}</strong></span></span>{% endif %}</div>
-            <form class="admin-filter-bar report-filter-bar" method="GET" action="/admin/reports">
-                <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search reports</span><input type="search" name="search" value="{{ search }}" placeholder="Search farmer or location"></label>
-                <label><span class="visually-hidden">Barangay</span><select name="barangay"><option value="">All barangays</option>{% for option in barangay_options %}<option value="{{ option }}"{% if option == selected_barangay %} selected{% endif %}>{{ option }}</option>{% endfor %}</select></label>
-                {% if search or selected_barangay %}<a class="btn ghost" href="/admin/reports">Clear</a>{% endif %}<button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
-            </form>
+            <div class="admin-filtered-layout">
+                <aside class="admin-filter-sidebar" aria-label="Report filters and exports">
+                    <form class="admin-filter-bar report-filter-bar" method="GET" action="/admin/reports">
+                        <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search reports</span><input type="search" name="search" value="{{ search }}" placeholder="Search farmer or location"></label>
+                        <label><span class="visually-hidden">Barangay</span><select name="barangay"><option value="">All barangays</option>{% for option in barangay_options %}<option value="{{ option }}"{% if option == selected_barangay %} selected{% endif %}>{{ option }}</option>{% endfor %}</select></label>
+                        {% if search or selected_barangay %}<a class="btn ghost" href="/admin/reports">Clear</a>{% endif %}<button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
+                    </form>
             <form class="report-export-form" id="report-export" method="GET" action="/admin/reports" aria-label="Export reports by date">
                 {% set month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] %}
                 <p>Select a year and month to export. Choose a day for a single-day CSV; search and barangay filters also apply.</p>
@@ -46,12 +48,16 @@
                 <label>Day (optional)<select name="day"><option value="">Entire month</option>{% for day in range(1, 32) %}<option value="{{ day }}"{% if day == selected_day %} selected{% endif %}>{{ day }}</option>{% endfor %}</select></label>
                 <button class="btn primary" type="submit" name="download" value="csv"><ion-icon name="download-outline"></ion-icon>Export selected dates</button>
             </form>
+                </aside>
+                <div class="admin-filtered-results">
             {% if rows %}
             <div class="admin-responsive-table report-table" role="region" aria-label="Farm performance" tabindex="0"><table class="data-table"><thead><tr><th>Farmer</th><th>Municipality</th><th>Barangay</th><th>Predictions</th><th>Avg LKG/TC</th><th>Avg LKG/HA</th><th>Total LKG</th></tr></thead><tbody>{% for row in rows %}<tr>
                 <td data-label="Farmer"><strong>{{ row.name }}</strong></td><td data-label="Municipality">{{ row.municipality }}</td><td data-label="Barangay">{{ row.barangay }}</td><td data-label="Predictions"><span class="report-count">{{ row.predictions }}</span></td><td data-label="Avg LKG/TC">{{ '%.2f'|format(row.avg_lkg_tc) }}</td><td data-label="Avg LKG/HA">{{ '%.2f'|format(row.avg_lkg_ha) }}</td><td data-label="Total LKG"><strong>{{ '%.2f'|format(row.total_lkg) }}</strong></td>
             </tr>{% endfor %}</tbody></table></div>
             {% include 'components/admin_pagination.html' %}
             {% else %}<div class="admin-empty-state"><span><ion-icon name="bar-chart-outline"></ion-icon></span><h3>No report data found</h3><p>{% if search or selected_barangay %}No farms match the current filters.{% else %}Reports will appear after farmers submit agronomic predictions.{% endif %}</p>{% if search or selected_barangay %}<a class="btn ghost" href="/admin/reports">Clear filters</a>{% else %}<a class="btn primary" href="/admin/farmers">View farmer accounts</a>{% endif %}</div>{% endif %}
+                </div>
+            </div>
         </section>
         <div class="footer-link">VISCANE Admin · Performance Reports</div>
     </main>

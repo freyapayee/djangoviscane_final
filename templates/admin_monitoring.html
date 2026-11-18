@@ -5,7 +5,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}?v=search-icon-1">
     <title>VISCANE | Prediction Monitoring</title>
 </head>
@@ -31,14 +31,17 @@
                 <div><span class="admin-eyebrow">Live data</span><h2 class="panel-title">Prediction Logs</h2><p class="panel-subtitle">{% if page_obj is defined %}{{ page_obj.paginator.count }} record{% if page_obj.paginator.count != 1 %}s{% endif %}{% else %}{{ rows|length }} record{% if rows|length != 1 %}s{% endif %}{% endif %} match the current view.</p></div>
                 <span class="admin-live-badge"><span></span>Live</span>
             </div>
-            <form class="admin-filter-bar" method="GET" action="/admin/monitoring">
-                <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search predictions</span><input type="search" name="search" value="{{ search|default('') }}" placeholder="Search farmer, variety, or RSSI"></label>
-                <label><span class="visually-hidden">Filter by variety</span><select name="variety"><option value="">All varieties</option>{% for option in variety_options|default([]) %}<option value="{{ option }}"{% if option == selected_variety %} selected{% endif %}>{{ option }}</option>{% endfor %}</select></label>
-                <label><span class="visually-hidden">Filter by status</span><select name="status"><option value="">All statuses</option><option value="completed"{% if selected_status == 'completed' %} selected{% endif %}>Completed</option><option value="pending"{% if selected_status == 'pending' %} selected{% endif %}>Pending</option></select></label>
-                {% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
-                <button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
-            </form>
-
+            <div class="admin-filtered-layout">
+                <aside class="admin-filter-sidebar" aria-label="Prediction filters">
+                    <form class="admin-filter-bar" method="GET" action="/admin/monitoring">
+                        <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search predictions</span><input type="search" name="search" value="{{ search|default('') }}" placeholder="Search farmer, variety, or RSSI"></label>
+                        <label><span class="visually-hidden">Filter by variety</span><select name="variety"><option value="">All varieties</option>{% for option in variety_options|default([]) %}<option value="{{ option }}"{% if option == selected_variety %} selected{% endif %}>{{ option }}</option>{% endfor %}</select></label>
+                        <label><span class="visually-hidden">Filter by status</span><select name="status"><option value="">All statuses</option><option value="completed"{% if selected_status == 'completed' %} selected{% endif %}>Completed</option><option value="pending"{% if selected_status == 'pending' %} selected{% endif %}>Pending</option></select></label>
+                        {% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
+                        <button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
+                    </form>
+                </aside>
+                <div class="admin-filtered-results">
             {% if rows %}
             <div class="admin-responsive-table" role="region" aria-label="Prediction logs" tabindex="0">
                 <table class="data-table"><thead><tr><th>Farmer</th><th>Variety</th><th>Area</th><th>LKG/TC</th><th>LKG/HA</th><th>Total LKG</th><th>RSSI</th><th>Status</th><th>Captured</th></tr></thead>
@@ -58,6 +61,8 @@
             {% else %}
             <div class="admin-empty-state"><span><ion-icon name="pulse-outline"></ion-icon></span><h3>No prediction logs found</h3><p>{% if search or selected_variety or selected_status %}Try clearing or changing the active filters.{% else %}Prediction activity will appear after farmers submit agronomic data.{% endif %}</p>{% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear filters</a>{% endif %}</div>
             {% endif %}
+                </div>
+            </div>
         </section>
         <div class="footer-link">VISCANE Admin | Prediction Monitoring</div>
     </main>
