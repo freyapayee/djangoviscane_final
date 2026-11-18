@@ -394,11 +394,12 @@ def farmer_notification_center(request):
         return django_redirect("/homepage?view=notification-center" if request.farmer_only else "/farmer/notification-center")
     if request.method != "GET":
         return HttpResponse(status=405)
-    announcements = list(Notification.objects.filter(id__gt=user.seen_announcement_id).order_by("-id"))
+    announcements = list(Notification.objects.order_by("-id"))
     return render_template(request, "farmer_notification_center.html", {
         "user": user,
         "announcements": announcements,
-        "unread_announcements": len(announcements),
+        "unread_announcements": Notification.objects.filter(id__gt=user.seen_announcement_id).count(),
+        "seen_announcement_id": user.seen_announcement_id,
     })
 
 
@@ -945,6 +946,23 @@ def api_mobile_offline_profile(request):
     return JsonResponse({"record_id": str(record_id), "synced": True}, status=201)
 
 
+def _staged_cv_scan_path(request, context=None):
+    context = context if isinstance(context, dict) else (request.session.get("latest_cv_context") or {})
+    token = str(context.get("staged_token") or "")
+    user_id = request.session.get("user_id")
+    if not token or not user_id or not re.fullmatch(r"[a-f0-9]{32}", token):
+        return None
+    return Path(settings.PRIVATE_UPLOAD_ROOT) / "staged_cv_scans" / str(user_id) / f"{token}.jpg"
+
+
+def _discard_staged_cv_scan(request):
+    context = request.session.get("latest_cv_context") or {}
+    staged_path = _staged_cv_scan_path(request, context)
+    if staged_path:
+        staged_path.unlink(missing_ok=True)
+    request.session.pop("latest_cv_context", None)
+
+
 @farmer_login_required
 @require_POST
 def api_scan_predict(request):
@@ -963,6 +981,7 @@ def api_scan_predict(request):
     if uploaded_file.size > settings.SCAN_MAX_IMAGE_BYTES:
         return JsonResponse({"error": "Image must be 10 MB or smaller."}, status=413)
     file_bytes = uploaded_file.read()
+    _discard_staged_cv_scan(request)
     from io import BytesIO
     from PIL import Image, UnidentifiedImageError
     try:
@@ -990,10 +1009,10 @@ def api_scan_predict(request):
         except (UnicodeDecodeError, json.JSONDecodeError):
             return JsonResponse({"error": "Prediction service did not return valid JSON."}, status=502)
         if reports_non_sugarcane(decoded_payload):
-            request.session.pop("latest_cv_context", None)
+            _discard_staged_cv_scan(request)
             return JsonResponse({"error": "No sugarcane detected in this photo. Please take a clear photo of a sugarcane stalk."}, status=422)
         if isinstance(decoded_payload, dict) and decoded_payload.get("count") == 0 and decoded_payload.get("stalks") == []:
-            request.session.pop("latest_cv_context", None)
+            _discard_staged_cv_scan(request)
             return JsonResponse({"error": "Unrecognized image. Try a clear sugarcane stalk photo."}, status=422)
         cv_context = _extract_cv_context(decoded_payload)
         if not cv_context:
@@ -1003,14 +1022,17 @@ def api_scan_predict(request):
                 "details": f"Response fields: {', '.join(response_keys) or 'none'}. Expected variety, maturity, and a prediction score.",
             }, status=502)
         if not supported_cv_confidence(cv_context):
-            request.session.pop("latest_cv_context", None)
+            _discard_staged_cv_scan(request)
             return JsonResponse({"error": INVALID_CV_IMAGE_MESSAGE}, status=422)
-        try:
-            cv_context = save_prediction_context(request.session.get("user_id"), uploaded_file, file_bytes, decoded_payload)
-        except Exception:
-            return JsonResponse({"error": "The analyzed photo could not be saved. Please try again."}, status=500)
-        if not cv_context.get("upload_id"):
-            return JsonResponse({"error": "The analyzed photo could not be saved. Please try again."}, status=500)
+        cv_context["staged_token"] = uuid.uuid4().hex
+        cv_context["staged_filename"] = os.path.basename(uploaded_file.name)
+        stage_dir = Path(settings.PRIVATE_UPLOAD_ROOT) / "staged_cv_scans" / str(request.session.get("user_id"))
+        stage_dir.mkdir(parents=True, exist_ok=True)
+        for previous in stage_dir.iterdir():
+            if previous.is_file():
+                previous.unlink(missing_ok=True)
+        staged_path = stage_dir / f"{cv_context['staged_token']}.jpg"
+        staged_path.write_bytes(file_bytes)
         request.session["latest_cv_context"] = cv_context
         if not isinstance(decoded_payload, dict):
             decoded_payload = {"stalks": decoded_payload}
@@ -1041,7 +1063,7 @@ def calculate_results(request):
     cv_prediction_applied = request.POST.get("cv_prediction_applied", "").strip() in {"1", "true", "True"}
     cv_context = (request.session.get("latest_cv_context") or {}) if cv_prediction_applied else {}
     if cv_prediction_applied and not supported_cv_confidence(cv_context):
-        request.session.pop("latest_cv_context", None)
+        _discard_staged_cv_scan(request)
         return redirect("homepage", error=INVALID_CV_IMAGE_MESSAGE)
     cv_detected_variety = normalize_cv_variety_name(cv_variety_detected or cv_context.get("normalized_variety") or cv_context.get("variety"))
     if not cv_maturity_status:
@@ -1168,6 +1190,8 @@ def calculate_results(request):
         cv_confidence_pct = f"{float(cv_context.get('confidence')) * 100:.1f}%"
     except (TypeError, ValueError, AttributeError):
         cv_confidence_pct = "Pending"
+    if cv_prediction_applied:
+        _discard_staged_cv_scan(request)
     return render_template(
         request,
         "calculate_results.html",
@@ -1514,8 +1538,8 @@ def admin_farmer_edit(request, user_id):
 @login_required
 def admin_monitoring(request):
     search = request.GET.get("search", "").strip()
-    variety = request.GET.get("variety", "").strip()
-    status = request.GET.get("status", "").strip()
+    varieties = [value.strip() for value in request.GET.getlist("variety") if value.strip()]
+    statuses = [value.strip() for value in request.GET.getlist("status") if value.strip() in {"completed", "pending"}]
     base_logs = AgronomicLog.objects.select_related("user").order_by("-created_at")
     total_predictions = base_logs.count()
     today_predictions = base_logs.filter(created_at__date=timezone.localdate()).count()
@@ -1532,28 +1556,28 @@ def admin_monitoring(request):
             | Q(variety__icontains=search)
             | Q(rssi_infected__icontains=search)
         )
-    if variety:
-        logs = logs.filter(variety=variety)
-    if status == "completed":
-        logs = logs.filter(predicted_lkg__isnull=False)
-    elif status == "pending":
-        logs = logs.filter(predicted_lkg__isnull=True)
+    if varieties:
+        logs = logs.filter(variety__in=varieties)
+    if len(statuses) == 1:
+        logs = logs.filter(predicted_lkg__isnull=(statuses[0] == "pending"))
+    elif len(statuses) == 2:
+        logs = logs.filter(Q(predicted_lkg__isnull=True) | Q(predicted_lkg__isnull=False))
     paginator = Paginator(logs, 12)
     page_obj = paginator.get_page(request.GET.get("page"))
     monitoring_rows = []
     for log in page_obj.object_list:
         monitoring_rows.append({"farmer_name": log.user.fullname if log.user else f"User #{log.user_id}", "variety": log.variety or "N/A", "hectares": log.hectares or "N/A", "predicted_lkg_tc": round(log.predicted_lkg_tc, 2) if log.predicted_lkg_tc is not None else None, "predicted_tc_ha": round(log.predicted_tc_ha, 2) if log.predicted_tc_ha is not None else None, "predicted_lkg": round(log.predicted_lkg, 2) if log.predicted_lkg is not None else None, "rssi_infected": log.rssi_infected or "N/A", "created_at": log.created_at})
     page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
-    filter_values = {"search": search, "variety": variety, "status": status}
-    query_string = urlencode({key: value for key, value in filter_values.items() if value})
+    filter_values = [("search", search), *(('variety', value) for value in varieties), *(('status', value) for value in statuses)]
+    query_string = urlencode([(key, value) for key, value in filter_values if value])
     return render_template(request, "admin_monitoring.html", {
         "rows": monitoring_rows,
         "page_obj": page_obj,
         "page_numbers": page_numbers,
         "query_string": query_string,
         "search": search,
-        "selected_variety": variety,
-        "selected_status": status,
+        "selected_varieties": varieties,
+        "selected_statuses": statuses,
         "variety_options": variety_options,
         "total_predictions": total_predictions,
         "today_predictions": today_predictions,
@@ -2439,8 +2463,10 @@ def scan_new(request):
     if request.method == "GET" and request.GET.get("review") == "1":
         cv_context = request.session.get("latest_cv_context") or {}
         if cv_context and not supported_cv_confidence(cv_context):
-            request.session.pop("latest_cv_context", None)
+            _discard_staged_cv_scan(request)
             cv_context = {}
+    elif request.method == "GET":
+        _discard_staged_cv_scan(request)
     if request.method == "POST":
         plot_name = request.POST.get("plot_name", "").strip()
         ai_prediction_applied = request.POST.get("ai_prediction_applied", "") in {"1", "true", "True"}
@@ -2450,26 +2476,35 @@ def scan_new(request):
         elif not ai_prediction_applied:
             error = "Please scan an image before continuing."
         elif not supported_cv_confidence(cv_context):
-            request.session.pop("latest_cv_context", None)
+            _discard_staged_cv_scan(request)
             error = INVALID_CV_IMAGE_MESSAGE
         else:
             derived_assessment = derive_scan_assessment(cv_context.get("maturity_status"), cv_context.get("confidence"))
-            cv_upload = CvScanUpload.objects.filter(pk=cv_context.get("upload_id"), user_id=request.session.get("user_id")).first()
-            if not derived_assessment or not cv_upload:
+            staged_path = _staged_cv_scan_path(request, cv_context)
+            if not derived_assessment or not staged_path or not staged_path.is_file():
                 error = "AI assessment is unavailable. Please scan the image again."
             else:
-                Scan.objects.create(user_id=request.session.get("user_id"), cv_upload=cv_upload, plot_name=plot_name,
-                    grade=derived_assessment["grade"], maturity_pct=derived_assessment["maturity_pct"], status=derived_assessment["status"])
-                request.session["scan_result_variety"] = normalize_cv_variety_name(cv_context.get("normalized_variety") or cv_context.get("variety")) or ""
-                log_audit(f"User {request.session.get('user_id')} uploaded a scan for {plot_name}", user_id=request.session.get("user_id"))
-                return django_redirect("/homepage#calc-form")
-    upload_id = cv_context.get("upload_id")
-    cv_upload = CvScanUpload.objects.filter(pk=upload_id, user_id=request.session.get("user_id")).first() if upload_id else None
+                try:
+                    with transaction.atomic():
+                        cv_upload = _persist_cv_upload(request.session.get("user_id"), cv_context.get("staged_filename") or "scan.jpg", staged_path.read_bytes(), cv_context)
+                        if not cv_upload:
+                            raise ValueError("Could not save scan photo")
+                        Scan.objects.create(user_id=request.session.get("user_id"), cv_upload=cv_upload, plot_name=plot_name,
+                            grade=derived_assessment["grade"], maturity_pct=derived_assessment["maturity_pct"], status=derived_assessment["status"])
+                    request.session["scan_result_variety"] = normalize_cv_variety_name(cv_context.get("normalized_variety") or cv_context.get("variety")) or ""
+                    _discard_staged_cv_scan(request)
+                    log_audit(f"User {request.session.get('user_id')} uploaded a scan for {plot_name}", user_id=request.session.get("user_id"))
+                    return django_redirect("/homepage#calc-form")
+                except Exception:
+                    error = "The scan could not be saved. Please try again."
+    cv_upload = CvScanUpload.objects.filter(pk=cv_context.get("upload_id"), user_id=request.session.get("user_id")).first() if cv_context.get("upload_id") else None
+    staged_path = _staged_cv_scan_path(request, cv_context)
+    has_review = bool(cv_upload or (staged_path and staged_path.is_file() and supported_cv_confidence(cv_context)))
     review_prediction = {
         "variety": normalize_cv_variety_name(cv_context.get("normalized_variety") or cv_context.get("variety")),
         "maturity_status": cv_context.get("maturity_status"),
         "confidence": cv_context.get("confidence"),
-    } if cv_upload else None
+    } if has_review else None
     confidence = cv_context.get("confidence") if review_prediction else None
     confidence_display = f"{float(confidence) * 100:.1f}%" if confidence is not None else ""
     return render_template(request, "scan_new.html", {
