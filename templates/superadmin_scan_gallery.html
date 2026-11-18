@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Sugarcane Scan Gallery</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-4">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-gallery">
     {% include 'components/superadmin_navigation.html' %}
@@ -47,12 +47,28 @@
             {% if superadmin_cv_uploads %}
                 <form id="bulk-delete-scans" method="POST" action="/superadmin/scan-gallery/delete-selected" class="superadmin-bulk-delete-form">
                     {{ csrf_input }}
-                    <button type="submit" class="btn danger">Delete selected photos</button>
+                    <button type="button" class="btn light" id="select-visible-scans">Select visible</button>
+                    <button type="button" class="btn light" id="clear-selected-scans">Clear selection</button>
                     <span>Select photos below. You’ll be asked for a reason before deletion.</span>
                 </form>
+                <div class="superadmin-gallery-filters" aria-label="Filter sugarcane scans">
+                    <label for="scan-variety-filter">Variety
+                        <select id="scan-variety-filter"><option value="">All varieties</option></select>
+                    </label>
+                    <label for="scan-maturity-filter">Maturity
+                        <select id="scan-maturity-filter">
+                            <option value="">All maturity levels</option>
+                            <option value="mature">Mature</option>
+                            <option value="not mature">Not mature</option>
+                            <option value="over mature">Over mature</option>
+                            <option value="unknown">Unknown</option>
+                        </select>
+                    </label>
+                    <span id="scan-filter-count" aria-live="polite"></span>
+                </div>
                 <div class="scan-gallery-grid superadmin-scan-gallery-grid">
                     {% for upload in superadmin_cv_uploads %}
-                        <figure class="scan-gallery-item superadmin-scan-gallery-item">
+                        <figure class="scan-gallery-item superadmin-scan-gallery-item" data-variety="{{ upload.variety or 'Unknown variety' }}" data-maturity="{{ (upload.maturity_status or 'unknown').replace('_', ' ').lower() }}">
                             <label class="superadmin-scan-select"><input type="checkbox" name="upload_ids" value="{{ upload.id }}" form="bulk-delete-scans"><span>Select photo</span></label>
                             <div class="superadmin-scan-media">
                                 <a href="{{ url_for('cv_upload_image', upload_id=upload.id) }}" target="_blank" rel="noopener" aria-label="View full photo {{ loop.index }}"><img src="{{ url_for('cv_upload_image', upload_id=upload.id) }}" alt="Sugarcane scan uploaded by {{ upload.user.fullname if upload.user else ('User #' ~ upload.user_id) }}" loading="lazy"></a>
@@ -107,6 +123,10 @@
         </section>
 
     </main>
+    <div id="bulk-delete-sticky" class="superadmin-gallery-sticky-actions" hidden role="region" aria-label="Selected scan actions">
+        <span id="bulk-delete-selected-count" aria-live="polite">0 photos selected</span>
+        <button type="submit" form="bulk-delete-scans" class="btn danger">Delete selected photos</button>
+    </div>
     <dialog class="scan-delete-dialog" id="bulk-delete-reason-dialog" aria-labelledby="bulk-delete-dialog-title">
         <form method="dialog" class="scan-delete-dialog-dismiss"><button type="submit" aria-label="Close">×</button></form>
         <h2 id="bulk-delete-dialog-title">Delete selected photos</h2>
@@ -129,6 +149,50 @@
             const reasonField = document.getElementById('bulk-delete-reason');
             const reasonError = document.getElementById('bulk-delete-dialog-error');
             const selectedPhotos = () => document.querySelectorAll('input[name="upload_ids"]:checked');
+            const scanCards = [...document.querySelectorAll('.superadmin-scan-gallery-item')];
+            const stickyActions = document.getElementById('bulk-delete-sticky');
+            const selectedCount = document.getElementById('bulk-delete-selected-count');
+            const varietyFilter = document.getElementById('scan-variety-filter');
+            const maturityFilter = document.getElementById('scan-maturity-filter');
+            const filterCount = document.getElementById('scan-filter-count');
+
+            const varieties = [...new Set(scanCards.map((card) => card.dataset.variety.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            varieties.forEach((variety) => {
+                const option = document.createElement('option');
+                option.value = variety.toLocaleLowerCase();
+                option.textContent = variety;
+                varietyFilter.append(option);
+            });
+
+            function refreshGallery() {
+                let visibleCount = 0;
+                scanCards.forEach((card) => {
+                    const matchesVariety = !varietyFilter.value || card.dataset.variety.trim().toLocaleLowerCase() === varietyFilter.value;
+                    const matchesMaturity = !maturityFilter.value || card.dataset.maturity.trim() === maturityFilter.value;
+                    const visible = matchesVariety && matchesMaturity;
+                    card.hidden = !visible;
+                    card.classList.toggle('is-selected', card.querySelector('input[name="upload_ids"]')?.checked === true);
+                    if (visible) visibleCount += 1;
+                });
+                filterCount.textContent = `Showing ${visibleCount} of ${scanCards.length} photos`;
+                const count = selectedPhotos().length;
+                stickyActions.hidden = count === 0;
+                selectedCount.textContent = `${count} photo${count === 1 ? '' : 's'} selected`;
+            }
+
+            varietyFilter.addEventListener('change', refreshGallery);
+            maturityFilter.addEventListener('change', refreshGallery);
+            document.querySelectorAll('input[name="upload_ids"]').forEach((checkbox) => checkbox.addEventListener('change', refreshGallery));
+            document.getElementById('select-visible-scans').addEventListener('click', () => {
+                scanCards.filter((card) => !card.hidden).forEach((card) => { card.querySelector('input[name="upload_ids"]').checked = true; });
+                refreshGallery();
+            });
+            document.getElementById('clear-selected-scans').addEventListener('click', () => {
+                document.querySelectorAll('input[name="upload_ids"]:checked').forEach((checkbox) => { checkbox.checked = false; });
+                refreshGallery();
+            });
+            refreshGallery();
+
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
                 const selected = selectedPhotos().length;
