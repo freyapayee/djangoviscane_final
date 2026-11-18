@@ -1351,6 +1351,16 @@ body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-res
 .superadmin-bulk-delete-form > span { color: #66766c; font-size: 13px; }
 .superadmin-scan-select { position: absolute; z-index: 2; top: 10px; right: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 999px; background: rgba(255,255,255,.94); color: #203b2b; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
 .superadmin-scan-select input { width: 16px; height: 16px; margin: 0; accent-color: #168346; }
+.scan-delete-dialog { width: min(460px, calc(100% - 40px)); max-width: 460px; padding: 24px; border: 1px solid #d5e3d8; border-radius: 16px; color: #263b2e; box-shadow: 0 24px 80px rgba(10, 30, 17, .3); }
+.scan-delete-dialog::backdrop { background: rgba(14, 30, 20, .62); backdrop-filter: blur(3px); }
+.scan-delete-dialog h2 { margin: 0 36px 8px 0; color: #173c25; font-size: 20px; }
+.scan-delete-dialog > p { color: #66766c; }
+.scan-delete-dialog > label { display: block; margin: 16px 0 7px; font-weight: 700; }
+.scan-delete-dialog textarea { box-sizing: border-box; width: 100%; resize: vertical; border: 1px solid #becfc2; border-radius: 8px; padding: 10px; font: inherit; }
+.scan-delete-dialog .scan-delete-dialog-error { color: #a52828; font-size: 13px; }
+.scan-delete-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.scan-delete-dialog-dismiss { position: absolute; top: 12px; right: 12px; margin: 0; }
+.scan-delete-dialog-dismiss button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: #eef4ef; color: #263b2e; font-size: 22px; cursor: pointer; }
 .governance-menu > .panel { margin-top: 20px; }
 .compliance-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; }
 .compliance-filters label { display: grid; gap: 6px; }

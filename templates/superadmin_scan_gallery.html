@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Sugarcane Scan Gallery</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=scan-gallery-3">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-gallery">
     {% include 'components/superadmin_navigation.html' %}
@@ -107,36 +107,58 @@
         </section>
 
     </main>
+    <dialog class="scan-delete-dialog" id="bulk-delete-reason-dialog" aria-labelledby="bulk-delete-dialog-title">
+        <form method="dialog" class="scan-delete-dialog-dismiss"><button type="submit" aria-label="Close">×</button></form>
+        <h2 id="bulk-delete-dialog-title">Delete selected photos</h2>
+        <p id="bulk-delete-dialog-count"></p>
+        <label for="bulk-delete-reason">Reason for deleting</label>
+        <textarea id="bulk-delete-reason" rows="4" maxlength="180" required placeholder="Enter a reason (1–180 characters)"></textarea>
+        <p class="scan-delete-dialog-error" id="bulk-delete-dialog-error" role="alert" hidden></p>
+        <div class="scan-delete-dialog-actions">
+            <button type="button" class="btn light" id="bulk-delete-cancel">Cancel</button>
+            <button type="button" class="btn danger" id="bulk-delete-confirm">Delete photos</button>
+        </div>
+    </dialog>
     {% include 'hiligaynon_runtime.html' %}
     <script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-1" defer></script>
     <script>
         (() => {
             const form = document.getElementById('bulk-delete-scans');
             if (!form) return;
-            let approved = false;
+            const dialog = document.getElementById('bulk-delete-reason-dialog');
+            const reasonField = document.getElementById('bulk-delete-reason');
+            const reasonError = document.getElementById('bulk-delete-dialog-error');
+            const selectedPhotos = () => document.querySelectorAll('input[name="upload_ids"][form="bulk-delete-scans"]:checked');
             form.addEventListener('submit', (event) => {
-                if (approved) return;
                 event.preventDefault();
-                const selected = form.querySelectorAll('input[name="upload_ids"]:checked').length;
+                const selected = selectedPhotos().length;
                 if (!selected) {
                     window.alert('Select at least one photo to delete.');
                     return;
                 }
-                const reason = window.prompt(`Enter a reason for deleting ${selected} selected photo${selected === 1 ? '' : 's'} (1–180 characters):`);
-                if (reason === null) return;
-                const trimmedReason = reason.trim();
-                if (!trimmedReason || trimmedReason.length > 180) {
-                    window.alert('The reason must be between 1 and 180 characters.');
+                document.getElementById('bulk-delete-dialog-count').textContent = `You selected ${selected} photo${selected === 1 ? '' : 's'}. This permanently deletes them.`;
+                reasonField.value = '';
+                reasonError.hidden = true;
+                if (typeof dialog.showModal === 'function') dialog.showModal();
+                else dialog.setAttribute('open', '');
+                reasonField.focus();
+            });
+            document.getElementById('bulk-delete-cancel').addEventListener('click', () => dialog.close());
+            document.getElementById('bulk-delete-confirm').addEventListener('click', () => {
+                const reason = reasonField.value.trim();
+                if (!reason || reason.length > 180) {
+                    reasonError.textContent = 'Enter a reason between 1 and 180 characters.';
+                    reasonError.hidden = false;
+                    reasonField.focus();
                     return;
                 }
-                if (!window.confirm(`Permanently delete ${selected} selected photo${selected === 1 ? '' : 's'}?`)) return;
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'reason';
-                input.value = trimmedReason;
+                input.value = reason;
                 form.append(input);
-                approved = true;
-                form.requestSubmit();
+                dialog.close();
+                HTMLFormElement.prototype.submit.call(form);
             });
         })();
     </script>
