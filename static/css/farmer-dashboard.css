@@ -42,6 +42,7 @@ body.ds-app.vis-farmer-dashboard .hero-actions .btn.ghost { background: rgba(255
 .farmer-scan-phone span { position: absolute; inset: 70px 18px; border: 2px solid #a1f1a8; border-radius: 14px; background: rgba(191,255,198,.14); }
 body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-bottom: 20px; }
 body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) > .stat-card { padding: 20px; display: flex; flex-direction: column; gap: 4px; }
+body.ds-app.vis-farmer-dashboard .stats-grid:not(.assessment-grid) > .stat-card { align-items: center; text-align: center; }
 .farmer-summary-icon { width: 40px; height: 40px; padding: 9px; box-sizing: border-box; fill: none; stroke: #078735; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; background: #e5f5e9; border-radius: 12px; margin-bottom: 4px; }
 .accent-blue .farmer-summary-icon { stroke: #167bea; background: #e7f2ff; }
 .accent-orange .farmer-summary-icon { stroke: #d88916; background: #fff1d6; }

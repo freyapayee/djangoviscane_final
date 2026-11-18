@@ -76,6 +76,7 @@ body.ds-app.vis-farmer-page details { padding: 10px 12px; border-radius: 10px; b
 body.ds-app.vis-farmer-page summary { cursor: pointer; color: #167b38; min-height: 32px; display: list-item; }
 body.ds-app.farmer_settings .settings-password-disclosure { padding: 0; border: 0; background: transparent; }
 body.ds-app.farmer_settings .settings-password-trigger { display: flex; align-items: center; gap: 14px; min-height: 70px; padding: 14px 18px; border: 1px solid #cfe1d3; border-radius: 14px; background: #edf7ef; color: #1d5834; list-style: none; box-shadow: 0 4px 14px rgba(23, 84, 44, .06); }
+body.ds-app.farmer_settings .settings-offline-workspace { width: 100%; text-decoration: none; }
 body.ds-app.farmer_settings .settings-password-trigger::-webkit-details-marker { display: none; }
 body.ds-app.farmer_settings .settings-password-trigger::marker { content: ""; }
 body.ds-app.farmer_settings .settings-password-trigger:hover,
@@ -224,6 +225,7 @@ body.ds-app.farmer_recommendations .recommendation-history-link:focus-visible { 
 body.ds-app.farmer_agronomic_logs #recommendation-history { scroll-margin-top: 20px; }
 body.ds-app.farmer_agronomic_logs .history-filter { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 22px; padding: 14px 16px; border: 1px solid #d5e8da; border-radius: 14px; background: #f4faf5; }
 body.ds-app.farmer_agronomic_logs .history-filter-copy { display: grid; gap: 2px; flex: 0 0 auto; color: #1d5933; font-size: 15px; font-weight: 800; }
+body.ds-app.farmer_agronomic_logs .history-filter-copy { text-align: center; justify-items: center; }
 body.ds-app.farmer_agronomic_logs .history-filter-copy small { color: #6a8171; font-size: 12px; font-weight: 600; }
 body.ds-app.farmer_agronomic_logs .history-filter-options { display: flex; align-items: center; justify-content: flex-end; gap: 7px; min-width: 0; }
 body.ds-app.farmer_agronomic_logs .history-filter-option { min-height: 40px; padding: 9px 12px; border: 1px solid #bcdac4; border-radius: 10px; color: #2c603d; background: #fff; font-size: 14px; font-weight: 750; line-height: 1.2; text-decoration: none; white-space: nowrap; }
