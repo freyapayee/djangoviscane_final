@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, timedelta
 from functools import wraps
 from io import BytesIO, StringIO
+from PIL import Image, UnidentifiedImageError
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -31,7 +32,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .language import translate_recommendations
-from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, Notification, OfflineAssessmentReceipt, OfflineProfileReceipt, OfflineScanReceipt, Scan, SystemConfig, User
+from .models import Admin, AgronomicLog, AuditLog, CvScanUpload, Feedback, FeedbackReply, LegacyScanReceipt, Notification, OfflineAssessmentReceipt, OfflineProfileReceipt, OfflineScanReceipt, Scan, SystemConfig, User
 from .services import (
     DEFAULT_RECOMMENDATIONS,
     DEFAULT_SCAN_PREDICT_TOP_K,
@@ -366,13 +367,12 @@ def farmer_notifications(request):
     if request.method == "POST":
         try:
             announcement_id = max(0, int(request.POST.get("announcement_id", 0)))
-            suggestion_id = max(0, int(request.POST.get("suggestion_id", 0)))
+            suggestion_id = 0
         except (TypeError, ValueError):
             return JsonResponse({"error": "Invalid notification IDs"}, status=400)
         announcement_id = min(announcement_id, announcements.values_list("id", flat=True).first() or 0)
         suggestion_id = min(suggestion_id, suggestions.values_list("id", flat=True).first() or 0)
         User.objects.filter(pk=user.pk, seen_announcement_id__lt=announcement_id).update(seen_announcement_id=announcement_id)
-        User.objects.filter(pk=user.pk, seen_suggestion_id__lt=suggestion_id).update(seen_suggestion_id=suggestion_id)
         user.refresh_from_db()
     elif request.method != "GET":
         return HttpResponse(status=405)
@@ -630,6 +630,81 @@ def api_mobile_offline_scan(request):
         )
         OfflineScanReceipt.objects.create(id=record_id, user=user, log=log)
     return JsonResponse({"record_id": str(record_id), "log_id": log.pk, "synced": True}, status=201)
+
+
+@require_POST
+def api_mobile_legacy_scan(request):
+    """Copy one v1 historical scan into its original farmer's account, idempotently."""
+    if settings.VISCANE_OFFLINE:
+        return JsonResponse({"error": "Production session required."}, status=403)
+    user = current_user(request)
+    if not user:
+        return JsonResponse({"error": "Farmer login required."}, status=401)
+    if request.POST.get("farmer_id") != str(user.pk) or request.POST.get("owner_email", "").strip().casefold() != user.email.strip().casefold():
+        return JsonResponse({"error": "History belongs to another farmer account."}, status=403)
+    source_id = request.POST.get("source_id", "")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", source_id):
+        return JsonResponse({"error": "Invalid historical record ID."}, status=400)
+    existing = LegacyScanReceipt.objects.filter(user=user, source_id=source_id).first()
+    if existing:
+        return JsonResponse({"source_id": source_id, "log_id": existing.log_id, "synced": True})
+    try:
+        created = datetime.fromisoformat(request.POST.get("timestamp", "").replace("Z", "+00:00"))
+        inputs = json.loads(request.POST.get("inputs", ""))
+        result = json.loads(request.POST.get("result", ""))
+        if not timezone.is_aware(created) or not isinstance(inputs, dict) or not isinstance(result, dict):
+            raise ValueError("Invalid historical record")
+        recommendations = result.get("recommendations")
+        if not isinstance(recommendations, list) or len(recommendations) > 100:
+            recommendations = []
+        def small(field, source, limit):
+            value = source.get(field)
+            return str(value)[:limit] if value is not None else ""
+        def metric(field):
+            value = result.get(field)
+            if value is None:
+                return None
+            number = float(value)
+            if not math.isfinite(number) or abs(number) > 1_000_000_000_000:
+                raise ValueError("Invalid historical result")
+            return number
+        values = dict(
+            variety=small("variety", result, 120), hectares=small("hectares", inputs, 50),
+            plowing_count=small("plowing_count", inputs, 20), weeding_count=small("weeding_count", inputs, 20),
+            fertilizer_count=small("fertilizer_count", inputs, 20), ratoon_stage=small("ratoon_stage", inputs, 40),
+            rssi_infected=small("rssi_infected", inputs, 20),
+            offline_maturity_status=small("cv_maturity_status", result, 20),
+            predicted_lkg_tc=metric("predicted_lkg_tc"), predicted_tc_ha=metric("predicted_tc_ha"),
+            predicted_lkg=metric("predicted_lkg"), recommendations_snapshot=recommendations,
+            recommendations_summary="Imported VISCANE v1 historical result.",
+        )
+        photo = request.FILES.get("file")
+        photo_bytes = photo.read() if photo else None
+        if photo_bytes:
+            if len(photo_bytes) > settings.SCAN_MAX_IMAGE_BYTES:
+                raise ValueError("Historical photo is too large")
+            with Image.open(BytesIO(photo_bytes)) as image:
+                if image.format != "JPEG" or image.width * image.height > 40_000_000:
+                    raise ValueError("Invalid historical photo")
+                image.verify()
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError, UnidentifiedImageError, OSError):
+        return JsonResponse({"error": "Invalid historical scan."}, status=400)
+    with transaction.atomic():
+        existing = LegacyScanReceipt.objects.select_for_update().filter(user=user, source_id=source_id).first()
+        if existing:
+            return JsonResponse({"source_id": source_id, "log_id": existing.log_id, "synced": True})
+        if photo_bytes:
+            upload = _persist_cv_upload(user.pk, f"legacy-{source_id}.jpg", photo_bytes, {
+                "normalized_variety": values["variety"], "maturity_status": values["offline_maturity_status"],
+                "model_name": "viscane_v1_history",
+            })
+            if not upload:
+                return JsonResponse({"error": "Historical photo could not be stored."}, status=500)
+            values["offline_cv_upload"] = upload
+        log = AgronomicLog.objects.create(user=user, **values)
+        AgronomicLog.objects.filter(pk=log.pk).update(created_at=created)
+        LegacyScanReceipt.objects.create(user=user, source_id=source_id, log=log)
+    return JsonResponse({"source_id": source_id, "log_id": log.pk, "synced": True}, status=201)
 
 
 @require_POST

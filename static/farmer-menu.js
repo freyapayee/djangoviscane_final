@@ -13,10 +13,10 @@
     const translate = text => document.documentElement.lang === 'hil' ? ((window.farmerMenuLabels || {})[text] || text) : text;
     function render(data) {
         latest = data;
-        const unread = data.unread_announcements + data.unread_suggestions;
+        const unread = data.unread_announcements;
         count.hidden = !unread;
         count.textContent = unread > 99 ? '99+' : String(unread);
-        const message = unread ? `${translate('New announcements')}: ${data.unread_announcements}. ${translate('New suggestions')}: ${data.unread_suggestions}.` : translate('No new notifications.');
+        const message = unread ? `${translate('New announcements')}: ${data.unread_announcements}.` : translate('No new notifications.');
         if (status && status.textContent !== message) status.textContent = message;
         if (!list) return;
         list.replaceChildren();
@@ -80,7 +80,7 @@
             const response = await fetch(notificationsUrl, {
                 method: 'POST',
                 headers: {'X-CSRFToken': menu.querySelector('[name=csrfmiddlewaretoken]').value},
-                body: new URLSearchParams({announcement_id: latest.announcement_id, suggestion_id: latest.suggestion_id})
+                body: new URLSearchParams({announcement_id: latest.announcement_id})
             });
             if (!response.ok) throw new Error('Request failed');
             render(await response.json());

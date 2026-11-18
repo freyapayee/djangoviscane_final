@@ -21,6 +21,18 @@ body.ds-app.vis-scan-page .vis-scan-header {
     box-shadow: 0 8px 24px rgba(29, 64, 39, .06);
 }
 
+/* Match farmer dashboard header across online and offline screens. */
+body.ds-app.vis-scan-page .vis-scan-header {
+    width: 100%; max-width: none; margin: 0 0 22px; padding: 18px 24px;
+    border: 0; border-radius: 0 0 28px 28px; background: #0b6b38; color: #fff;
+    box-shadow: none; flex-direction: row; align-items: center;
+}
+body.ds-app.vis-scan-page .vis-scan-heading { display: none; }
+body.ds-app.vis-scan-page .scan-header-actions { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+body.ds-app.vis-scan-page .scan-header-actions .farmer-info-chip { color: #fff; background: transparent; }
+body.ds-app.vis-scan-page .scan-header-actions .farmer-header-navigation { display: flex; align-items: center; gap: 8px; }
+body.ds-app.vis-scan-page .scan-header-actions .vis-button { min-height: 46px; padding: 10px 16px; border-radius: 14px; color: #116b38; background: #fff; border: 1px solid #fff; }
+
 body.ds-app.vis-scan-page .vis-section-kicker { margin: 0 0 4px; color: #2c7a43; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 body.ds-app.vis-scan-page .vis-scan-heading h1 { margin: 0 0 5px; color: #14291d; font-size: clamp(27px, 4vw, 36px); letter-spacing: -.04em; }
 body.ds-app.vis-scan-page .vis-scan-heading > p:last-child { margin: 0; color: #68796e; font-size: 13px; }
@@ -82,6 +94,10 @@ body.ds-app.vis-scan-page .scan-entry-card .scan-subtitle { margin: 0; color: #7
 body.ds-app.vis-scan-page .scan-entry-card .input-wrapper { margin-bottom: 14px; box-shadow: none; }
 body.ds-app.vis-scan-page .scan-entry-card .input-wrapper :is(input, select) { min-height: 50px; border-color: #d7e3da; font-size: 13px; }
 body.ds-app.vis-scan-page .scan-entry-card .primary-btn { min-height: 50px; margin-top: 2px; border-radius: 11px; font-size: 13px; }
+body.ds-app.vis-scan-page .scan-entry-card form { display: flex; flex-direction: column; align-items: center; }
+body.ds-app.vis-scan-page .scan-entry-card form > :is(.scan-field-label,.input-wrapper) { align-self: stretch; }
+body.ds-app.vis-scan-page .scan-entry-card form .primary-btn { order: 3; width: min(100%, 360px); justify-content: center; margin: 10px auto 0; }
+body.ds-app.vis-scan-page .scan-entry-card form .scan-back-button { order: 4; width: min(100%, 360px); margin: 8px auto 0; }
 
 @media (max-width: 900px) {
     body.ds-app.vis-scan-page .vis-scan-layout { grid-template-columns: minmax(0, 1fr); }
@@ -90,8 +106,11 @@ body.ds-app.vis-scan-page .scan-entry-card .primary-btn { min-height: 50px; marg
 
 @media (max-width: 600px) {
     body.ds-app.vis-scan-page { padding: max(12px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom)); }
-    body.ds-app.vis-scan-page .vis-scan-header { align-items: flex-start; flex-direction: column; padding: 18px; border-radius: 15px; }
-    body.ds-app.vis-scan-page .vis-scan-header .vis-button { width: 100%; justify-content: center; }
+    body.ds-app.vis-scan-page .vis-scan-header { align-items: center; flex-direction: row; padding: 14px 16px; border-radius: 0 0 24px 24px; }
+    body.ds-app.vis-scan-page .vis-scan-header .vis-button { width: auto; justify-content: center; }
+    body.ds-app.vis-scan-page .scan-header-actions { width: 100%; flex-wrap: nowrap; }
+    body.ds-app.vis-scan-page .scan-header-actions .farmer-info-chip { flex: 1; min-width: 0; font-size: 12px; }
+    body.ds-app.vis-scan-page .scan-header-actions .farmer-header-navigation { flex: 0 0 auto; }
     body.ds-app.vis-scan-page .scanner-screen,
     body.ds-app.vis-scan-page .scan-entry-card { padding: 15px; border-radius: 15px; }
     body.ds-app.vis-scan-page .vis-upload-panel { align-items: stretch; flex-direction: column; }
