@@ -128,7 +128,7 @@
             const dialog = document.getElementById('bulk-delete-reason-dialog');
             const reasonField = document.getElementById('bulk-delete-reason');
             const reasonError = document.getElementById('bulk-delete-dialog-error');
-            const selectedPhotos = () => document.querySelectorAll('input[name="upload_ids"][form="bulk-delete-scans"]:checked');
+            const selectedPhotos = () => document.querySelectorAll('input[name="upload_ids"]:checked');
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
                 const selected = selectedPhotos().length;
