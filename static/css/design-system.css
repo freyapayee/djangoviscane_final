@@ -166,6 +166,7 @@ body.ds-app :is(.vis-field-label,.ds-field-label) { display: block; margin: 0 0 
 body.ds-app .input-warning { position: static; transform: none; display: none; }
 body.ds-app .form-error { color: var(--ds-error); background: white; border: 1px solid var(--ds-error); border-radius: 12px; padding: 16px; }
 body.ds-app .form-success { color: var(--ds-green); background: var(--ds-sage); border: 1px solid var(--ds-green); border-radius: 12px; padding: 16px; }
+body.admin-layout.ds-app .form-success { color: #205d31; background-color: #e2efe3; border-color: #4f8c5a; font-weight: 700; opacity: 1; }
 
 /* Compact application entry and role choice. */
 .vis-landing-shell { width: 100%; }
