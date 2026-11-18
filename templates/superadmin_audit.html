@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Audit & Compliance</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-audit">
     {% include 'components/superadmin_navigation.html' %}
@@ -35,11 +35,15 @@
     </header>
 
     <main class="dashboard-container fade-in">
-        <form method="GET" class="compliance-filters panel">
-            <label>Period <select name="period">{% for value in ['daily', 'weekly', 'monthly', 'yearly'] %}<option value="{{ value }}"{% if period == value %} selected{% endif %}>{{ value.title() }}</option>{% endfor %}</select></label>
-            <label>Date within period <input type="date" name="date" value="{{ selected_date }}" required></label>
-            <button class="btn primary" type="submit">Apply filters</button>
-        </form>
+        <div class="admin-filtered-layout">
+            <aside class="admin-filter-sidebar" aria-label="Audit filters">
+                <form method="GET" class="compliance-filters panel">
+                    <label>Period <select name="period">{% for value in ['daily', 'weekly', 'monthly', 'yearly'] %}<option value="{{ value }}"{% if period == value %} selected{% endif %}>{{ value.title() }}</option>{% endfor %}</select></label>
+                    <label>Date within period <input type="date" name="date" value="{{ selected_date }}" required></label>
+                    <button class="btn primary" type="submit">Apply filters</button>
+                </form>
+            </aside>
+            <div class="admin-filtered-results">
         <section class="panel">
             <div class="panel-header">
                 <div>
@@ -73,6 +77,8 @@
                 </tbody>
             </table></div>
         </section>
+            </div>
+        </div>
 
         <div class="footer-link">VISCANE Superadmin | Audit & Compliance</div>
     </main>
