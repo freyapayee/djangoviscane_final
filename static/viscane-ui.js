@@ -1,4 +1,21 @@
 (() => {
+  if (/^\/(?:admin|superadmin)(?:$|[/-])/.test(window.location.pathname)) {
+    const scheduledMessages = new WeakSet();
+    const scheduleDismissal = (message) => {
+      if (!(message instanceof HTMLElement) || !message.matches('.form-success') || scheduledMessages.has(message)) return;
+      scheduledMessages.add(message);
+      window.setTimeout(() => message.remove(), 20000);
+    };
+    document.querySelectorAll('.form-success').forEach(scheduleDismissal);
+    new MutationObserver((records) => {
+      records.forEach((record) => record.addedNodes.forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        scheduleDismissal(node);
+        node.querySelectorAll?.('.form-success').forEach(scheduleDismissal);
+      }));
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   // Delegation keeps controls working after HTMX swaps Login/Register forms.
   document.addEventListener('click', (event) => {
     const button = event.target.closest('[data-password-toggle]');
