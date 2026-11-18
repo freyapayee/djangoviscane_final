@@ -5,7 +5,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=admin-filter-polish-2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}?v=search-icon-1">
     <title>VISCANE | Prediction Monitoring</title>
 </head>
@@ -35,9 +35,9 @@
                 <aside class="admin-filter-sidebar" aria-label="Prediction filters">
                     <form class="admin-filter-bar" method="GET" action="/admin/monitoring">
                         <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search predictions</span><input type="search" name="search" value="{{ search|default('') }}" placeholder="Search farmer, variety, or RSSI"></label>
-                        <label><span class="visually-hidden">Filter by variety</span><select name="variety"><option value="">All varieties</option>{% for option in variety_options|default([]) %}<option value="{{ option }}"{% if option == selected_variety %} selected{% endif %}>{{ option }}</option>{% endfor %}</select></label>
-                        <label><span class="visually-hidden">Filter by status</span><select name="status"><option value="">All statuses</option><option value="completed"{% if selected_status == 'completed' %} selected{% endif %}>Completed</option><option value="pending"{% if selected_status == 'pending' %} selected{% endif %}>Pending</option></select></label>
-                        {% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
+                        <fieldset class="monitoring-filter-options"><legend>Varieties</legend><label class="filter-option{% if not selected_varieties %} is-active{% endif %}"><input type="checkbox" name="variety" value=""{% if not selected_varieties %} checked{% endif %}><span>All varieties</span></label>{% for option in variety_options|default([]) %}<label class="filter-option{% if option in selected_varieties %} is-active{% endif %}"><input type="checkbox" name="variety" value="{{ option }}"{% if option in selected_varieties %} checked{% endif %}><span>{{ option }}</span></label>{% endfor %}</fieldset>
+                        <fieldset class="monitoring-filter-options"><legend>Status</legend><label class="filter-option{% if not selected_statuses %} is-active{% endif %}"><input type="checkbox" name="status" value=""{% if not selected_statuses %} checked{% endif %}><span>All statuses</span></label><label class="filter-option{% if 'completed' in selected_statuses %} is-active{% endif %}"><input type="checkbox" name="status" value="completed"{% if 'completed' in selected_statuses %} checked{% endif %}><span>Completed</span></label><label class="filter-option{% if 'pending' in selected_statuses %} is-active{% endif %}"><input type="checkbox" name="status" value="pending"{% if 'pending' in selected_statuses %} checked{% endif %}><span>Pending</span></label></fieldset>
+                        {% if search or selected_varieties or selected_statuses %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
                         <button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
                     </form>
                 </aside>
@@ -59,7 +59,7 @@
             </div>
             {% if page_obj is defined %}{% include 'components/admin_pagination.html' %}{% endif %}
             {% else %}
-            <div class="admin-empty-state"><span><ion-icon name="pulse-outline"></ion-icon></span><h3>No prediction logs found</h3><p>{% if search or selected_variety or selected_status %}Try clearing or changing the active filters.{% else %}Prediction activity will appear after farmers submit agronomic data.{% endif %}</p>{% if search or selected_variety or selected_status %}<a class="btn ghost" href="/admin/monitoring">Clear filters</a>{% endif %}</div>
+            <div class="admin-empty-state"><span><ion-icon name="pulse-outline"></ion-icon></span><h3>No prediction logs found</h3><p>{% if search or selected_varieties or selected_statuses %}Try clearing or changing the active filters.{% else %}Prediction activity will appear after farmers submit agronomic data.{% endif %}</p>{% if search or selected_varieties or selected_statuses %}<a class="btn ghost" href="/admin/monitoring">Clear filters</a>{% endif %}</div>
             {% endif %}
                 </div>
             </div>
@@ -67,4 +67,15 @@
         <div class="footer-link">VISCANE Admin | Prediction Monitoring</div>
     </main>
     {% include 'hiligaynon_runtime.html' %}<script src="{{ url_for('static', filename='viscane-ui.js') }}?v=confirm-3" defer></script>
+    <script>
+        document.querySelectorAll('.monitoring-filter-options').forEach((group) => {
+            const allChoice = group.querySelector('input[value=""]');
+            group.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', () => {
+                if (input === allChoice && input.checked) group.querySelectorAll('input:not([value=""])').forEach((item) => { item.checked = false; });
+                if (input !== allChoice && input.checked && allChoice) allChoice.checked = false;
+                if (allChoice && !group.querySelector('input:not([value=""]):checked')) allChoice.checked = true;
+                group.querySelectorAll('.filter-option').forEach((label) => label.classList.toggle('is-active', label.querySelector('input').checked));
+            }));
+        });
+    </script>
 </body></html>

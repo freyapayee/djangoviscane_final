@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Farmer Account Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=filter-side-layout-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=admin-filter-polish-2">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-farmers.css') }}?v=account-reasons-1">
 </head>
 <body class="admin-layout admin-farmers-page has-vis-sidebar ds-app vis-management-dashboard vis-admin-farmers">
@@ -54,21 +54,17 @@
                     <h2 class="panel-title" id="farmer-accounts-title">Farmer Accounts</h2>
                     <p class="panel-subtitle">{{ page_obj.paginator.count }} account{% if page_obj.paginator.count != 1 %}s{% endif %}{% if search %} matching “{{ search }}”{% endif %}</p>
                 </div>
+                <form class="admin-search-row" method="GET" action="/admin/farmers" role="search">
+                    <label class="search-control">
+                        <ion-icon name="search-outline"></ion-icon>
+                        <span class="visually-hidden">Search farmer accounts</span>
+                        <input class="stat-input" type="search" name="search" placeholder="Search name, email, phone, or address" value="{{ search or '' }}">
+                    </label>
+                    {% if search %}<a class="btn ghost" href="/admin/farmers">Clear</a>{% endif %}
+                    <button class="btn primary" type="submit">Search</button>
+                </form>
             </div>
 
-            <div class="admin-filtered-layout">
-                <aside class="admin-filter-sidebar" aria-label="Farmer account search">
-                    <form class="admin-search-row" method="GET" action="/admin/farmers" role="search">
-                        <label class="search-control">
-                            <ion-icon name="search-outline"></ion-icon>
-                            <span class="visually-hidden">Search farmer accounts</span>
-                            <input class="stat-input" type="search" name="search" placeholder="Search name, email, phone, or address" value="{{ search or '' }}">
-                        </label>
-                        {% if search %}<a class="btn ghost" href="/admin/farmers">Clear</a>{% endif %}
-                        <button class="btn primary" type="submit">Search</button>
-                    </form>
-                </aside>
-                <div class="admin-filtered-results">
             {% if users %}
                 <div class="farmer-table-wrap" role="region" aria-label="Farmer accounts" tabindex="0">
                     <table class="data-table farmer-accounts-table">
@@ -120,8 +116,6 @@
                     {% if search %}<a class="btn ghost" href="/admin/farmers">Clear Search</a>{% else %}<button class="btn primary" type="button" data-open-create-farmer><ion-icon name="person-add-outline"></ion-icon>Create Farmer Account</button>{% endif %}
                 </div>
             {% endif %}
-                </div>
-            </div>
         </section>
         <details class="panel create-farmer-panel" id="create-farmer"{% if open_create %} open{% endif %}>
             <summary class="create-farmer-toggle">
