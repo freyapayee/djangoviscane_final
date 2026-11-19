@@ -2228,33 +2228,42 @@ def superadmin_portal(request):
 
 @role_required("superadmin")
 def superadmin_governance(request):
-    active_queryset = User.objects.filter(is_archived=False, is_active=True)
-    active_search = request.GET.get("search", "").strip()
-    active_barangay = request.GET.get("barangay", "").strip()
-    if active_search:
-        active_queryset = active_queryset.filter(
-            Q(fullname__icontains=active_search)
-            | Q(email__icontains=active_search)
-            | Q(phone__icontains=active_search)
+    selected_status = request.GET.get("status", "active").strip().lower()
+    if selected_status not in {"active", "deactivated", "archived"}:
+        selected_status = "active"
+    search = request.GET.get("search", "").strip()
+    barangay = request.GET.get("barangay", "").strip()
+    all_users = User.objects.all()
+    if selected_status == "archived":
+        users_queryset = all_users.filter(is_archived=True)
+        section_title = "Archived Accounts"
+    elif selected_status == "deactivated":
+        users_queryset = all_users.filter(is_archived=False, is_active=False)
+        section_title = "Deactivated Accounts"
+    else:
+        users_queryset = all_users.filter(is_archived=False, is_active=True)
+        section_title = "Active Farmers"
+    if search:
+        users_queryset = users_queryset.filter(
+            Q(fullname__icontains=search)
+            | Q(email__icontains=search)
+            | Q(phone__icontains=search)
         )
-    if active_barangay:
-        active_queryset = active_queryset.filter(barangay=active_barangay)
-    users = list(active_queryset.order_by("-id"))
-    all_active_users = User.objects.filter(is_archived=False, is_active=True)
-    archived_users = list(User.objects.filter(is_archived=True).order_by("-id"))
-    deactivated_users = list(User.objects.filter(is_archived=False, is_active=False).order_by("-id"))
+    if barangay:
+        users_queryset = users_queryset.filter(barangay=barangay)
+    users = list(users_queryset.order_by("-id"))
     return render_template(request, "superadmin_governance.html", {
-        "total_users": all_active_users.count(),
-        "active_user_count": all_active_users.count(),
-        "active_result_count": len(users),
-        "active_search": active_search,
-        "active_barangay": active_barangay,
+        "total_users": all_users.filter(is_archived=False).count(),
+        "active_user_count": all_users.filter(is_archived=False, is_active=True).count(),
+        "archived_user_count": all_users.filter(is_archived=True).count(),
+        "deactivated_user_count": all_users.filter(is_archived=False, is_active=False).count(),
+        "result_count": len(users),
+        "search": search,
+        "selected_barangay": barangay,
+        "selected_status": selected_status,
+        "section_title": section_title,
         "barangays": REGISTRATION_BARANGAYS,
-        "archived_user_count": len(archived_users),
-        "deactivated_user_count": len(deactivated_users),
         "users": users,
-        "archived_users": archived_users,
-        "deactivated_users": deactivated_users,
         "current_admin": current_admin(request),
     })
 
@@ -2267,8 +2276,19 @@ def superadmin_scan_gallery(request):
 
 @role_required("superadmin")
 def superadmin_admins(request):
+    selected_role = request.GET.get("role", "").strip().lower()
+    if selected_role not in {"admin", "superadmin"}:
+        selected_role = ""
+    search = request.GET.get("search", "").strip()
+    admins = Admin.objects.filter(is_archived=False)
+    if selected_role:
+        admins = admins.filter(role=selected_role)
+    if search:
+        admins = admins.filter(Q(username__icontains=search) | Q(email__icontains=search) | Q(full_name__icontains=search))
     return render_template(request, "superadmin_admins.html", {
-        "admins": Admin.objects.filter(is_archived=False).order_by("-id"),
+        "admins": admins.order_by("-id"),
+        "selected_role": selected_role,
+        "search": search,
         "create_error": request.GET.get("create_error"),
         "create_success": request.GET.get("create_success"),
         "current_admin": current_admin(request),
