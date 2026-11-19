@@ -1540,7 +1540,9 @@ def admin_monitoring(request):
     search = request.GET.get("search", "").strip()
     varieties = [value.strip() for value in request.GET.getlist("variety") if value.strip()]
     statuses = [value.strip() for value in request.GET.getlist("status") if value.strip() in {"completed", "pending"}]
-    base_logs = AgronomicLog.objects.select_related("user").order_by("-created_at")
+    rssi_values = [value.strip().lower() for value in request.GET.getlist("rssi") if value.strip().lower() in {"yes", "no"}]
+    maturities = [value.strip() for value in request.GET.getlist("maturity") if value.strip() in {"mature", "not_mature", "over_mature"}]
+    base_logs = AgronomicLog.objects.select_related("user", "scan__cv_upload", "offline_cv_upload").order_by("-created_at")
     total_predictions = base_logs.count()
     today_predictions = base_logs.filter(created_at__date=timezone.localdate()).count()
     completed_predictions = base_logs.filter(predicted_lkg__isnull=False).count()
@@ -1578,6 +1580,8 @@ def admin_monitoring(request):
         "search": search,
         "selected_varieties": varieties,
         "selected_statuses": statuses,
+        "selected_rssi": rssi_values,
+        "selected_maturities": maturities,
         "variety_options": variety_options,
         "total_predictions": total_predictions,
         "today_predictions": today_predictions,

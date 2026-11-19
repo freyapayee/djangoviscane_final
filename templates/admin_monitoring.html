@@ -5,7 +5,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=admin-filter-polish-2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=monitoring-filters-3">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-sections.css') }}?v=search-icon-1">
     <title>VISCANE | Prediction Monitoring</title>
 </head>
@@ -37,17 +37,20 @@
                         <label class="admin-search-field"><ion-icon name="search-outline"></ion-icon><span class="visually-hidden">Search predictions</span><input type="search" name="search" value="{{ search|default('') }}" placeholder="Search farmer, variety, or RSSI"></label>
                         <fieldset class="monitoring-filter-options"><legend>Varieties</legend><label class="filter-option{% if not selected_varieties %} is-active{% endif %}"><input type="checkbox" name="variety" value=""{% if not selected_varieties %} checked{% endif %}><span>All varieties</span></label>{% for option in variety_options|default([]) %}<label class="filter-option{% if option in selected_varieties %} is-active{% endif %}"><input type="checkbox" name="variety" value="{{ option }}"{% if option in selected_varieties %} checked{% endif %}><span>{{ option }}</span></label>{% endfor %}</fieldset>
                         <fieldset class="monitoring-filter-options"><legend>Status</legend><label class="filter-option{% if not selected_statuses %} is-active{% endif %}"><input type="checkbox" name="status" value=""{% if not selected_statuses %} checked{% endif %}><span>All statuses</span></label><label class="filter-option{% if 'completed' in selected_statuses %} is-active{% endif %}"><input type="checkbox" name="status" value="completed"{% if 'completed' in selected_statuses %} checked{% endif %}><span>Completed</span></label><label class="filter-option{% if 'pending' in selected_statuses %} is-active{% endif %}"><input type="checkbox" name="status" value="pending"{% if 'pending' in selected_statuses %} checked{% endif %}><span>Pending</span></label></fieldset>
-                        {% if search or selected_varieties or selected_statuses %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
+                        <fieldset class="monitoring-filter-options"><legend>RSSI affected</legend><label class="filter-option{% if not selected_rssi %} is-active{% endif %}"><input type="checkbox" name="rssi" value=""{% if not selected_rssi %} checked{% endif %}><span>All</span></label><label class="filter-option{% if 'yes' in selected_rssi %} is-active{% endif %}"><input type="checkbox" name="rssi" value="yes"{% if 'yes' in selected_rssi %} checked{% endif %}><span>Yes</span></label><label class="filter-option{% if 'no' in selected_rssi %} is-active{% endif %}"><input type="checkbox" name="rssi" value="no"{% if 'no' in selected_rssi %} checked{% endif %}><span>No</span></label></fieldset>
+                        <fieldset class="monitoring-filter-options"><legend>Maturity</legend><label class="filter-option{% if not selected_maturities %} is-active{% endif %}"><input type="checkbox" name="maturity" value=""{% if not selected_maturities %} checked{% endif %}><span>All maturities</span></label><label class="filter-option{% if 'mature' in selected_maturities %} is-active{% endif %}"><input type="checkbox" name="maturity" value="mature"{% if 'mature' in selected_maturities %} checked{% endif %}><span>Mature</span></label><label class="filter-option{% if 'not_mature' in selected_maturities %} is-active{% endif %}"><input type="checkbox" name="maturity" value="not_mature"{% if 'not_mature' in selected_maturities %} checked{% endif %}><span>Not Mature</span></label><label class="filter-option{% if 'over_mature' in selected_maturities %} is-active{% endif %}"><input type="checkbox" name="maturity" value="over_mature"{% if 'over_mature' in selected_maturities %} checked{% endif %}><span>Over Mature</span></label></fieldset>
+                        {% if search or selected_varieties or selected_statuses or selected_rssi or selected_maturities %}<a class="btn ghost" href="/admin/monitoring">Clear</a>{% endif %}
                         <button class="btn primary" type="submit"><ion-icon name="funnel-outline"></ion-icon>Apply filters</button>
                     </form>
                 </aside>
                 <div class="admin-filtered-results">
             {% if rows %}
             <div class="admin-responsive-table" role="region" aria-label="Prediction logs" tabindex="0">
-                <table class="data-table"><thead><tr><th>Farmer</th><th>Variety</th><th>Area</th><th>LKG/TC</th><th>LKG/HA</th><th>Total LKG</th><th>RSSI</th><th>Status</th><th>Captured</th></tr></thead>
+                <table class="data-table"><thead><tr><th>Farmer</th><th>Variety</th><th>Maturity</th><th>Area</th><th>LKG/TC</th><th>LKG/HA</th><th>Total LKG</th><th>RSSI</th><th>Status</th><th>Captured</th></tr></thead>
                 <tbody>{% for row in rows %}<tr>
                     <td data-label="Farmer"><strong>{{ row.farmer_name }}</strong></td>
                     <td data-label="Variety"><span class="admin-value-pill">{{ row.variety }}</span></td>
+                    <td data-label="Maturity">{{ row.maturity_status }}</td>
                     <td data-label="Area">{{ row.hectares }} ha</td>
                     <td data-label="LKG/TC">{{ row.predicted_lkg_tc if row.predicted_lkg_tc is not none else 'N/A' }}</td>
                     <td data-label="LKG/HA">{{ row.predicted_tc_ha if row.predicted_tc_ha is not none else 'N/A' }}</td>
@@ -59,7 +62,7 @@
             </div>
             {% if page_obj is defined %}{% include 'components/admin_pagination.html' %}{% endif %}
             {% else %}
-            <div class="admin-empty-state"><span><ion-icon name="pulse-outline"></ion-icon></span><h3>No prediction logs found</h3><p>{% if search or selected_varieties or selected_statuses %}Try clearing or changing the active filters.{% else %}Prediction activity will appear after farmers submit agronomic data.{% endif %}</p>{% if search or selected_varieties or selected_statuses %}<a class="btn ghost" href="/admin/monitoring">Clear filters</a>{% endif %}</div>
+            <div class="admin-empty-state"><span><ion-icon name="pulse-outline"></ion-icon></span><h3>No prediction logs found</h3><p>{% if search or selected_varieties or selected_statuses or selected_rssi or selected_maturities %}Try clearing or changing the active filters.{% else %}Prediction activity will appear after farmers submit agronomic data.{% endif %}</p>{% if search or selected_varieties or selected_statuses or selected_rssi or selected_maturities %}<a class="btn ghost" href="/admin/monitoring">Clear filters</a>{% endif %}</div>
             {% endif %}
                 </div>
             </div>
