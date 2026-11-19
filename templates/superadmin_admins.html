@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Admin Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=buttons-flat-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=superadmin-role-status-1">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-overview">
     {% include 'components/superadmin_navigation.html' %}
@@ -69,6 +69,21 @@
                     </button>
                 </form>
                 </details>
+                <div class="admin-filtered-layout superadmin-admin-management-layout">
+                    <aside class="admin-filter-sidebar" aria-label="Admin account filters">
+                        <form class="superadmin-admin-filters" method="GET" action="/superadmin/admins">
+                            <label class="superadmin-governance-search"><span class="superadmin-governance-search-icon" aria-hidden="true"><ion-icon name="search-outline"></ion-icon></span><input type="search" name="search" value="{{ search }}" aria-label="Search admin accounts" placeholder="Search username or email"></label>
+                            <label for="admin-role-filter">Account role</label>
+                            <select id="admin-role-filter" name="role" aria-label="Filter admin accounts by role">
+                                <option value=""{% if not selected_role %} selected{% endif %}>All roles</option>
+                                <option value="admin"{% if selected_role == 'admin' %} selected{% endif %}>Admin</option>
+                                <option value="superadmin"{% if selected_role == 'superadmin' %} selected{% endif %}>Superadmin</option>
+                            </select>
+                            <button class="btn primary" type="submit"><ion-icon name="filter-outline"></ion-icon>Apply filters</button>
+                            {% if search or selected_role %}<a class="btn light" href="/superadmin/admins">Clear</a>{% endif %}
+                        </form>
+                    </aside>
+                    <div class="admin-filtered-results">
                 {% if admins %}
                     <div class="superadmin-accounts-grid">
                     {% for admin in admins %}
@@ -103,6 +118,8 @@
                 {% else %}
                     <div class="list-meta">No admin accounts found.</div>
                 {% endif %}
+                    </div>
+                </div>
             </div>
 
     </main>

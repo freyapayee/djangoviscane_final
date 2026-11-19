@@ -1403,6 +1403,13 @@ body.ds-app.vis-management-dashboard.vis-superadmin-gallery .superadmin-scan-gal
 body.ds-app.vis-management-dashboard .superadmin-accounts-grid .superadmin-account-row { margin: 0; min-width: 0; }
 .superadmin-accounts-grid .list-meta { overflow-wrap: anywhere; }
 .deactivation-reason { white-space: pre-wrap; overflow-wrap: anywhere; min-width: 180px; max-width: 420px; }
+.superadmin-admin-management-layout { margin-top: 20px; }
+.superadmin-admin-filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; width: 100%; margin: 0; }
+.superadmin-admin-filters > label:not(.superadmin-governance-search) { color: #354f40; font-size: 12px; font-weight: 700; }
+.superadmin-admin-filters select { width: 100%; min-width: 0; min-height: 40px; padding: 0 38px 0 11px; border: 1px solid #d7e5da; border-radius: 9px; background-color: #fff; color: #30483b; font: inherit; font-size: 12px; }
+.superadmin-admin-filters > .btn { justify-self: start; width: auto; min-width: 0; min-height: 38px; height: 38px; padding: 0 13px; font-size: 12px; }
+.governance-summary { width: 100%; max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body.ds-app.vis-management-dashboard.vis-superadmin-governance .governance-summary .stat-card { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; text-align: center; }
 .admin-filtered-layout { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); align-items: start; gap: 18px; }
 .admin-filter-sidebar { position: sticky; top: 16px; min-width: 0; padding: 14px; border: 1px solid #dce8df; border-radius: 12px; background: #f4f8f5; }
 .admin-filtered-results { min-width: 0; }
@@ -1426,6 +1433,7 @@ body.ds-app.vis-management-dashboard .admin-filter-sidebar .admin-search-row { g
 body.ds-app.vis-management-dashboard :is(select, .admin-filter-sidebar select) { appearance: none; -webkit-appearance: none; padding-right: 42px !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m3 6 5 5 5-5' fill='none' stroke='%23445b4d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 14px; }
 body.ds-app.vis-management-dashboard .admin-filter-sidebar .admin-filter-bar > .btn,
 body.ds-app.vis-management-dashboard .admin-filter-sidebar .superadmin-governance-filters > .btn,
+body.ds-app.vis-management-dashboard .admin-filter-sidebar .superadmin-admin-filters > .btn,
 body.ds-app.vis-management-dashboard .admin-filter-sidebar .compliance-filters > .btn,
 body.ds-app.vis-management-dashboard .admin-filter-sidebar .report-export-form > .btn { justify-self: start; width: auto; min-width: 0; min-height: 38px; height: 38px; padding: 0 13px; font-size: 12px; }
 .monitoring-filter-options { display: grid; gap: 5px; margin: 2px 0; padding: 10px; border: 1px solid #dce8df; border-radius: 9px; }
