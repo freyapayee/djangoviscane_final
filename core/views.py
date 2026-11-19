@@ -1564,13 +1564,45 @@ def admin_monitoring(request):
         logs = logs.filter(predicted_lkg__isnull=(statuses[0] == "pending"))
     elif len(statuses) == 2:
         logs = logs.filter(Q(predicted_lkg__isnull=True) | Q(predicted_lkg__isnull=False))
+    if rssi_values:
+        rssi_query = Q()
+        if "yes" in rssi_values:
+            rssi_query |= Q(rssi_infected__iexact="yes") | Q(rssi_infected__iexact="true") | Q(rssi_infected__iexact="infected")
+        if "no" in rssi_values:
+            rssi_query |= Q(rssi_infected__iexact="no") | Q(rssi_infected__iexact="false") | Q(rssi_infected__iexact="not infected")
+        logs = logs.filter(rssi_query)
+    if maturities:
+        maturity_ids = []
+        for log in base_logs:
+            upload = (log.scan.cv_upload if log.scan else None) or log.offline_cv_upload
+            status = normalize_cv_maturity_status((upload.maturity_status if upload else "") or "")
+            if status == "NOT_MATURE":
+                label = "not_mature"
+            elif status == "MATURE":
+                label = "mature"
+            elif status == "OVER_MATURE":
+                label = "over_mature"
+            elif log.scan and log.scan.maturity_pct is not None:
+                label = "not_mature" if log.scan.maturity_pct < 75 else "mature" if log.scan.maturity_pct <= 90 else "over_mature"
+            else:
+                continue
+            if label in maturities:
+                maturity_ids.append(log.pk)
+        logs = logs.filter(pk__in=maturity_ids)
     paginator = Paginator(logs, 12)
     page_obj = paginator.get_page(request.GET.get("page"))
     monitoring_rows = []
     for log in page_obj.object_list:
-        monitoring_rows.append({"farmer_name": log.user.fullname if log.user else f"User #{log.user_id}", "variety": log.variety or "N/A", "hectares": log.hectares or "N/A", "predicted_lkg_tc": round(log.predicted_lkg_tc, 2) if log.predicted_lkg_tc is not None else None, "predicted_tc_ha": round(log.predicted_tc_ha, 2) if log.predicted_tc_ha is not None else None, "predicted_lkg": round(log.predicted_lkg, 2) if log.predicted_lkg is not None else None, "rssi_infected": log.rssi_infected or "N/A", "created_at": log.created_at})
+        upload = (log.scan.cv_upload if log.scan else None) or log.offline_cv_upload
+        maturity_status = normalize_cv_maturity_status((upload.maturity_status if upload else "") or "")
+        if maturity_status == "NOT_MATURE": maturity_label = "Not Mature"
+        elif maturity_status == "MATURE": maturity_label = "Mature"
+        elif maturity_status == "OVER_MATURE": maturity_label = "Over Mature"
+        elif log.scan and log.scan.maturity_pct is not None: maturity_label = "Not Mature" if log.scan.maturity_pct < 75 else "Mature" if log.scan.maturity_pct <= 90 else "Over Mature"
+        else: maturity_label = "Not provided"
+        monitoring_rows.append({"farmer_name": log.user.fullname if log.user else f"User #{log.user_id}", "variety": log.variety or "N/A", "hectares": log.hectares or "N/A", "predicted_lkg_tc": round(log.predicted_lkg_tc, 2) if log.predicted_lkg_tc is not None else None, "predicted_tc_ha": round(log.predicted_tc_ha, 2) if log.predicted_tc_ha is not None else None, "predicted_lkg": round(log.predicted_lkg, 2) if log.predicted_lkg is not None else None, "rssi_infected": log.rssi_infected or "N/A", "maturity_status": maturity_label, "created_at": log.created_at})
     page_numbers = [None if str(number) == str(Paginator.ELLIPSIS) else number for number in paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)]
-    filter_values = [("search", search), *(('variety', value) for value in varieties), *(('status', value) for value in statuses)]
+    filter_values = [("search", search), *(('variety', value) for value in varieties), *(('status', value) for value in statuses), *(('rssi', value) for value in rssi_values), *(('maturity', value) for value in maturities)]
     query_string = urlencode([(key, value) for key, value in filter_values if value])
     return render_template(request, "admin_monitoring.html", {
         "rows": monitoring_rows,
