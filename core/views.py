@@ -2228,21 +2228,23 @@ def superadmin_portal(request):
 
 @role_required("superadmin")
 def superadmin_governance(request):
-    selected_status = request.GET.get("status", "active").strip().lower()
-    if selected_status not in {"active", "deactivated", "archived"}:
-        selected_status = "active"
+    valid_statuses = {"active", "deactivated", "archived"}
+    selected_statuses = [value.strip().lower() for value in request.GET.getlist("status") if value.strip().lower() in valid_statuses]
+    if not selected_statuses:
+        selected_statuses = ["active"]
     search = request.GET.get("search", "").strip()
     barangay = request.GET.get("barangay", "").strip()
     all_users = User.objects.all()
-    if selected_status == "archived":
-        users_queryset = all_users.filter(is_archived=True)
-        section_title = "Archived Accounts"
-    elif selected_status == "deactivated":
-        users_queryset = all_users.filter(is_archived=False, is_active=False)
-        section_title = "Deactivated Accounts"
-    else:
-        users_queryset = all_users.filter(is_archived=False, is_active=True)
-        section_title = "Active Farmers"
+    status_query = Q()
+    if "active" in selected_statuses:
+        status_query |= Q(is_archived=False, is_active=True)
+    if "deactivated" in selected_statuses:
+        status_query |= Q(is_archived=False, is_active=False)
+    if "archived" in selected_statuses:
+        status_query |= Q(is_archived=True)
+    users_queryset = all_users.filter(status_query)
+    status_titles = {"active": "Active Farmers", "deactivated": "Deactivated Accounts", "archived": "Archived Accounts"}
+    section_title = status_titles[selected_statuses[0]] if len(selected_statuses) == 1 else "Farmer Accounts"
     if search:
         users_queryset = users_queryset.filter(
             Q(fullname__icontains=search)
@@ -2260,7 +2262,7 @@ def superadmin_governance(request):
         "result_count": len(users),
         "search": search,
         "selected_barangay": barangay,
-        "selected_status": selected_status,
+        "selected_statuses": selected_statuses,
         "section_title": section_title,
         "barangays": REGISTRATION_BARANGAYS,
         "users": users,
@@ -2276,18 +2278,17 @@ def superadmin_scan_gallery(request):
 
 @role_required("superadmin")
 def superadmin_admins(request):
-    selected_role = request.GET.get("role", "").strip().lower()
-    if selected_role not in {"admin", "superadmin"}:
-        selected_role = ""
+    valid_roles = {"admin", "superadmin"}
+    selected_roles = [value.strip().lower() for value in request.GET.getlist("role") if value.strip().lower() in valid_roles]
     search = request.GET.get("search", "").strip()
     admins = Admin.objects.filter(is_archived=False)
-    if selected_role:
-        admins = admins.filter(role=selected_role)
+    if selected_roles:
+        admins = admins.filter(role__in=selected_roles)
     if search:
         admins = admins.filter(Q(username__icontains=search) | Q(email__icontains=search) | Q(full_name__icontains=search))
     return render_template(request, "superadmin_admins.html", {
         "admins": admins.order_by("-id"),
-        "selected_role": selected_role,
+        "selected_roles": selected_roles,
         "search": search,
         "create_error": request.GET.get("create_error"),
         "create_success": request.GET.get("create_success"),
