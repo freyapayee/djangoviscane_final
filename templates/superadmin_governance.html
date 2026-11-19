@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | User Governance</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=superadmin-role-status-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=superadmin-choice-lists-2">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-governance">
     {% include 'components/superadmin_navigation.html' %}
@@ -35,22 +35,22 @@
             <div class="admin-filtered-layout">
                 <aside class="admin-filter-sidebar" aria-label="Account status and farmer filters">
                     <form class="superadmin-governance-filters" method="GET" action="/superadmin/governance" role="search">
-                        <label class="superadmin-governance-search"><span class="superadmin-governance-search-icon" aria-hidden="true"><ion-icon name="search-outline"></ion-icon></span><input type="search" name="search" value="{{ search }}" aria-label="Search farmer accounts" placeholder="Search name, email, or phone"></label>
-                        <label for="governance-status-filter">Account status</label>
-                        <select id="governance-status-filter" name="status" aria-label="Filter accounts by status">
-                            <option value="active"{% if selected_status == 'active' %} selected{% endif %}>Active</option>
-                            <option value="deactivated"{% if selected_status == 'deactivated' %} selected{% endif %}>Deactivated</option>
-                            <option value="archived"{% if selected_status == 'archived' %} selected{% endif %}>Archived</option>
-                        </select>
+                        <label class="superadmin-governance-search"><input type="search" name="search" value="{{ search }}" aria-label="Search farmer accounts" placeholder="Search name, email, or phone"></label>
+                        <fieldset class="monitoring-filter-options superadmin-choice-list">
+                            <legend>Account status</legend>
+                            {% for value, label in [('active', 'Active'), ('deactivated', 'Deactivated'), ('archived', 'Archived')] %}
+                            <label class="filter-option{% if value in selected_statuses %} is-active{% endif %}"><input type="radio" name="status" value="{{ value }}"{% if value in selected_statuses %} checked{% endif %}>{{ label }}</label>
+                            {% endfor %}
+                        </fieldset>
                         <label for="governance-barangay-filter">Barangay</label>
                         <select id="governance-barangay-filter" name="barangay" aria-label="Filter by barangay"><option value="">All barangays</option>{% for barangay in barangays %}<option value="{{ barangay }}"{% if barangay == selected_barangay %} selected{% endif %}>{{ barangay }}</option>{% endfor %}</select>
                         <button class="btn primary" type="submit"><ion-icon name="filter-outline"></ion-icon>Apply filters</button>
-                        {% if search or selected_barangay or selected_status != 'active' %}<a class="btn light" href="/superadmin/governance">Clear</a>{% endif %}
+                        {% if search or selected_barangay or selected_statuses != ['active'] %}<a class="btn light" href="/superadmin/governance">Clear</a>{% endif %}
                     </form>
                 </aside>
                 <div class="admin-filtered-results">
-                    <div class="ds-table-scroll" role="region" aria-label="{{ section_title }}" tabindex="0"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th>{% if selected_status == 'deactivated' %}<th>Reason</th>{% endif %}<th>Action</th></tr></thead><tbody>
-                        {% if users %}{% for user in users %}<tr><td>{{ user.fullname }}</td><td>{{ user.email }}</td><td>{{ user.phone }}</td>{% if selected_status == 'deactivated' %}<td class="deactivation-reason">{{ user.restriction_reason or 'No reason recorded.' }}</td>{% endif %}<td><div class="superadmin-table-actions"><a class="tag superadmin-tag" href="/superadmin/users/{{ user.id }}">See Details</a>{% if selected_status == 'active' %}<form method="POST" action="/superadmin/users/archive" data-confirm-action="archive-farmer" data-confirm-subject="{{ user.fullname }}">{{ csrf_input }}<input type="hidden" name="user_id" value="{{ user.id }}"><button class="tag warning superadmin-tag" type="submit">Archive</button></form>{% endif %}</div></td></tr>{% endfor %}{% else %}<tr><td colspan="{% if selected_status == 'deactivated' %}5{% else %}4{% endif %}">No {{ selected_status }} accounts found.</td></tr>{% endif %}
+                    <div class="ds-table-scroll" role="region" aria-label="{{ section_title }}" tabindex="0"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th>{% if 'deactivated' in selected_statuses %}<th>Reason</th>{% endif %}<th>Action</th></tr></thead><tbody>
+                        {% if users %}{% for user in users %}<tr><td>{{ user.fullname }}</td><td>{{ user.email }}</td><td>{{ user.phone }}</td>{% if 'deactivated' in selected_statuses %}<td class="deactivation-reason">{{ user.restriction_reason or 'No reason recorded.' if not user.is_active else '—' }}</td>{% endif %}<td><div class="superadmin-table-actions"><a class="tag superadmin-tag" href="/superadmin/users/{{ user.id }}">See Details</a>{% if user.is_active and not user.is_archived %}<form method="POST" action="/superadmin/users/archive" data-confirm-action="archive-farmer" data-confirm-subject="{{ user.fullname }}">{{ csrf_input }}<input type="hidden" name="user_id" value="{{ user.id }}"><button class="tag warning superadmin-tag" type="submit">Archive</button></form>{% endif %}</div></td></tr>{% endfor %}{% else %}<tr><td colspan="{% if 'deactivated' in selected_statuses %}5{% else %}4{% endif %}">No matching accounts found.</td></tr>{% endif %}
                     </tbody></table></div>
                 </div>
             </div>

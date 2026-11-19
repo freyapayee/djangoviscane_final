@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>VISCANE | Sugarcane Scan Gallery</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}?v=confirm-3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=superadmin-role-status-1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}?v=superadmin-choice-lists-2">
 </head>
 <body class="admin-layout superadmin-layout has-vis-sidebar ds-app vis-management-dashboard vis-superadmin-gallery">
     {% include 'components/superadmin_navigation.html' %}
@@ -54,18 +54,15 @@
                             <span>Select photos below. You’ll be asked for a reason before deletion.</span>
                         </form>
                         <div class="superadmin-gallery-filters" aria-label="Filter sugarcane scans">
-                            <label for="scan-variety-filter">Variety
-                                <select id="scan-variety-filter"><option value="">All varieties</option></select>
-                            </label>
-                            <label for="scan-maturity-filter">Maturity
-                                <select id="scan-maturity-filter">
-                                    <option value="">All maturity levels</option>
-                                    <option value="mature">Mature</option>
-                                    <option value="not mature">Not mature</option>
-                                    <option value="over mature">Over mature</option>
-                                    <option value="unknown">Unknown</option>
-                                </select>
-                            </label>
+                            <fieldset class="monitoring-filter-options superadmin-choice-list" id="scan-variety-filter"><legend>Variety</legend><div id="scan-variety-options"></div></fieldset>
+                            <p class="superadmin-gallery-filter-hint">Leave varieties or maturity unchecked to show all.</p>
+                            <fieldset class="monitoring-filter-options superadmin-choice-list" id="scan-maturity-filter">
+                                <legend>Maturity</legend>
+                                <label class="filter-option"><input type="checkbox" value="mature">Mature</label>
+                                <label class="filter-option"><input type="checkbox" value="not mature">Not mature</label>
+                                <label class="filter-option"><input type="checkbox" value="over mature">Over mature</label>
+                                <label class="filter-option"><input type="checkbox" value="unknown">Unknown</label>
+                            </fieldset>
                             <span id="scan-filter-count" aria-live="polite"></span>
                         </div>
                     </aside>
@@ -158,23 +155,31 @@
             const scanCards = [...document.querySelectorAll('.superadmin-scan-gallery-item')];
             const stickyActions = document.getElementById('bulk-delete-sticky');
             const selectedCount = document.getElementById('bulk-delete-selected-count');
+            const varietyOptions = document.getElementById('scan-variety-options');
             const varietyFilter = document.getElementById('scan-variety-filter');
             const maturityFilter = document.getElementById('scan-maturity-filter');
             const filterCount = document.getElementById('scan-filter-count');
 
             const varieties = [...new Set(scanCards.map((card) => card.dataset.variety.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
             varieties.forEach((variety) => {
-                const option = document.createElement('option');
+                const label = document.createElement('label');
+                label.className = 'filter-option';
+                const option = document.createElement('input');
+                option.type = 'checkbox';
                 option.value = variety.toLocaleLowerCase();
-                option.textContent = variety;
-                varietyFilter.append(option);
+                label.append(option, document.createTextNode(variety));
+                varietyOptions.append(label);
             });
 
             function refreshGallery() {
+                varietyFilter.querySelectorAll('.filter-option').forEach((label) => label.classList.toggle('is-active', label.querySelector('input').checked));
+                maturityFilter.querySelectorAll('.filter-option').forEach((label) => label.classList.toggle('is-active', label.querySelector('input').checked));
+                const selectedVarieties = [...varietyFilter.querySelectorAll('input:checked')].map((input) => input.value);
+                const selectedMaturities = [...maturityFilter.querySelectorAll('input:checked')].map((input) => input.value);
                 let visibleCount = 0;
                 scanCards.forEach((card) => {
-                    const matchesVariety = !varietyFilter.value || card.dataset.variety.trim().toLocaleLowerCase() === varietyFilter.value;
-                    const matchesMaturity = !maturityFilter.value || card.dataset.maturity.trim() === maturityFilter.value;
+                    const matchesVariety = !selectedVarieties.length || selectedVarieties.includes(card.dataset.variety.trim().toLocaleLowerCase());
+                    const matchesMaturity = !selectedMaturities.length || selectedMaturities.includes(card.dataset.maturity.trim());
                     const visible = matchesVariety && matchesMaturity;
                     card.hidden = !visible;
                     card.classList.toggle('is-selected', card.querySelector('input[name="upload_ids"]')?.checked === true);
