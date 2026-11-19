@@ -1564,6 +1564,10 @@ def admin_monitoring(request):
         logs = logs.filter(predicted_lkg__isnull=(statuses[0] == "pending"))
     elif len(statuses) == 2:
         logs = logs.filter(Q(predicted_lkg__isnull=True) | Q(predicted_lkg__isnull=False))
+    # Keep these selections local to the filtering block so this change remains
+    # safe when deployed as a standalone cherry-pick onto the server branch.
+    rssi_values = [value.strip().lower() for value in request.GET.getlist("rssi") if value.strip().lower() in {"yes", "no"}]
+    maturities = [value.strip() for value in request.GET.getlist("maturity") if value.strip() in {"mature", "not_mature", "over_mature"}]
     if rssi_values:
         rssi_query = Q()
         if "yes" in rssi_values:
